@@ -16,6 +16,23 @@ export function ThemeProvider({
 	return <ThemeContext.Provider value={palette}>{children}</ThemeContext.Provider>;
 }
 
+export function ThemeOverride({
+	overrides,
+	children,
+}: {
+	overrides: Partial<Palette>;
+	children: ReactNode;
+}) {
+	const base = useTheme();
+	return (
+		<ThemeContext.Provider value={{ ...base, ...overrides }}>{children}</ThemeContext.Provider>
+	);
+}
+
+export function useIsDark(): boolean {
+	return useTheme() === DARK;
+}
+
 export function useTheme(): Palette {
 	return useContext(ThemeContext);
 }

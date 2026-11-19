@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
-import { useTheme } from "./theme-context";
+import { ThemeOverride, useTheme } from "./theme-context";
+import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
 import { SignInScreen } from "./sign-in-screen";
 import { TaskDetailPane } from "./task-detail-pane";
@@ -13,6 +14,11 @@ import { TaskListPane } from "./task-list-pane";
 
 export interface AppShellProps {
 	readonly providers: readonly IdentityProvider[];
+}
+
+function ThemedArea({ children }: { children: ReactNode }) {
+	const { overrides } = useListTheme();
+	return <ThemeOverride overrides={overrides}>{children}</ThemeOverride>;
 }
 
 export function AppShell({ providers }: AppShellProps) {
@@ -43,12 +49,20 @@ export function AppShell({ providers }: AppShellProps) {
 	const closeDetail = () => store.selectTask(null);
 	if (mode === "compact") {
 		if (task !== null) {
-			return <TaskDetailPane task={task} onClose={closeDetail} />;
+			return (
+				<ThemedArea>
+					<TaskDetailPane task={task} onClose={closeDetail} />
+				</ThemedArea>
+			);
 		}
 		if (sidebarOpen) {
 			return <Sidebar onSelected={() => setSidebarOpen(false)} />;
 		}
-		return <TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />;
+		return (
+			<ThemedArea>
+				<TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />
+			</ThemedArea>
+		);
 	}
 	return (
 		<View
@@ -59,7 +73,9 @@ export function AppShell({ providers }: AppShellProps) {
 				<Sidebar onSelected={() => undefined} />
 			</View>
 			<View style={{ flex: 1 }}>
-				<TaskListPane mode={mode} />
+				<ThemedArea>
+					<TaskListPane mode={mode} />
+				</ThemedArea>
 			</View>
 			{task === null ? null : (
 				<View
@@ -69,7 +85,9 @@ export function AppShell({ providers }: AppShellProps) {
 						borderLeftColor: palette.border,
 					}}
 				>
-					<TaskDetailPane task={task} onClose={closeDetail} />
+					<ThemedArea>
+						<TaskDetailPane task={task} onClose={closeDetail} />
+					</ThemedArea>
 				</View>
 			)}
 		</View>

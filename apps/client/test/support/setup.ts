@@ -10,6 +10,10 @@ vi.mock("expo-auth-session", () => ({
 vi.mock("expo-audio", () => ({
 	createAudioPlayer: () => ({ seekTo: async () => undefined, play: () => undefined }),
 }));
+vi.mock("expo-image-picker", () => ({
+	launchImageLibraryAsync: async () => ({ canceled: true, assets: null }),
+}));
+vi.mock("expo-print", () => ({ printAsync: async () => undefined }));
 vi.mock("expo-secure-store", () => ({
 	getItemAsync: async () => null,
 	setItemAsync: async () => undefined,

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { Task } from "../src/domain/task";
 import { TodoList } from "../src/domain/todo-list";
+import {
+	DEFAULT_THEME_COLOR,
+	SORT_OPTIONS,
+	THEME_COLORS,
+	ViewSettings,
+} from "../src/domain/view-settings";
 
 describe("Task", () => {
 	it("creates with defaults", () => {
@@ -74,6 +80,35 @@ describe("Task steps and notes", () => {
 		expect(task.note).toBe("Hello");
 		expect(task.stepsCompleted).toBe(1);
 		expect(task.with({ steps: [] }).steps).toEqual([]);
+	});
+});
+
+describe("ViewSettings", () => {
+	it("starts with defaults and applies changes immutably", () => {
+		const defaults = ViewSettings.defaults("my-day");
+		expect(defaults.id).toBe("my-day");
+		expect(defaults.sort).toBeNull();
+		expect(defaults.hideCompleted).toBe(false);
+		expect(defaults.theme).toBeNull();
+		const changed = defaults.with({
+			sort: "due",
+			hideCompleted: true,
+			theme: { type: "color", color: "#c0392b" },
+		});
+		expect(changed.sort).toBe("due");
+		expect(changed.hideCompleted).toBe(true);
+		expect(changed.theme).toEqual({ type: "color", color: "#c0392b" });
+		expect(defaults.sort).toBeNull();
+		expect(changed.with({ sort: null, theme: null }).sort).toBeNull();
+		expect(changed.with({}).hideCompleted).toBe(true);
+		expect(THEME_COLORS[0]!.hex).toBe(DEFAULT_THEME_COLOR);
+		expect(SORT_OPTIONS.map((option) => option.key)).toEqual([
+			"importance",
+			"alphabetical",
+			"due",
+			"created",
+			"myDay",
+		]);
 	});
 });
 

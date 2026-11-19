@@ -21,7 +21,8 @@ cloud "AWS" {
     component "DynamoRepository" as Repo
   }
 
-  database "DynamoDB\ntasks + lists\nownerId + id" as Table
+  database "DynamoDB\ntasks, lists, settings, photos\nownerId + id" as Table
+  database "S3 photos bucket\n(private, presigned URLs)" as Photos
 }
 
 Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Google, Microsoft)
@@ -39,4 +40,6 @@ Mcp --> Service
 Service --> TaskRepository
 Repo ..|> TaskRepository
 Repo --> Table
+Service --> Photos : presigned upload and download
+Client ..> Photos : upload photo directly
 @enduml

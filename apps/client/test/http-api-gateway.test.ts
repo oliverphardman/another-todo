@@ -47,6 +47,44 @@ describe("HttpApiGateway", () => {
 		expect((await tasks.gateway.listTasks())[0]!.id).toBe("t");
 	});
 
+	it("lists and replaces view settings", async () => {
+		const listed = setup(() =>
+			json({
+				settings: [
+					{
+						id: "my-day",
+						sort: "due",
+						hideCompleted: true,
+						theme: { type: "color", color: "#c0392b" },
+						updatedAt: "x",
+					},
+					{ id: "tasks", sort: null, hideCompleted: false, theme: null, updatedAt: "x" },
+				],
+			}),
+		);
+		expect(await listed.gateway.listSettings()).toEqual([
+			{
+				id: "my-day",
+				sort: "due",
+				hideCompleted: true,
+				theme: { type: "color", color: "#c0392b" },
+			},
+			{ id: "tasks", sort: null, hideCompleted: false, theme: null },
+		]);
+		const put = setup();
+		await put.gateway.putSettings({
+			id: "my day",
+			sort: "created",
+			hideCompleted: false,
+			theme: null,
+		});
+		expect(put.calls[0]).toMatchObject({
+			method: "PUT",
+			url: "https://api.test/view-settings/my%20day",
+			body: { sort: "created", hideCompleted: false, theme: null },
+		});
+	});
+
 	it("sends the client id so creation is idempotent", async () => {
 		const { gateway, calls } = setup();
 		await gateway.createList({ id: "l1", name: "Work", createdAt: "x" });

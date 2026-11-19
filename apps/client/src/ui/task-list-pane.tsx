@@ -9,7 +9,10 @@ import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { SyncBanner } from "./sync-banner";
+import { ListMenu, type ListPanel } from "./list-menu";
+import { PaneBackground } from "./pane-background";
 import { SyncIndicator } from "./sync-indicator";
+import { useListTheme } from "./use-list-theme";
 import type { LayoutMode } from "./theme";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -26,6 +29,8 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const state = useObservable(store);
 	const [showDone, setShowDone] = useState(true);
 	const [renaming, setRenaming] = useState<string | null>(null);
+	const [panel, setPanel] = useState<ListPanel | null>(null);
+	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
 	const { open, done } = store.visibleTasks();
 	const today = store.today;
@@ -53,7 +58,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const addBar = <AddTaskBar placeholder="Add a task" onSubmit={(text) => store.addTask(text)} />;
 	const compact = mode === "compact";
 	return (
-		<View style={{ flex: 1, backgroundColor: palette.background }}>
+		<PaneBackground imageUrl={imageUrl}>
 			<SyncBanner />
 			<View
 				style={{
@@ -134,6 +139,15 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					</View>
 				) : null}
 				<SyncIndicator />
+				<PressableSurface
+					accessibilityRole="button"
+					accessibilityLabel="List options"
+					accessibilityState={{ expanded: panel !== null }}
+					onPress={() => setPanel(panel === null ? "menu" : null)}
+					style={{ padding: 8, marginLeft: 4 }}
+				>
+					<Icon glyph={compact ? "moreVertical" : "more"} color={palette.onAccent} />
+				</PressableSurface>
 			</View>
 			<ScrollView
 				contentContainerStyle={{
@@ -173,6 +187,14 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					</View>
 				)}
 			</ScrollView>
-		</View>
+			{panel === null ? null : (
+				<ListMenu
+					panel={panel}
+					compact={compact}
+					onPanel={setPanel}
+					onClose={() => setPanel(null)}
+				/>
+			)}
+		</PaneBackground>
 	);
 }

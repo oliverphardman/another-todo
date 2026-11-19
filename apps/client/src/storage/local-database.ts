@@ -1,5 +1,6 @@
 import type { TaskData } from "../domain/task";
 import type { TodoListData } from "../domain/todo-list";
+import type { ViewSettingsData } from "../domain/view-settings";
 import { Observable } from "../state/observable";
 import type { Operation } from "../sync/operation";
 import type { KeyValueStore } from "./key-value-store";
@@ -8,6 +9,7 @@ export interface Snapshot {
 	readonly version: 1;
 	readonly lists: readonly TodoListData[];
 	readonly tasks: readonly TaskData[];
+	readonly settings: readonly ViewSettingsData[];
 	readonly outbox: readonly Operation[];
 }
 
@@ -17,6 +19,7 @@ export const EMPTY_SNAPSHOT: Snapshot = {
 	version: 1,
 	lists: [],
 	tasks: [],
+	settings: [],
 	outbox: [],
 };
 
@@ -35,7 +38,7 @@ export class LocalDatabase extends Observable<Snapshot> {
 		try {
 			const parsed = JSON.parse(stored) as Snapshot;
 			if (parsed.version === 1) {
-				this.set(parsed);
+				this.set({ ...EMPTY_SNAPSHOT, ...parsed });
 			}
 		} catch {
 			await this.store.remove(STORAGE_KEY);

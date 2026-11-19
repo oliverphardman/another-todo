@@ -100,6 +100,8 @@ export class SyncEngine {
 
 	private dispatch(operation: Operation): Promise<void> {
 		switch (operation.kind) {
+			case "putSettings":
+				return this.gateway.putSettings(operation.settings);
 			case "createList":
 				return this.gateway.createList(operation.list);
 			case "renameList":
@@ -116,16 +118,25 @@ export class SyncEngine {
 	}
 
 	private async pull(): Promise<void> {
-		const [lists, tasks] = await Promise.all([this.gateway.listLists(), this.gateway.listTasks()]);
+		const [lists, tasks, settings] = await Promise.all([
+			this.gateway.listLists(),
+			this.gateway.listTasks(),
+			this.gateway.listSettings(),
+		]);
 		await this.database.apply((snapshot) => {
 			const outbox = new Outbox(snapshot.outbox);
 			const pendingTasks = outbox.pendingTaskIds();
 			const pendingLists = outbox.pendingListIds();
+			const pendingSettings = outbox.pendingSettingsIds();
 			return {
 				...snapshot,
 				lists: [
 					...lists.filter((list) => !pendingLists.has(list.id)),
 					...snapshot.lists.filter((list) => pendingLists.has(list.id)),
+				],
+				settings: [
+					...settings.filter((entry) => !pendingSettings.has(entry.id)),
+					...snapshot.settings.filter((entry) => pendingSettings.has(entry.id)),
 				],
 				tasks: [
 					...tasks.filter((task) => !pendingTasks.has(task.id)),

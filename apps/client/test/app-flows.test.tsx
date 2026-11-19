@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { renderApp } from "./support/render-app";
 
@@ -477,7 +477,7 @@ describe("connectivity and sync", () => {
 			respond: (method) =>
 				method === "POST"
 					? new Response(JSON.stringify({ error: "invalid" }), { status: 400 })
-					: new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 }),
+					: new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
 		});
 		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
 		addTask("Rejected one");
@@ -499,7 +499,7 @@ describe("connectivity and sync", () => {
 		const app = await start({
 			respond: () =>
 				accepted
-					? new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 })
+					? new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 })
 					: new Response(JSON.stringify({ error: "expired" }), { status: 401 }),
 		});
 		await waitFor(() => expect(screen.getByText(/Your session has expired/)).toBeTruthy());
@@ -522,7 +522,9 @@ describe("connectivity and sync", () => {
 				if (method === "POST") {
 					await gate;
 				}
-				return new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 });
+				return new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), {
+					status: 200,
+				});
 			},
 		});
 		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
@@ -532,5 +534,266 @@ describe("connectivity and sync", () => {
 		expect(screen.queryByLabelText("Changes are waiting to sync")).toBeNull();
 		release?.();
 		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
+	});
+});
+
+describe("list options menu", () => {
+	const open = (label = "List options") => fireEvent.click(screen.getByLabelText(label));
+
+	it("shows the horizontal button on wide screens and the vertical one on narrow screens", async () => {
+		await start();
+		const wide = screen.getByLabelText("List options").querySelector("path")!.getAttribute("d");
+		expect(wide).toContain("M4.5 12");
+		cleanup();
+		await start({ width: 400 });
+		const narrow = screen.getByLabelText("List options").querySelector("path")!.getAttribute("d");
+		expect(narrow).toContain("M10.5 5");
+	});
+
+	it("offers the list options and closes when the user clicks away", async () => {
+		await start();
+		open();
+		for (const label of ["Sort", "Change Theme…", "Print List", "Hide Completed Tasks"]) {
+			expect(screen.getByLabelText(label)).toBeTruthy();
+		}
+		expect(screen.queryByLabelText("Duplicate List")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Close menu"));
+		expect(screen.queryByLabelText("List options", { selector: "[role=menu]" })).toBeNull();
+		open();
+		fireEvent.click(screen.getByLabelText("List options", { selector: "button" }));
+		expect(screen.queryByRole("menu")).toBeNull();
+	});
+
+	it("sorts the list from the flyout and clears the sort when chosen again", async () => {
+		const app = await start();
+		addTask("Banana");
+		app.clock.advance(1000);
+		addTask("apple");
+		app.clock.advance(1000);
+		addTask("Cherry");
+		const titles = () => app.container.store.visibleTasks().open.map((task) => task.title);
+		expect(titles()).toEqual(["Cherry", "apple", "Banana"]);
+		open();
+		fireEvent.click(screen.getByLabelText("Sort"));
+		for (const label of [
+			"Importance",
+			"Alphabetically",
+			"Due Date",
+			"Creation Date",
+			"Added to My Day",
+		]) {
+			expect(screen.getByLabelText(label)).toBeTruthy();
+		}
+		fireEvent.click(screen.getByLabelText("Alphabetically"));
+		expect(titles()).toEqual(["apple", "Banana", "Cherry"]);
+		expect(screen.queryByRole("menu")).toBeNull();
+		open();
+		fireEvent.click(screen.getByLabelText("Sort"));
+		expect(
+			screen
+				.getByLabelText("Alphabetically", { selector: "[role=menuitemradio]" })
+				.getAttribute("aria-checked"),
+		).toBe("true");
+		fireEvent.click(screen.getByLabelText("Alphabetically"));
+		expect(titles()).toEqual(["Cherry", "apple", "Banana"]);
+		expect(app.container.store.settingsFor("my-day").sort).toBeNull();
+	});
+
+	it("drills into the sort options on narrow screens and can go back", async () => {
+		const app = await start({ width: 400 });
+		addTask("Zed");
+		app.clock.advance(1000);
+		addTask("Alpha");
+		open();
+		fireEvent.click(screen.getByLabelText("Sort"));
+		expect(screen.queryByLabelText("Change Theme…")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Back"));
+		expect(screen.getByLabelText("Change Theme…")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Sort"));
+		fireEvent.click(screen.getByLabelText("Alphabetically"));
+		expect(app.container.store.visibleTasks().open.map((task) => task.title)).toEqual([
+			"Alpha",
+			"Zed",
+		]);
+	});
+
+	it("hides and shows completed tasks", async () => {
+		const app = await start();
+		addTask("Finished");
+		fireEvent.click(screen.getByLabelText("Mark as completed"));
+		expect(screen.getByText("Completed 1")).toBeTruthy();
+		open();
+		fireEvent.click(screen.getByLabelText("Hide Completed Tasks"));
+		expect(screen.queryByText("Completed 1")).toBeNull();
+		expect(app.container.store.settingsFor("my-day").hideCompleted).toBe(true);
+		open();
+		fireEvent.click(screen.getByLabelText("Show Completed Tasks"));
+		expect(screen.getByText("Completed 1")).toBeTruthy();
+	});
+
+	it("duplicates a custom list and keeps the option out of built-in views", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const name = screen.getByLabelText("New list");
+		fireEvent.change(name, { target: { value: "Groceries" } });
+		fireEvent.keyDown(name, { key: "Enter" });
+		addTask("Milk");
+		open();
+		fireEvent.click(screen.getByLabelText("Duplicate List"));
+		expect(screen.getByRole("heading", { name: "Copy of Groceries" })).toBeTruthy();
+		expect(screen.getByText("Milk")).toBeTruthy();
+		expect(app.container.store.get().lists.map((list) => list.name)).toEqual([
+			"Groceries",
+			"Copy of Groceries",
+		]);
+	});
+
+	it("prints the visible tasks, and survives a printer failure", async () => {
+		const app = await start();
+		addTask("Print me");
+		open();
+		fireEvent.click(screen.getByLabelText("Print List"));
+		await waitFor(() => expect(app.printer.documents).toHaveLength(1));
+		expect(app.printer.documents[0]).toContain("Print me");
+		expect(app.printer.documents[0]).toContain("My Day");
+		app.printer.failure = new Error("no printer");
+		open();
+		fireEvent.click(screen.getByLabelText("Print List"));
+		await waitFor(() => expect(app.printer.documents).toHaveLength(2));
+		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+	});
+});
+
+describe("change theme", () => {
+	const openTheme = () => {
+		fireEvent.click(screen.getByLabelText("List options"));
+		fireEvent.click(screen.getByLabelText("Change Theme…"));
+	};
+
+	it("lets the user pick a color for the current list and go back to the default", async () => {
+		const app = await start();
+		openTheme();
+		expect(screen.getByLabelText("Red theme")).toBeTruthy();
+		expect(screen.getByLabelText("Blue theme").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(screen.getByLabelText("Red theme"));
+		expect(app.container.store.settingsFor("my-day").theme).toEqual({
+			type: "color",
+			color: "#c0392b",
+		});
+		expect(screen.getByLabelText("Red theme").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(screen.getByLabelText("Blue theme"));
+		expect(app.container.store.settingsFor("my-day").theme).toBeNull();
+		fireEvent.click(screen.getByLabelText("Close theme"));
+		expect(screen.queryByLabelText("Upload photo")).toBeNull();
+	});
+
+	it("keeps each list's theme separate", async () => {
+		const app = await start();
+		openTheme();
+		fireEvent.click(screen.getByLabelText("Green theme"));
+		fireEvent.click(screen.getByLabelText("Close menu"));
+		fireEvent.click(screen.getByLabelText("Important"));
+		expect(app.container.store.settingsFor("important").theme).toBeNull();
+		expect(app.container.store.settingsFor("my-day").theme).toEqual({
+			type: "color",
+			color: "#3a8a4a",
+		});
+	});
+
+	it("uploads a photo, adds it to the theme menu, uses it as the background and can delete it permanently", async () => {
+		const app = await start();
+		openTheme();
+		await waitFor(() => expect(app.photoGateway.calls).toContain("list"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Upload photo"));
+		});
+		const use = await screen.findByLabelText("Use photo beach.png");
+		expect(app.photoGateway.photos).toHaveLength(1);
+		fireEvent.click(use);
+		expect(app.container.store.settingsFor("my-day").theme).toEqual({
+			type: "photo",
+			photoId: "photo-1",
+		});
+		expect(screen.getByLabelText("List background photo")).toBeTruthy();
+		expect(screen.getByLabelText("Use photo beach.png").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(screen.getByLabelText("Delete photo beach.png"));
+		expect(screen.getByText(/Delete beach.png permanently/)).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Cancel delete photo"));
+		expect(screen.queryByText(/permanently/)).toBeNull();
+		expect(app.photoGateway.photos).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Delete photo beach.png"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Confirm delete photo"));
+		});
+		await waitFor(() => expect(screen.queryByLabelText("Use photo beach.png")).toBeNull());
+		expect(app.photoGateway.photos).toEqual([]);
+	});
+
+	it("falls back to the default look when the chosen photo is not available", async () => {
+		const app = await start();
+		app.container.store.updateSettings("my-day", { theme: { type: "photo", photoId: "gone" } });
+		expect(screen.queryByLabelText("List background photo")).toBeNull();
+	});
+
+	it("explains problems with a photo", async () => {
+		const app = await start();
+		openTheme();
+		app.photoPicker.next = {
+			name: "movie.gif",
+			contentType: "image/gif",
+			size: 10,
+			body: new Blob(["x"]),
+		};
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Upload photo"));
+		});
+		expect(await screen.findByText("Choose a JPEG, PNG or WebP image.")).toBeTruthy();
+		app.photoGateway.failure = new Error("offline");
+		app.photoPicker.next = {
+			name: "ok.png",
+			contentType: "image/png",
+			size: 10,
+			body: new Blob(["x"]),
+		};
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Upload photo"));
+		});
+		expect(await screen.findByText(/Photos are unavailable/)).toBeTruthy();
+	});
+
+	it("shows the upload progress and cannot be started twice", async () => {
+		const app = await start();
+		openTheme();
+		let release: (() => void) | undefined;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const create = app.photoGateway.create.bind(app.photoGateway);
+		app.photoGateway.create = async (picked) => {
+			await gate;
+			return create(picked);
+		};
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Upload photo"));
+		});
+		expect(screen.getByText("Uploading…")).toBeTruthy();
+		release?.();
+		await screen.findByLabelText("Use photo beach.png");
+		expect(screen.getByText("Upload")).toBeTruthy();
+	});
+
+	it("themes the list on narrow screens too", async () => {
+		const app = await start({ width: 400 });
+		fireEvent.click(screen.getByLabelText("List options"));
+		fireEvent.click(screen.getByLabelText("Change Theme…"));
+		fireEvent.click(screen.getByLabelText("Purple theme"));
+		expect(app.container.store.settingsFor("my-day").theme).toEqual({
+			type: "color",
+			color: "#6b5bb5",
+		});
+		fireEvent.click(screen.getByLabelText("Close theme"));
+		addTask("Themed");
+		fireEvent.click(screen.getByLabelText("Open Themed"));
+		expect(screen.getByLabelText("Task details")).toBeTruthy();
 	});
 });

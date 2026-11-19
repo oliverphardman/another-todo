@@ -2,9 +2,11 @@ import type { SoundPlayer } from "../audio/sound-player";
 import { DueDay } from "../domain/due-day";
 import type { Clock, IdGenerator } from "../domain/ports";
 import { Task, type TaskChanges } from "../domain/task";
+import { TaskSorter } from "../domain/task-sorter";
 import type { TaskStepData } from "../domain/task-step";
 import { TaskView, ViewCatalog } from "../domain/task-view";
 import { TodoList } from "../domain/todo-list";
+import { ViewSettings, type ViewSettingsChanges } from "../domain/view-settings";
 import type { LocalDatabase, Snapshot } from "../storage/local-database";
 import { Outbox } from "../sync/outbox";
 import type { Operation } from "../sync/operation";
@@ -17,6 +19,7 @@ export interface TodoState {
 	readonly lists: readonly TodoList[];
 	readonly tasks: readonly Task[];
 	readonly views: readonly TaskView[];
+	readonly settings: readonly ViewSettings[];
 	readonly selectedViewId: string;
 	readonly selectedTaskId: string | null;
 	readonly pendingChanges: number;
@@ -63,6 +66,7 @@ export class TodoStore extends Observable<TodoState> {
 			lists,
 			tasks,
 			views,
+			settings: snapshot.settings.map((data) => new ViewSettings(data)),
 			selectedViewId: views.some((view) => view.id === selectedViewId)
 				? selectedViewId
 				: DEFAULT_VIEW_ID,
@@ -97,14 +101,73 @@ export class TodoStore extends Observable<TodoState> {
 		const view = this.selectedView;
 		const today = this.today;
 		const matching = this.get().tasks.filter((task) => view.matches(task, today));
-		const compare =
-			view.order === "due"
-				? (a: Task, b: Task) => a.dueSortKey.localeCompare(b.dueSortKey) || TodoStore.newest(a, b)
-				: TodoStore.newest;
+		const settings = this.settingsFor(view.id);
+		const compare = TaskSorter.comparator(settings.sort, view.order, today);
 		return {
 			open: matching.filter((task) => !task.completed).sort(compare),
-			done: matching.filter((task) => task.completed).sort(compare),
+			done: settings.hideCompleted ? [] : matching.filter((task) => task.completed).sort(compare),
 		};
+	}
+
+	settingsFor(viewId: string): ViewSettings {
+		return (
+			this.get().settings.find((settings) => settings.id === viewId) ??
+			ViewSettings.defaults(viewId)
+		);
+	}
+
+	updateSettings(viewId: string, changes: ViewSettingsChanges): void {
+		const updated = this.settingsFor(viewId).with(changes);
+		this.commit((snapshot) => ({
+			...snapshot,
+			settings: [...snapshot.settings.filter((entry) => entry.id !== viewId), updated.data],
+			outbox: this.enqueue(snapshot, {
+				kind: "putSettings",
+				opId: this.ids.next(),
+				settings: updated.data,
+			}),
+		}));
+	}
+
+	duplicateList(listId: string): string | null {
+		const source = this.get().lists.find((list) => list.id === listId);
+		if (source === undefined) {
+			return null;
+		}
+		const now = this.clock.now().toISOString();
+		const copy = TodoList.create(this.ids.next(), `Copy of ${source.name}`, now);
+		const tasks = this.get()
+			.tasks.filter((task) => task.listId === listId)
+			.map(
+				(task) =>
+					new Task({
+						...task.data,
+						id: this.ids.next(),
+						listId: copy.id,
+						createdAt: now,
+						myDay: null,
+						myDayDismissed: null,
+						steps: task.steps.map((step) => ({ ...step, id: this.ids.next() })),
+					}).data,
+			);
+		this.commit((snapshot) => {
+			let outbox = new Outbox(snapshot.outbox).enqueue({
+				kind: "createList",
+				opId: this.ids.next(),
+				list: copy.data,
+			});
+			for (const data of tasks) {
+				outbox = outbox.enqueue({ kind: "createTask", opId: this.ids.next(), task: data });
+			}
+			return {
+				...snapshot,
+				lists: [...snapshot.lists, copy.data],
+				tasks: [...snapshot.tasks, ...tasks],
+				outbox: outbox.operations,
+			};
+		});
+		this.select(copy.id);
+		return copy.id;
 	}
 
 	listName(task: Task): string {
@@ -314,10 +377,12 @@ export class TodoStore extends Observable<TodoState> {
 			);
 			const outbox = new Outbox(snapshot.outbox)
 				.discardTasks(doomed)
+				.discardSettings(listId)
 				.enqueue({ kind: "deleteList", opId: this.ids.next(), listId });
 			return {
 				...snapshot,
 				lists: snapshot.lists.filter((data) => data.id !== listId),
+				settings: snapshot.settings.filter((entry) => entry.id !== listId),
 				tasks: snapshot.tasks.filter((data) => data.listId !== listId),
 				outbox: outbox.operations,
 			};
@@ -331,10 +396,6 @@ export class TodoStore extends Observable<TodoState> {
 	private commit(mutation: (snapshot: Snapshot) => Snapshot): void {
 		void this.database.apply(mutation);
 		this.trigger.request();
-	}
-
-	private static newest(a: Task, b: Task): number {
-		return b.createdAt.localeCompare(a.createdAt) || a.id.localeCompare(b.id);
 	}
 }
 

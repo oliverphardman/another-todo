@@ -53,6 +53,17 @@ describe("LocalDatabase", () => {
 		expect(other.get()).toEqual(EMPTY_SNAPSHOT);
 	});
 
+	it("loads snapshots saved before settings existed", async () => {
+		const store = new MemoryKeyValueStore();
+		await store.set(
+			"atd.snapshot",
+			JSON.stringify({ version: 1, lists: [], tasks: [], outbox: [] }),
+		);
+		const database = new LocalDatabase(store);
+		await database.load();
+		expect(database.get().settings).toEqual([]);
+	});
+
 	it("clears everything", async () => {
 		const store = new MemoryKeyValueStore();
 		const database = new LocalDatabase(store);

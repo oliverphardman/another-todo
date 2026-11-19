@@ -19,10 +19,12 @@ export default function App() {
 	useEffect(() => {
 		void container.database.load().then(() => container.auth.restore());
 		container.sync.start();
+		container.photos.start();
 		const rollover = setInterval(() => container.store.refreshToday(), 60_000);
 		return () => {
 			clearInterval(rollover);
 			container.sync.stop();
+			container.photos.stop();
 		};
 	}, [container]);
 	return (

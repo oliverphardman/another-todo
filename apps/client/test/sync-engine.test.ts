@@ -42,10 +42,48 @@ describe("SyncEngine", () => {
 			"deleteList:old",
 			"listLists",
 			"listTasks",
+			"listSettings",
 		]);
 		expect(database.get().outbox).toEqual([]);
 		expect(database.get().tasks.map((task) => [task.id, task.completed])).toEqual([["t", true]]);
 		expect(database.get().lists.map((list) => list.name)).toEqual(["R"]);
+	});
+
+	it("sends queued settings and pulls the server's, keeping settings with changes pending", async () => {
+		const { engine, gateway, database } = await setup(
+			[
+				{
+					kind: "putSettings",
+					opId: "s1",
+					settings: { id: "my-day", sort: "due", hideCompleted: true, theme: null },
+				},
+			],
+			[],
+		);
+		gateway.settings = [{ id: "other", sort: null, hideCompleted: false, theme: null }];
+		await engine.sync();
+		expect(gateway.calls).toContain("putSettings:my-day");
+		expect(
+			database
+				.get()
+				.settings.map((entry) => entry.id)
+				.sort(),
+		).toEqual(["my-day", "other"]);
+		await database.apply((snapshot) => ({
+			...snapshot,
+			settings: [{ id: "local", sort: "created", hideCompleted: false, theme: null }],
+			outbox: [
+				{
+					kind: "putSettings",
+					opId: "s2",
+					settings: { id: "local", sort: "created", hideCompleted: false, theme: null },
+				},
+			],
+		}));
+		gateway.putSettings = async () => undefined;
+		gateway.settings = [{ id: "local", sort: null, hideCompleted: true, theme: null }];
+		await engine.sync();
+		expect(database.get().settings.find((entry) => entry.id === "local")!.sort).toBeNull();
 	});
 
 	it("replaces local data with the server's when nothing is pending", async () => {

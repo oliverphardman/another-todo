@@ -1,0 +1,95 @@
+import type { ReactNode } from "react";
+import { Pressable, View, type ViewStyle } from "react-native";
+import { AppText } from "./app-text";
+import { Icon, type IconGlyph } from "./icon";
+import { PressableSurface } from "./pressable-surface";
+import { useTheme } from "./theme-context";
+
+export function MenuOverlay({
+	onDismiss,
+	children,
+}: {
+	onDismiss: () => void;
+	children: ReactNode;
+}) {
+	return (
+		<View
+			style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 }}
+			accessibilityLabel="Menu overlay"
+		>
+			<Pressable
+				accessibilityLabel="Close menu"
+				onPress={onDismiss}
+				style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+			/>
+			{children}
+		</View>
+	);
+}
+
+export function MenuPanel({
+	label,
+	placement,
+	children,
+}: {
+	label: string;
+	placement: ViewStyle;
+	children: ReactNode;
+}) {
+	const palette = useTheme();
+	return (
+		<View
+			accessibilityRole="menu"
+			accessibilityLabel={label}
+			style={
+				{
+					position: "absolute",
+					backgroundColor: palette.surface,
+					borderRadius: 8,
+					padding: 4,
+					boxShadow: "0px 4px 16px rgba(0, 0, 0, 0.24)",
+					...placement,
+				} as object
+			}
+		>
+			{children}
+		</View>
+	);
+}
+
+export interface MenuItemProps {
+	readonly glyph: IconGlyph;
+	readonly label: string;
+	readonly onPress: () => void;
+	readonly trailing?: "chevron";
+	readonly selected?: boolean;
+}
+
+export function MenuItem({ glyph, label, onPress, trailing, selected }: MenuItemProps) {
+	const palette = useTheme();
+	return (
+		<PressableSurface
+			accessibilityRole={selected === undefined ? "menuitem" : "menuitemradio"}
+			accessibilityLabel={label}
+			aria-checked={selected}
+			onPress={onPress}
+			hoverColor={palette.surfaceHover}
+			style={{
+				flexDirection: "row",
+				alignItems: "center",
+				minHeight: 40,
+				paddingHorizontal: 12,
+				borderRadius: 6,
+			}}
+		>
+			<Icon glyph={glyph} size={18} color={palette.text} strokeWidth={1.4} />
+			<AppText size={14} style={{ marginLeft: 12, flex: 1 }}>
+				{label}
+			</AppText>
+			{trailing === "chevron" ? (
+				<Icon glyph="chevronRight" size={16} color={palette.textSecondary} />
+			) : null}
+			{selected === true ? <Icon glyph="check" size={16} color={palette.accent} /> : null}
+		</PressableSurface>
+	);
+}

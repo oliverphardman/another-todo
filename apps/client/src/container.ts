@@ -1,3 +1,10 @@
+import { AuthorizedHttp, type Fetcher } from "./api/authorized-http";
+import { ExpoPhotoPicker } from "./photos/expo-photo-picker";
+import { HttpPhotoGateway } from "./photos/http-photo-gateway";
+import { PhotoLibrary } from "./photos/photo-library";
+import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
+import { ExpoListPrinter } from "./print/expo-list-printer";
+import type { ListPrinter } from "./print/list-print-document";
 import { ExpoSoundPlayer } from "./audio/expo-sound-player";
 import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
@@ -21,6 +28,8 @@ export interface Container {
 	readonly database: LocalDatabase;
 	readonly store: TodoStore;
 	readonly sync: SyncCoordinator;
+	readonly photos: PhotoLibrary;
+	readonly printer: ListPrinter;
 }
 
 export interface ContainerOverrides {
@@ -29,10 +38,13 @@ export interface ContainerOverrides {
 	readonly tokenStore?: KeyValueStore;
 	readonly connectivity?: Connectivity;
 	readonly authorizationServer?: AuthorizationServer;
-	readonly fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
+	readonly fetcher?: Fetcher;
 	readonly clock?: Clock;
 	readonly ids?: IdGenerator;
 	readonly sounds?: SoundPlayer;
+	readonly photoGateway?: PhotoGateway;
+	readonly photoPicker?: PhotoPicker;
+	readonly printer?: ListPrinter;
 }
 
 export function createContainer(config: AppConfig, overrides: ContainerOverrides): Container {
@@ -63,10 +75,21 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		clock,
 		auth,
 	);
+	const photos = new PhotoLibrary(
+		overrides.photoGateway ??
+			new HttpPhotoGateway(
+				new AuthorizedHttp(config.apiUrl, auth, overrides.fetcher),
+				overrides.fetcher,
+			),
+		overrides.photoPicker ?? new ExpoPhotoPicker(),
+		auth,
+	);
 	return {
 		auth,
 		database,
 		store: new TodoStore(database, ids, clock, sync, overrides.sounds ?? new ExpoSoundPlayer()),
 		sync,
+		photos,
+		printer: overrides.printer ?? new ExpoListPrinter(),
 	};
 }

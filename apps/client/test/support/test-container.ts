@@ -5,6 +5,9 @@ import {
 	FakeAuthorizationServer,
 	FixedClock,
 	ManualConnectivity,
+	FakePhotoGateway,
+	FakePhotoPicker,
+	RecordingPrinter,
 	RecordingSoundPlayer,
 	SequenceIds,
 } from "./fakes";
@@ -22,6 +25,9 @@ export interface TestContainer {
 	readonly connectivity: ManualConnectivity;
 	readonly authorizationServer: FakeAuthorizationServer;
 	readonly sounds: RecordingSoundPlayer;
+	readonly printer: RecordingPrinter;
+	readonly photoGateway: FakePhotoGateway;
+	readonly photoPicker: FakePhotoPicker;
 	readonly requests: { method: string; url: string; body: unknown }[];
 	readonly tokenStore: MemoryKeyValueStore;
 	readonly dataStore: MemoryKeyValueStore;
@@ -29,12 +35,15 @@ export interface TestContainer {
 
 export function createTestContainer(
 	respond: (method: string, url: string, body: unknown) => Response | Promise<Response> = () =>
-		new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 }),
+		new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
 	const authorizationServer = new FakeAuthorizationServer();
 	const sounds = new RecordingSoundPlayer();
+	const printer = new RecordingPrinter();
+	const photoGateway = new FakePhotoGateway();
+	const photoPicker = new FakePhotoPicker();
 	const tokenStore = new MemoryKeyValueStore();
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
@@ -45,6 +54,9 @@ export function createTestContainer(
 		connectivity,
 		authorizationServer,
 		sounds,
+		printer,
+		photoGateway,
+		photoPicker,
 		clock,
 		ids: new SequenceIds(),
 		fetcher: async (input, init) => {
@@ -59,6 +71,9 @@ export function createTestContainer(
 		connectivity,
 		authorizationServer,
 		sounds,
+		printer,
+		photoGateway,
+		photoPicker,
 		requests,
 		tokenStore,
 		dataStore,

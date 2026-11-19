@@ -1,3 +1,6 @@
+import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
+import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
+import type { ListPrinter } from "../../src/print/list-print-document";
 import type { SoundPlayer } from "../../src/audio/sound-player";
 import type { ApiGateway } from "../../src/api/api-gateway";
 import type { AuthorizationServer, IdentityProvider } from "../../src/auth/authorization-server";
@@ -5,6 +8,7 @@ import type { TokenSet } from "../../src/auth/token-set";
 import type { Clock, IdGenerator } from "../../src/domain/ports";
 import { Task, type TaskChanges, type TaskData } from "../../src/domain/task";
 import type { TodoListData } from "../../src/domain/todo-list";
+import type { ViewSettingsData } from "../../src/domain/view-settings";
 import type { Connectivity } from "../../src/state/connectivity";
 
 export class FixedClock implements Clock {
@@ -33,6 +37,75 @@ export class RecordingSoundPlayer implements SoundPlayer {
 
 	playCompleted(): void {
 		this.plays += 1;
+	}
+}
+
+export class RecordingPrinter implements ListPrinter {
+	documents: string[] = [];
+	failure: Error | null = null;
+
+	async print(html: string): Promise<void> {
+		this.documents.push(html);
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+	}
+}
+
+export class FakePhotoGateway implements PhotoGateway {
+	photos: PhotoData[] = [];
+	failure: Error | null = null;
+	calls: string[] = [];
+	private counter = 0;
+
+	async list(): Promise<PhotoData[]> {
+		this.calls.push("list");
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		return this.photos.map((photo) => ({ ...photo }));
+	}
+
+	async create(picked: PickedPhoto): Promise<PhotoData> {
+		this.calls.push("create");
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		this.counter += 1;
+		const photo: PhotoData = {
+			id: `photo-${this.counter}`,
+			name: picked.name,
+			contentType: picked.contentType,
+			size: picked.size,
+			createdAt: "2026-11-19T10:00:00.000Z",
+			url: `https://photos.test/photo-${this.counter}`,
+		};
+		this.photos = [...this.photos, photo];
+		return photo;
+	}
+
+	async remove(id: string): Promise<void> {
+		this.calls.push("remove");
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		this.photos = this.photos.filter((photo) => photo.id !== id);
+	}
+}
+
+export class FakePhotoPicker implements PhotoPicker {
+	next: PickedPhoto | null | Error = {
+		name: "beach.png",
+		contentType: "image/png",
+		size: 1000,
+		body: new Blob(["x"]),
+	};
+
+	async pick(): Promise<PickedPhoto | null> {
+		if (this.next instanceof Error) {
+			throw this.next;
+		}
+		return this.next;
 	}
 }
 
@@ -65,6 +138,7 @@ export class ManualConnectivity implements Connectivity {
 export class FakeGateway implements ApiGateway {
 	lists: TodoListData[] = [];
 	tasks: TaskData[] = [];
+	settings: ViewSettingsData[] = [];
 	calls: string[] = [];
 	failure: Error | null = null;
 	failOnce = new Map<string, Error>();
@@ -102,6 +176,16 @@ export class FakeGateway implements ApiGateway {
 		this.guard(`deleteList:${id}`);
 		this.lists = this.lists.filter((list) => list.id !== id);
 		this.tasks = this.tasks.filter((task) => task.listId !== id);
+	}
+
+	async listSettings(): Promise<ViewSettingsData[]> {
+		this.guard("listSettings");
+		return this.settings.map((entry) => ({ ...entry }));
+	}
+
+	async putSettings(settings: ViewSettingsData): Promise<void> {
+		this.guard(`putSettings:${settings.id}`);
+		this.settings = [...this.settings.filter((entry) => entry.id !== settings.id), { ...settings }];
 	}
 
 	async listTasks(): Promise<TaskData[]> {

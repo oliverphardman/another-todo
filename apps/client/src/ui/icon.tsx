@@ -4,6 +4,14 @@ export type IconGlyph =
 	| "check"
 	| "circle"
 	| "sun"
+	| "more"
+	| "moreVertical"
+	| "sort"
+	| "palette"
+	| "duplicate"
+	| "print"
+	| "arrowsUpDown"
+	| "calendarPlus"
 	| "bell"
 	| "repeat"
 	| "tag"
@@ -51,6 +59,22 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	calendarDots: {
 		d: "M5 5h14v15H5zM5 9.5h14M9 13h.01M12 13h.01M15 13h.01M9 16.2h.01M12 16.2h.01M15 16.2h.01",
 	},
+	more: {
+		d: "M4.5 12a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M10.5 12a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M16.5 12a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0",
+		fill: true,
+	},
+	moreVertical: {
+		d: "M10.5 5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M10.5 12a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0M10.5 19a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0",
+		fill: true,
+	},
+	sort: { d: "M4 7h9M4 12h6M4 17h3M17 5v14M14 16l3 3 3-3" },
+	palette: {
+		d: "M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.5-1.9-.3-1 .3-2.1 1.5-2.1H17a3.5 3.5 0 0 0 3.5-3.5C20.5 6.7 16.7 3.5 12 3.5zM7.5 11h.01M10 7.5h.01M14 7.5h.01",
+	},
+	duplicate: { d: "M8 8h11v11H8zM5 15V5h10" },
+	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
+	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },
+	calendarPlus: { d: "M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4M12 12.5v4M10 14.5h4" },
 	star: {
 		d: "M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z",
 	},

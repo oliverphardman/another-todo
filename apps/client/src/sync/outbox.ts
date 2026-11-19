@@ -10,6 +10,8 @@ export class Outbox {
 
 	enqueue(operation: Operation): Outbox {
 		switch (operation.kind) {
+			case "putSettings":
+				return this.enqueueSettings(operation);
 			case "updateTask":
 				return this.enqueueTaskUpdate(operation);
 			case "deleteTask":
@@ -26,6 +28,22 @@ export class Outbox {
 	discardTasks(taskIds: ReadonlySet<string>): Outbox {
 		return new Outbox(
 			this.operations.filter((operation) => !Outbox.touchesTask(operation, taskIds)),
+		);
+	}
+
+	discardSettings(viewId: string): Outbox {
+		return new Outbox(
+			this.operations.filter(
+				(operation) => !(operation.kind === "putSettings" && operation.settings.id === viewId),
+			),
+		);
+	}
+
+	pendingSettingsIds(): ReadonlySet<string> {
+		return new Set(
+			this.operations.flatMap((operation) =>
+				operation.kind === "putSettings" ? [operation.settings.id] : [],
+			),
 		);
 	}
 
@@ -72,6 +90,18 @@ export class Outbox {
 			}
 		}
 		return ids;
+	}
+
+	private enqueueSettings(operation: Extract<Operation, { kind: "putSettings" }>): Outbox {
+		const remaining = this.operations.filter(
+			(candidate) =>
+				!(
+					candidate.kind === "putSettings" &&
+					candidate.settings.id === operation.settings.id &&
+					!candidate.sending
+				),
+		);
+		return new Outbox([...remaining, operation]);
 	}
 
 	private enqueueTaskUpdate(operation: Extract<Operation, { kind: "updateTask" }>): Outbox {

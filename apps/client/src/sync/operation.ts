@@ -1,7 +1,13 @@
 import type { TaskChanges, TaskData } from "../domain/task";
 import type { TodoListData } from "../domain/todo-list";
+import type { ViewSettingsData } from "../domain/view-settings";
 
 export type OperationBody =
+	| {
+			readonly kind: "putSettings";
+			readonly opId: string;
+			readonly settings: ViewSettingsData;
+	  }
 	| {
 			readonly kind: "createList";
 			readonly opId: string;

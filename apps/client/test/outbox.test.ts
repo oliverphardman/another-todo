@@ -175,6 +175,24 @@ describe("Outbox", () => {
 		expect(again.operations.map((operation) => operation.opId)).toEqual(["r-m", "r-m2"]);
 	});
 
+	it("keeps only the latest unsent settings for each view", () => {
+		const put = (id: string, sort: "due" | "created" | null, opId: string): Operation => ({
+			kind: "putSettings",
+			opId,
+			settings: { id, sort, hideCompleted: false, theme: null },
+		});
+		const outbox = build(put("a", "due", "p1"), put("b", null, "p2"), put("a", "created", "p3"));
+		expect(outbox.operations.map((operation) => operation.opId)).toEqual(["p2", "p3"]);
+		expect([...outbox.pendingSettingsIds()].sort()).toEqual(["a", "b"]);
+		const sending = build(put("a", "due", "p1"))
+			.markSending("p1")
+			.enqueue(put("a", "created", "p2"));
+		expect(sending.operations.map((operation) => operation.opId)).toEqual(["p1", "p2"]);
+		expect(outbox.discardSettings("a").operations.map((operation) => operation.opId)).toEqual([
+			"p2",
+		]);
+	});
+
 	it("clears every sending mark", () => {
 		const outbox = build(createTask("1"), createTask("2")).markSending("op-1").markSending("op-2");
 		expect(outbox.operations.every((operation) => operation.sending)).toBe(true);

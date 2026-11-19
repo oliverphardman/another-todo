@@ -168,6 +168,71 @@ describe("TodoStore", () => {
 		expect(store.get().tasks[0]!.note).toBe("A note");
 	});
 
+	it("keeps settings per view, queues them for syncing and applies sort and hide completed", async () => {
+		const { store, database } = await setup();
+		store.select("tasks");
+		const first = store.addTask("Banana")!;
+		store.addTask("apple");
+		const third = store.addTask("Cherry")!;
+		store.toggleCompleted(third);
+		store.updateSettings("tasks", { sort: "alphabetical" });
+		expect(store.settingsFor("tasks").sort).toBe("alphabetical");
+		expect(store.settingsFor("my-day").sort).toBeNull();
+		expect(store.visibleTasks().open.map((task) => task.title)).toEqual(["apple", "Banana"]);
+		expect(store.visibleTasks().done.map((task) => task.title)).toEqual(["Cherry"]);
+		store.updateSettings("tasks", { hideCompleted: true });
+		expect(store.visibleTasks().done).toEqual([]);
+		store.updateSettings("tasks", { theme: { type: "color", color: "#3a8a4a" } });
+		expect(store.settingsFor("tasks").data).toEqual({
+			id: "tasks",
+			sort: "alphabetical",
+			hideCompleted: true,
+			theme: { type: "color", color: "#3a8a4a" },
+		});
+		expect(
+			database.get().outbox.filter((operation) => operation.kind === "putSettings"),
+		).toHaveLength(1);
+		store.toggleImportant(first);
+		store.updateSettings("tasks", { sort: "importance" });
+		expect(store.visibleTasks().open[0]!.id).toBe(first);
+	});
+
+	it("duplicates a list with its tasks, steps and notes", async () => {
+		const { store } = await setup();
+		expect(store.duplicateList("missing")).toBeNull();
+		const listId = store.addList("Groceries")!;
+		const task = store.addTask("Milk")!;
+		store.addStep(task, "Check the date");
+		store.setNote(task, "Semi-skimmed");
+		store.setDueDay(task, "2026-11-25");
+		store.toggleCompleted(task);
+		store.select("tasks");
+		store.addTask("Elsewhere");
+		const copyId = store.duplicateList(listId)!;
+		expect(store.selectedView.id).toBe(copyId);
+		expect(store.selectedView.title).toBe("Copy of Groceries");
+		const copies = store.get().tasks.filter((entry) => entry.listId === copyId);
+		expect(copies).toHaveLength(1);
+		const original = store.get().tasks.find((entry) => entry.id === task)!;
+		expect(copies[0]!.id).not.toBe(task);
+		expect(copies[0]).toMatchObject({
+			data: { title: "Milk", note: "Semi-skimmed", completed: true },
+		});
+		expect(copies[0]!.steps[0]!.id).not.toBe(original.steps[0]!.id);
+		expect(copies[0]!.steps[0]!.title).toBe("Check the date");
+		expect(store.get().tasks.filter((entry) => entry.listId === listId)).toHaveLength(1);
+		expect(store.get().tasks.filter((entry) => entry.listId === null)).toHaveLength(1);
+	});
+
+	it("forgets a deleted list's settings, including ones not yet synced", async () => {
+		const { store, database } = await setup();
+		const listId = store.addList("Temp")!;
+		store.updateSettings(listId, { sort: "due" });
+		store.deleteList(listId);
+		expect(store.get().settings).toEqual([]);
+		expect(database.get().outbox).toEqual([]);
+	});
+
 	it("only notifies when the day actually changes", async () => {
 		const { store, clock } = await setup();
 		const listener = vi.fn();
