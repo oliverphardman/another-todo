@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { NetworkError } from "../src/api/errors";
+import { ApiError, NetworkError } from "../src/api/errors";
 import { MemoryKeyValueStore } from "../src/storage/key-value-store";
 import { LocalDatabase } from "../src/storage/local-database";
 import { SyncCoordinator } from "../src/sync/sync-coordinator";
@@ -32,7 +32,11 @@ describe("SyncCoordinator", () => {
 		coordinator.start();
 		await vi.advanceTimersByTimeAsync(0);
 		expect(gateway.calls).toContain("listTasks");
-		expect(coordinator.get()).toEqual({ phase: "idle", lastSyncedAt: clock.now().toISOString() });
+		expect(coordinator.get()).toEqual({
+			phase: "idle",
+			lastSyncedAt: clock.now().toISOString(),
+			rejected: 0,
+		});
 		coordinator.stop();
 	});
 
@@ -88,7 +92,22 @@ describe("SyncCoordinator", () => {
 		const synced = coordinator.get().lastSyncedAt;
 		gateway.failure = new NetworkError();
 		await coordinator.syncNow();
-		expect(coordinator.get()).toEqual({ phase: "offline", lastSyncedAt: synced });
+		expect(coordinator.get()).toEqual({ phase: "offline", lastSyncedAt: synced, rejected: 0 });
+	});
+
+	it("counts changes the server refused until they are dismissed", async () => {
+		const { coordinator, gateway } = setup();
+		const database = (coordinator as unknown as { engine: { database: LocalDatabase } }).engine
+			.database;
+		await database.apply((snapshot) => ({
+			...snapshot,
+			outbox: [{ kind: "deleteTask", opId: "d", taskId: "gone" }],
+		}));
+		gateway.failOnce.set("deleteTask:gone", new ApiError(404, "missing"));
+		await coordinator.syncNow();
+		expect(coordinator.get().rejected).toBe(1);
+		coordinator.dismissRejected();
+		expect(coordinator.get().rejected).toBe(0);
 	});
 
 	it("stops listening and clears timers", async () => {

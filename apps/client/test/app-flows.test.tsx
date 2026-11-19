@@ -276,6 +276,28 @@ describe("connectivity and sync", () => {
 		]);
 	});
 
+	it("tells the user when the server refuses changes", async () => {
+		const app = await start({
+			respond: (method) =>
+				method === "POST"
+					? new Response(JSON.stringify({ error: "invalid" }), { status: 400 })
+					: new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 }),
+		});
+		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
+		addTask("Rejected one");
+		await waitFor(() =>
+			expect(screen.getByText("1 change couldn't be saved and was undone.")).toBeTruthy(),
+		);
+		expect(app.container.store.get().tasks).toEqual([]);
+		addTask("Rejected two");
+		addTask("Rejected three");
+		await waitFor(() =>
+			expect(screen.getByText("3 changes couldn't be saved and were undone.")).toBeTruthy(),
+		);
+		fireEvent.click(screen.getByLabelText("Dismiss"));
+		expect(screen.queryByLabelText("Dismiss")).toBeNull();
+	});
+
 	it("asks the user to sign in again when the session expires", async () => {
 		const app = await start({
 			respond: () => new Response(JSON.stringify({ error: "expired" }), { status: 401 }),

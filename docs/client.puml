@@ -1,0 +1,62 @@
+@startuml client
+title Client architecture
+
+skinparam componentStyle rectangle
+
+package "UI (React Native, react-native-web)" {
+  component "AppShell\n(compact / medium / expanded)" as Shell
+  component "Sidebar" as Sidebar
+  component "TaskListPane" as ListPane
+  component "TaskDetailPane" as DetailPane
+  component "SyncBanner" as Banner
+  component "SignInScreen" as SignIn
+}
+
+package "State" {
+  component "TodoStore\n(views, selection, commands)" as Store
+  component "TaskView\nImportant / Planned / All / Default / Custom" as Views
+  component "AuthenticationService" as Auth
+}
+
+package "Offline sync" {
+  component "LocalDatabase\n(snapshot + outbox)" as Db
+  component "Outbox\n(compaction)" as Outbox
+  component "SyncCoordinator\n(connectivity, polling, debounce)" as Coordinator
+  component "SyncEngine\n(push then pull)" as Engine
+}
+
+package "Adapters" {
+  component "HttpApiGateway" as Gateway
+  component "ExpoAuthorizationServer\n(Cognito code + PKCE)" as AuthServer
+  component "AsyncStorage / SecureStore" as Storage
+  component "NetInfo" as NetInfo
+}
+
+cloud "AWS" {
+  component "Cognito hosted UI" as Cognito
+  component "API (Lambda Web Function)" as Api
+}
+
+Shell --> Sidebar
+Shell --> ListPane
+Shell --> DetailPane
+Shell --> SignIn
+ListPane --> Banner
+Sidebar --> Store
+ListPane --> Store
+DetailPane --> Store
+SignIn --> Auth
+Store --> Views
+Store --> Db
+Store --> Coordinator : request sync
+Db --> Outbox
+Db --> Storage
+Coordinator --> Engine
+Coordinator --> NetInfo
+Engine --> Db
+Engine --> Gateway
+Gateway --> Auth : access token
+Gateway --> Api : REST, client generated ids
+Auth --> AuthServer
+AuthServer --> Cognito
+@enduml

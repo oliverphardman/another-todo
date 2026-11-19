@@ -6,8 +6,13 @@ import { Outbox } from "./outbox";
 
 export type SyncOutcome = "synced" | "offline" | "unauthorized";
 
+export interface SyncReport {
+	readonly outcome: SyncOutcome;
+	readonly rejected: number;
+}
+
 export class SyncEngine {
-	private running: Promise<SyncOutcome> | null = null;
+	private running: Promise<SyncReport> | null = null;
 	private rerun = false;
 
 	constructor(
@@ -15,7 +20,7 @@ export class SyncEngine {
 		private readonly gateway: ApiGateway,
 	) {}
 
-	sync(): Promise<SyncOutcome> {
+	sync(): Promise<SyncReport> {
 		if (this.running !== null) {
 			this.rerun = true;
 			return this.running;
@@ -26,22 +31,25 @@ export class SyncEngine {
 		return this.running;
 	}
 
-	private async run(): Promise<SyncOutcome> {
-		let outcome: SyncOutcome;
+	private async run(): Promise<SyncReport> {
+		let rejected = 0;
+		let report: SyncReport;
 		do {
 			this.rerun = false;
-			outcome = await this.runOnce();
-		} while (this.rerun && outcome === "synced");
-		return outcome;
+			report = await this.runOnce();
+			rejected += report.rejected;
+		} while (this.rerun && report.outcome === "synced");
+		return { outcome: report.outcome, rejected };
 	}
 
-	private async runOnce(): Promise<SyncOutcome> {
+	private async runOnce(): Promise<SyncReport> {
+		const counter = { rejected: 0 };
 		try {
-			await this.push();
+			await this.push(counter);
 			await this.pull();
-			return "synced";
+			return { outcome: "synced", rejected: counter.rejected };
 		} catch (error) {
-			return SyncEngine.outcomeOf(error);
+			return { outcome: SyncEngine.outcomeOf(error), rejected: counter.rejected };
 		}
 	}
 
@@ -55,7 +63,7 @@ export class SyncEngine {
 		throw error;
 	}
 
-	private async push(): Promise<void> {
+	private async push(counter: { rejected: number }): Promise<void> {
 		for (;;) {
 			const operation = this.database.get().outbox[0];
 			if (operation === undefined) {
@@ -67,6 +75,7 @@ export class SyncEngine {
 				if (!(error instanceof ApiError) || !error.isPermanent || error.status === 401) {
 					throw error;
 				}
+				counter.rejected += 1;
 			}
 			await this.database.apply((snapshot) => ({
 				...snapshot,

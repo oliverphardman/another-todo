@@ -1,0 +1,39 @@
+@startuml offline-sync
+title Offline editing and sync
+
+actor User
+participant TodoStore
+participant LocalDatabase
+participant SyncCoordinator
+participant SyncEngine
+participant API
+
+User -> TodoStore : add or edit a task
+TodoStore -> LocalDatabase : apply change + enqueue operation
+LocalDatabase --> User : UI updates immediately
+TodoStore -> SyncCoordinator : request()
+
+alt offline
+  SyncCoordinator --> User : offline banner shows queued changes
+  ... connection restored ...
+  SyncCoordinator -> SyncEngine : sync()
+else online
+  SyncCoordinator -> SyncEngine : sync() after a short debounce
+end
+
+loop each queued operation, in order
+  SyncEngine -> API : create (client id) / update / delete
+  alt accepted
+    SyncEngine -> LocalDatabase : remove operation
+  else retryable (network, 5xx, 408, 429)
+    SyncEngine --> SyncCoordinator : offline, keep the queue
+  else rejected (other 4xx)
+    SyncEngine -> LocalDatabase : remove operation
+    SyncEngine --> SyncCoordinator : rejected + 1
+  end
+end
+
+SyncEngine -> API : GET /lists, GET /tasks
+SyncEngine -> LocalDatabase : replace local data, keeping entities with pending operations
+SyncCoordinator --> User : banner reports changes the server refused
+@enduml

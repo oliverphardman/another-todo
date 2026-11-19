@@ -8,6 +8,7 @@ export type SyncPhase = "idle" | "syncing" | "offline" | "unauthorized";
 export interface SyncStatus {
 	readonly phase: SyncPhase;
 	readonly lastSyncedAt: string | null;
+	readonly rejected: number;
 }
 
 export interface SyncTrigger {
@@ -27,7 +28,7 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 		private readonly connectivity: Connectivity,
 		private readonly clock: Clock,
 	) {
-		super({ phase: "idle", lastSyncedAt: null });
+		super({ phase: "idle", lastSyncedAt: null, rejected: 0 });
 	}
 
 	start(): void {
@@ -80,11 +81,16 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 			return;
 		}
 		this.set({ ...this.get(), phase: "syncing" });
-		const outcome = await this.engine.sync();
+		const { outcome, rejected } = await this.engine.sync();
+		const total = this.get().rejected + rejected;
 		this.set(
 			outcome === "synced"
-				? { phase: "idle", lastSyncedAt: this.clock.now().toISOString() }
-				: { ...this.get(), phase: outcome },
+				? { phase: "idle", lastSyncedAt: this.clock.now().toISOString(), rejected: total }
+				: { ...this.get(), phase: outcome, rejected: total },
 		);
+	}
+
+	dismissRejected(): void {
+		this.set({ ...this.get(), rejected: 0 });
 	}
 }

@@ -31,7 +31,7 @@ describe("SyncEngine", () => {
 		];
 		const { engine, gateway, database } = await setup(operations, []);
 		gateway.tasks = [taskData({ id: "gone" })];
-		expect(await engine.sync()).toBe("synced");
+		expect((await engine.sync()).outcome).toBe("synced");
 		expect(gateway.calls).toEqual([
 			"createList:l",
 			"renameList:l",
@@ -92,7 +92,7 @@ describe("SyncEngine", () => {
 	it("stops and keeps the outbox when offline", async () => {
 		const { engine, gateway, database } = await setup([createTask("a"), createTask("b")]);
 		gateway.failOnce.set("createTask:a", new NetworkError());
-		expect(await engine.sync()).toBe("offline");
+		expect((await engine.sync()).outcome).toBe("offline");
 		expect(database.get().outbox).toHaveLength(2);
 		expect(gateway.calls).toEqual(["createTask:a"]);
 	});
@@ -100,14 +100,14 @@ describe("SyncEngine", () => {
 	it("treats server errors as retryable", async () => {
 		const { engine, gateway, database } = await setup([createTask("a")]);
 		gateway.failOnce.set("createTask:a", new ApiError(503, "down"));
-		expect(await engine.sync()).toBe("offline");
+		expect((await engine.sync()).outcome).toBe("offline");
 		expect(database.get().outbox).toHaveLength(1);
 	});
 
 	it("drops operations the server permanently rejects", async () => {
 		const { engine, gateway, database } = await setup([createTask("bad"), createTask("good")]);
 		gateway.failOnce.set("createTask:bad", new ApiError(400, "invalid"));
-		expect(await engine.sync()).toBe("synced");
+		expect(await engine.sync()).toEqual({ outcome: "synced", rejected: 1 });
 		expect(database.get().outbox).toEqual([]);
 		expect(gateway.calls).toContain("createTask:good");
 	});
@@ -115,26 +115,34 @@ describe("SyncEngine", () => {
 	it("reports unauthorized for 401 and missing sign-in", async () => {
 		const first = await setup([createTask("a")]);
 		first.gateway.failOnce.set("createTask:a", new ApiError(401, "no"));
-		expect(await first.engine.sync()).toBe("unauthorized");
+		expect((await first.engine.sync()).outcome).toBe("unauthorized");
 		expect(first.database.get().outbox).toHaveLength(1);
 		const second = await setup([]);
 		second.gateway.failure = new AuthRequiredError();
-		expect(await second.engine.sync()).toBe("unauthorized");
+		expect((await second.engine.sync()).outcome).toBe("unauthorized");
 		const third = await setup([]);
 		third.gateway.failure = new ApiError(401, "expired");
-		expect(await third.engine.sync()).toBe("unauthorized");
+		expect((await third.engine.sync()).outcome).toBe("unauthorized");
 	});
 
 	it("goes offline when pulling fails", async () => {
 		const { engine, gateway } = await setup([]);
 		gateway.failure = new NetworkError();
-		expect(await engine.sync()).toBe("offline");
+		expect((await engine.sync()).outcome).toBe("offline");
 	});
 
 	it("rethrows unexpected errors", async () => {
 		const { engine, gateway } = await setup([]);
 		gateway.failure = new Error("bug");
 		await expect(engine.sync()).rejects.toThrow("bug");
+	});
+
+	it("adds up rejections across a rerun", async () => {
+		const { engine, gateway } = await setup([createTask("bad")]);
+		gateway.failOnce.set("createTask:bad", new ApiError(400, "invalid"));
+		const first = engine.sync();
+		engine.sync();
+		expect((await first).rejected).toBe(1);
 	});
 
 	it("coalesces concurrent syncs and reruns once", async () => {
