@@ -62,6 +62,11 @@ describe("Task", () => {
 		const { myDay: _myDay, ...legacy } = task.toRecord();
 		expect(Task.restore(legacy).myDay).toBeNull();
 		expect(task.setMyDay(null).myDay).toBeNull();
+		const dismissed = task.setMyDayDismissed("2026-11-19");
+		expect(dismissed.myDayDismissed).toBe("2026-11-19");
+		expect(Task.restore(dismissed.toRecord()).myDayDismissed).toBe("2026-11-19");
+		expect(Task.restore(legacy).myDayDismissed).toBeNull();
+		expect(dismissed.setMyDayDismissed(null).myDayDismissed).toBeNull();
 		expect(JSON.parse(JSON.stringify(task)).myDay).toBe("2026-11-19");
 	});
 
@@ -74,6 +79,7 @@ describe("Task", () => {
 			importance: "normal",
 			listId: null,
 			myDay: null,
+			myDayDismissed: null,
 			dueDate: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});

@@ -112,6 +112,16 @@ describe("TaskService", () => {
 		}
 	});
 
+	it("records the day a task was removed from My Day and validates it", async () => {
+		const { tasks } = createServices();
+		const task = await tasks.create("u", { title: "A", myDayDismissed: "2026-11-19" });
+		expect(task.myDayDismissed).toBe("2026-11-19");
+		expect((await tasks.update("u", task.id, { myDayDismissed: null })).myDayDismissed).toBeNull();
+		await expect(tasks.update("u", task.id, { myDayDismissed: "soon" })).rejects.toThrow(
+			"myDayDismissed must be a YYYY-MM-DD date or null",
+		);
+	});
+
 	it("deletes tasks", async () => {
 		const service = createService();
 		const task = await service.create("u", { title: "A" });

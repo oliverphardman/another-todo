@@ -365,7 +365,8 @@
 					"dueDate",
 					"createdAt",
 					"listId",
-					"myDay"
+					"myDay",
+					"myDayDismissed"
 				],
 				"properties": {
 					"id": {
@@ -398,6 +399,12 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the task was added to My Day"
+					},
+					"myDayDismissed": {
+						"type": "string",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"nullable": true,
+						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
 					}
 				}
 			},
@@ -448,6 +455,12 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the task was added to My Day"
+					},
+					"myDayDismissed": {
+						"type": "string",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"nullable": true,
+						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
 					}
 				}
 			},
@@ -480,6 +493,12 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the task was added to My Day"
+					},
+					"myDayDismissed": {
+						"type": "string",
+						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+						"nullable": true,
+						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
 					}
 				}
 			},

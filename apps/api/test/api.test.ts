@@ -134,6 +134,26 @@ describe("My Day", () => {
 		expect(bad.status).toBe(400);
 	});
 
+	it("stores and clears the day the user removed a task from My Day", async () => {
+		const api = createTestApi();
+		const created = await api(
+			event({
+				method: "POST",
+				path: "/tasks",
+				body: { title: "Due", myDayDismissed: "2026-11-19" },
+			}),
+		);
+		expect(created.body.myDayDismissed).toBe("2026-11-19");
+		const cleared = await api(
+			event({ method: "PATCH", path: `/tasks/${created.body.id}`, body: { myDayDismissed: null } }),
+		);
+		expect(cleared.body.myDayDismissed).toBeNull();
+		const bad = await api(
+			event({ method: "PATCH", path: `/tasks/${created.body.id}`, body: { myDayDismissed: "x" } }),
+		);
+		expect(bad.status).toBe(400);
+	});
+
 	it("is available to MCP clients", async () => {
 		const api = createTestApi();
 		const reply = await api(
