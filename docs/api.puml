@@ -1,0 +1,37 @@
+@startuml api
+title Another To Do API
+
+skinparam componentStyle rectangle
+
+actor "Client\n(Expo app / MCP client)" as Client
+
+cloud "AWS" {
+  component "Amazon Cognito\nuser pool + hosted UI" as Cognito
+  component "API Gateway\nHTTP API + JWT authorizer" as Gateway
+
+  package "Lambda (serverless-express)" {
+    component "express-openapi-validator\n(openapi.json)" as Validator
+    component "TaskController\n/tasks" as Tasks
+    component "McpController\n/mcp" as Mcp
+    component "DiscoveryController\n/.well-known" as Discovery
+    component "TaskService" as Service
+    interface TaskRepository
+    component "DynamoTaskRepository" as Repo
+  }
+
+  database "DynamoDB\nownerId + id" as Table
+}
+
+Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Google, Microsoft)
+Client --> Gateway : Bearer access token
+Gateway ..> Cognito : verify JWT
+Gateway --> Validator : proxy event (v2)
+Validator --> Tasks
+Gateway --> Mcp
+Gateway --> Discovery
+Tasks --> Service
+Mcp --> Service
+Service --> TaskRepository
+Repo ..|> TaskRepository
+Repo --> Table
+@enduml

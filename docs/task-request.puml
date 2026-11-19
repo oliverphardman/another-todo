@@ -1,0 +1,23 @@
+@startuml task-request
+title Create task
+
+actor Client
+participant "API Gateway" as Gateway
+participant "Express app" as App
+participant "OpenAPI validator" as Validator
+participant TaskController
+participant TaskService
+participant DynamoTaskRepository as Repo
+database DynamoDB
+
+Client -> Gateway : POST /tasks (Bearer token)
+Gateway -> Gateway : validate JWT
+Gateway -> App : event with jwt claims
+App -> App : authenticate (sub claim)
+App -> Validator : validate body against openapi.json
+Validator -> TaskController : valid request
+TaskController -> TaskService : create(ownerId, input)
+TaskService -> Repo : save(task)
+Repo -> DynamoDB : PutItem
+TaskController --> Client : 201 Task
+@enduml
