@@ -1,33 +1,38 @@
 {
-  "expo": {
-    "name": "Another To Do",
-    "description": "It's just Another To Do app. What did you expect?",
-    "slug": "another-todo",
-    "scheme": "anothertodo",
-    "version": "0.0.0",
-    "orientation": "default",
-    "userInterfaceStyle": "automatic",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "dev.oliverhardman.anothertodo"
-    },
-    "android": {
-      "package": "dev.oliverhardman.anothertodo"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "single",
-      "name": "Another To Do",
-      "themeColor": "#2564cf",
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-audio",
-      "expo-localization",
-      "expo-secure-store",
-      "expo-web-browser",
-      "expo-asset",
-      "@react-native-community/datetimepicker"
-    ]
-  }
+	"expo": {
+		"name": "Another To Do",
+		"description": "It's just Another To Do app. What did you expect?",
+		"slug": "another-todo",
+		"scheme": "anothertodo",
+		"version": "0.0.0",
+		"orientation": "default",
+		"userInterfaceStyle": "automatic",
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "dev.oliverhardman.anothertodo"
+		},
+		"android": {
+			"package": "dev.oliverhardman.anothertodo"
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "single",
+			"name": "Another To Do",
+			"themeColor": "#2564cf",
+			"favicon": "./assets/favicon.png",
+			"shortName": "To Do",
+			"description": "Get things done, wherever you are.",
+			"backgroundColor": "#1e1e1e",
+			"lang": "en"
+		},
+		"plugins": [
+			"expo-audio",
+			"expo-localization",
+			"expo-secure-store",
+			"expo-web-browser",
+			"expo-asset",
+			"@react-native-community/datetimepicker"
+		],
+		"icon": null
+	}
 }
