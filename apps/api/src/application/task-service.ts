@@ -1,3 +1,4 @@
+import { EntityId } from "../domain/entity-id";
 import { NotFoundError, ValidationError } from "../domain/errors";
 import { Task } from "../domain/task";
 import type { TaskRepository } from "../domain/task-repository";
@@ -17,14 +18,14 @@ export class TaskService {
 		if (input.title === undefined) {
 			throw new ValidationError("title is required");
 		}
+		const id = input.id === undefined ? this.ids.next() : EntityId.parse(input.id);
+		const existing = input.id === undefined ? null : await this.repository.findById(ownerId, id);
+		if (existing !== null) {
+			return existing;
+		}
 		await this.ensureListExists(ownerId, input);
-		const created = Task.create(
-			ownerId,
-			this.ids.next(),
-			TaskChanges.title(input.title),
-			this.clock.now(),
-		);
-		const task = TaskChanges.apply(created, { ...input, title: undefined });
+		const created = Task.create(ownerId, id, TaskChanges.title(input.title), this.clock.now());
+		const task = TaskChanges.apply(created, { ...input, id: undefined, title: undefined });
 		await this.repository.save(task);
 		return task;
 	}

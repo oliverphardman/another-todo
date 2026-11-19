@@ -137,6 +137,8 @@ export interface components {
 			tasks: components["schemas"]["Task"][];
 		};
 		CreateTask: {
+			/** @description Optional client generated id that makes creation idempotent */
+			id?: string;
 			title: string;
 			completed?: boolean;
 			importance?: components["schemas"]["Importance"];
@@ -170,6 +172,8 @@ export interface components {
 			lists: components["schemas"]["TodoList"][];
 		};
 		CreateList: {
+			/** @description Optional client generated id that makes creation idempotent */
+			id?: string;
 			name: string;
 		};
 		UpdateList: {

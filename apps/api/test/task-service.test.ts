@@ -85,6 +85,23 @@ describe("TaskService", () => {
 		await expect(tasks.update("u", task.id, { listId: 7 })).rejects.toThrow(ValidationError);
 	});
 
+	it("creates idempotently when the client supplies an id", async () => {
+		const { tasks } = createServices();
+		const first = await tasks.create("u", { id: "client-1", title: "A" });
+		const second = await tasks.create("u", { id: "client-1", title: "Changed" });
+		expect(first.id).toBe("client-1");
+		expect(second).toBe(first);
+		expect((await tasks.list("u")).length).toBe(1);
+		expect((await tasks.create("other", { id: "client-1", title: "B" })).title).toBe("B");
+	});
+
+	it("rejects malformed client ids", async () => {
+		const { tasks } = createServices();
+		for (const id of ["", "has space", "x".repeat(65), 5]) {
+			await expect(tasks.create("u", { id, title: "A" })).rejects.toThrow(ValidationError);
+		}
+	});
+
 	it("deletes tasks", async () => {
 		const service = createService();
 		const task = await service.create("u", { title: "A" });

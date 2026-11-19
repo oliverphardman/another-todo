@@ -1,3 +1,4 @@
+import { EntityId } from "../domain/entity-id";
 import { NotFoundError, ValidationError } from "../domain/errors";
 import type { TaskRepository } from "../domain/task-repository";
 import { TodoList } from "../domain/todo-list";
@@ -5,6 +6,7 @@ import type { TodoListRepository } from "../domain/todo-list-repository";
 import type { Clock, IdGenerator } from "./ports";
 
 export interface ListInput {
+	readonly id?: unknown;
 	readonly name?: unknown;
 }
 
@@ -17,12 +19,12 @@ export class ListService {
 	) {}
 
 	async create(ownerId: string, input: ListInput): Promise<TodoList> {
-		const list = TodoList.create(
-			ownerId,
-			this.ids.next(),
-			ListService.nameOf(input),
-			this.clock.now(),
-		);
+		const id = input.id === undefined ? this.ids.next() : EntityId.parse(input.id);
+		const existing = input.id === undefined ? null : await this.lists.findById(ownerId, id);
+		if (existing !== null) {
+			return existing;
+		}
+		const list = TodoList.create(ownerId, id, ListService.nameOf(input), this.clock.now());
 		await this.lists.save(list);
 		return list;
 	}

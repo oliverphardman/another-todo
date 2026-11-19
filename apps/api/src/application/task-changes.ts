@@ -2,6 +2,7 @@ import { ValidationError } from "../domain/errors";
 import type { Importance, Task } from "../domain/task";
 
 export interface TaskInput {
+	readonly id?: unknown;
 	readonly title?: unknown;
 	readonly completed?: unknown;
 	readonly importance?: unknown;

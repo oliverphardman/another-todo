@@ -19,6 +19,15 @@ describe("ListService", () => {
 		]);
 	});
 
+	it("creates idempotently when the client supplies an id", async () => {
+		const { lists } = createServices();
+		const first = await lists.create("u", { id: "list-1", name: "A" });
+		const second = await lists.create("u", { id: "list-1", name: "B" });
+		expect(second).toBe(first);
+		expect(first.id).toBe("list-1");
+		await expect(lists.create("u", { id: "bad id", name: "A" })).rejects.toThrow(ValidationError);
+	});
+
 	it("requires a string name", async () => {
 		const { lists } = createServices();
 		await expect(lists.create("u", {})).rejects.toThrow(ValidationError);

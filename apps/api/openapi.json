@@ -403,6 +403,11 @@
 				"required": ["title"],
 				"additionalProperties": false,
 				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,64}$",
+						"description": "Optional client generated id that makes creation idempotent"
+					},
 					"title": {
 						"type": "string",
 						"minLength": 1
@@ -514,6 +519,11 @@
 				"required": ["name"],
 				"additionalProperties": false,
 				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,64}$",
+						"description": "Optional client generated id that makes creation idempotent"
+					},
 					"name": {
 						"type": "string",
 						"minLength": 1

@@ -115,6 +115,22 @@ describe("REST API", () => {
 	});
 });
 
+describe("Idempotent creation", () => {
+	it("returns the existing task or list when a client id is replayed", async () => {
+		const api = createTestApi();
+		const post = (path: string, body: unknown) => api(event({ method: "POST", path, body }));
+		const first = await post("/tasks", { id: "offline-1", title: "A" });
+		const replay = await post("/tasks", { id: "offline-1", title: "A" });
+		expect(first.status).toBe(201);
+		expect(replay.body.id).toBe("offline-1");
+		expect((await api(event({ path: "/tasks" }))).body.tasks).toHaveLength(1);
+		await post("/lists", { id: "offline-list", name: "L" });
+		await post("/lists", { id: "offline-list", name: "L" });
+		expect((await api(event({ path: "/lists" }))).body.lists).toHaveLength(1);
+		expect((await post("/tasks", { id: "bad id", title: "A" })).status).toBe(400);
+	});
+});
+
 describe("Lists API", () => {
 	it("creates, reads, renames, lists and deletes a list", async () => {
 		const api = createTestApi();
