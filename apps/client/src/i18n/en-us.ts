@@ -148,7 +148,7 @@ export const EN_US = {
 	"ctx.moveToGroup": "Move to Group…",
 	"ctx.removeFromGroup": "Remove from Group",
 	"ctx.renameGroup": "Rename Group",
-	"ctx.ungroup": "Ungroup",
+	"ctx.ungroup": "Delete group",
 	"group.new": "New group",
 	"group.menu": "Group actions",
 	"group.header": "Group {name}",
