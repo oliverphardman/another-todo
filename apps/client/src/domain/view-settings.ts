@@ -18,9 +18,18 @@ export interface ViewSettingsChanges {
 }
 
 export const DEFAULT_THEME_COLOR = "#2564cf";
+export const LIST_THEME_COLOR = "#6074c3";
+
+const VIEW_THEME_COLORS: Record<string, string> = {
+	"my-day": DEFAULT_THEME_COLOR,
+	important: DEFAULT_THEME_COLOR,
+	all: "#f9e7de",
+	planned: "#d5f1ee",
+};
 
 export const THEME_COLORS: readonly { readonly name: string; readonly hex: string }[] = [
 	{ name: "Blue", hex: DEFAULT_THEME_COLOR },
+	{ name: "Periwinkle", hex: LIST_THEME_COLOR },
 	{ name: "Red", hex: "#c0392b" },
 	{ name: "Orange", hex: "#d9791f" },
 	{ name: "Green", hex: "#3a8a4a" },
@@ -29,6 +38,8 @@ export const THEME_COLORS: readonly { readonly name: string; readonly hex: strin
 	{ name: "Pink", hex: "#c4488a" },
 	{ name: "Brown", hex: "#8a5a44" },
 	{ name: "Gray", hex: "#5f6b7a" },
+	{ name: "Peach", hex: "#f9e7de" },
+	{ name: "Mint", hex: "#d5f1ee" },
 ];
 
 export const SORT_OPTIONS: readonly { readonly key: SortKey; readonly label: string }[] = [
@@ -38,6 +49,12 @@ export const SORT_OPTIONS: readonly { readonly key: SortKey; readonly label: str
 	{ key: "created", label: "Creation Date" },
 	{ key: "myDay", label: "Added to My Day" },
 ];
+
+export class ViewDefaults {
+	static themeColor(viewId: string): string {
+		return VIEW_THEME_COLORS[viewId] ?? LIST_THEME_COLOR;
+	}
+}
 
 export class ViewSettings {
 	constructor(readonly data: ViewSettingsData) {}

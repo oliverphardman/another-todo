@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import type { TaskStepData } from "../domain/task-step";
-import { Icon } from "./icon";
+import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { DETAIL_ROW_HEIGHT, DetailSeparator } from "./detail-card";
 import { AppText } from "./app-text";
@@ -56,12 +56,11 @@ export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 					accessibilityState={{ checked: step.completed }}
 					onPress={onToggle}
 				>
-					<Icon
-						glyph={step.completed ? "check" : "circle"}
-						size={20}
-						color={palette.accent}
-						strokeWidth={1.3}
-					/>
+					{step.completed ? (
+						<CheckedCircle size={20} color={palette.accent} />
+					) : (
+						<Icon glyph="circle" size={20} color={palette.accent} strokeWidth={1.3} />
+					)}
 				</PressableSurface>
 				<TextInput
 					accessibilityLabel={`Step ${step.title}`}

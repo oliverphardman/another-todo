@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
-import { Icon } from "./icon";
+import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
@@ -43,7 +43,11 @@ export function TaskRow({
 				onPress={onToggleCompleted}
 				style={{ padding: 14 }}
 			>
-				<Icon glyph={task.completed ? "check" : "circle"} size={22} color={palette.accent} />
+				{task.completed ? (
+					<CheckedCircle size={22} color={palette.accent} />
+				) : (
+					<Icon glyph="circle" size={22} color={palette.accent} />
+				)}
 			</PressableSurface>
 			<PressableSurface
 				accessibilityRole="button"

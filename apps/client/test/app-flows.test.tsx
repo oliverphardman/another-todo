@@ -710,6 +710,29 @@ describe("change theme", () => {
 		expect(screen.queryByLabelText("Upload photo")).toBeNull();
 	});
 
+	it("shows a list's default color as selected and uses it when nothing is chosen", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		openTheme();
+		expect(screen.getByLabelText("Periwinkle theme").getAttribute("aria-checked")).toBe("true");
+		expect(screen.getByLabelText("Blue theme").getAttribute("aria-checked")).toBe("false");
+		fireEvent.click(screen.getByLabelText("Peach theme"));
+		expect(app.container.store.settingsFor("tasks").theme).toEqual({
+			type: "color",
+			color: "#f9e7de",
+		});
+		fireEvent.click(screen.getByLabelText("Periwinkle theme"));
+		expect(app.container.store.settingsFor("tasks").theme).toBeNull();
+		fireEvent.click(screen.getByLabelText("Close menu"));
+		fireEvent.click(screen.getByLabelText("All tasks"));
+		openTheme();
+		expect(screen.getByLabelText("Peach theme").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(screen.getByLabelText("Close menu"));
+		fireEvent.click(screen.getByLabelText("Planned"));
+		openTheme();
+		expect(screen.getByLabelText("Mint theme").getAttribute("aria-checked")).toBe("true");
+	});
+
 	it("keeps each list's theme separate", async () => {
 		const app = await start();
 		openTheme();

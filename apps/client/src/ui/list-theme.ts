@@ -1,35 +1,40 @@
-import { DEFAULT_THEME_COLOR, type ThemeSetting } from "../domain/view-settings";
+import type { ThemeSetting } from "../domain/view-settings";
 import { ColorMath } from "./color-math";
-import type { Palette } from "./theme";
+import { DARK, type Palette } from "./theme";
 
 export interface ResolvedTheme {
 	readonly overrides: Partial<Palette>;
 	readonly imageUrl: string | null;
 }
 
+const MINIMUM_CONTRAST = 4.5;
+
 export class ListTheme {
 	static resolve(
 		setting: ThemeSetting | null,
 		photoUrl: string | null,
 		dark: boolean,
+		defaultColor: string,
 	): ResolvedTheme {
+		const color = setting?.type === "color" ? setting.color : defaultColor;
+		const accent = dark
+			? ColorMath.ensureContrast(
+					ColorMath.mix(color, "#ffffff", 0.35),
+					DARK.surface,
+					MINIMUM_CONTRAST,
+					"#ffffff",
+				)
+			: ColorMath.ensureContrast(color, "#ffffff", MINIMUM_CONTRAST, "#000000");
+		const accentSoft = ColorMath.mix(accent, dark ? "#000000" : "#ffffff", dark ? 0.65 : 0.85);
 		if (setting?.type === "photo" && photoUrl !== null) {
-			return { overrides: {}, imageUrl: photoUrl };
+			return { overrides: { accent, accentSoft, onAccent: "#ffffff" }, imageUrl: photoUrl };
 		}
-		if (setting?.type === "color" && setting.color !== DEFAULT_THEME_COLOR) {
-			return {
-				overrides: {
-					background: dark ? ColorMath.mix(setting.color, "#000000", 0.55) : setting.color,
-					accent: dark ? ColorMath.mix(setting.color, "#ffffff", 0.35) : setting.color,
-					accentSoft: ColorMath.mix(
-						setting.color,
-						dark ? "#000000" : "#ffffff",
-						dark ? 0.35 : 0.85,
-					),
-				},
-				imageUrl: null,
-			};
+		if (dark) {
+			return { overrides: { accent, accentSoft }, imageUrl: null };
 		}
-		return { overrides: {}, imageUrl: null };
+		return {
+			overrides: { background: color, onAccent: ColorMath.readableOn(color), accent, accentSoft },
+			imageUrl: null,
+		};
 	}
 }

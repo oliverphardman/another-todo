@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
-import { DEFAULT_THEME_COLOR, THEME_COLORS, type ThemeSetting } from "../domain/view-settings";
+import { THEME_COLORS, ViewDefaults, type ThemeSetting } from "../domain/view-settings";
+import { ColorMath } from "./color-math";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
@@ -27,8 +28,9 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 	}, [photos]);
 	const current = store.settingsFor(viewId).theme;
 	const choose = (theme: ThemeSetting | null) => store.updateSettings(viewId, { theme });
+	const defaultColor = ViewDefaults.themeColor(viewId);
 	const selectedColor =
-		current?.type === "color" ? current.color : current === null ? DEFAULT_THEME_COLOR : null;
+		current === null ? defaultColor : current.type === "color" ? current.color : null;
 	const doomed = library.photos.find((photo) => photo.id === confirming);
 	return (
 		<ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ padding: 12 }}>
@@ -56,7 +58,7 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 						accessibilityLabel={`${color.name} theme`}
 						aria-checked={selectedColor === color.hex}
 						onPress={() =>
-							choose(color.hex === DEFAULT_THEME_COLOR ? null : { type: "color", color: color.hex })
+							choose(color.hex === defaultColor ? null : { type: "color", color: color.hex })
 						}
 						style={{
 							width: SWATCH,
@@ -69,7 +71,9 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 							borderColor: palette.text,
 						}}
 					>
-						{selectedColor === color.hex ? <Icon glyph="check" size={18} color="#ffffff" /> : null}
+						{selectedColor === color.hex ? (
+							<Icon glyph="check" size={18} color={ColorMath.readableOn(color.hex)} />
+						) : null}
 					</PressableSurface>
 				))}
 			</View>

@@ -3,8 +3,10 @@ import { Task } from "../src/domain/task";
 import { TodoList } from "../src/domain/todo-list";
 import {
 	DEFAULT_THEME_COLOR,
+	LIST_THEME_COLOR,
 	SORT_OPTIONS,
 	THEME_COLORS,
+	ViewDefaults,
 	ViewSettings,
 } from "../src/domain/view-settings";
 
@@ -102,6 +104,13 @@ describe("ViewSettings", () => {
 		expect(changed.with({ sort: null, theme: null }).sort).toBeNull();
 		expect(changed.with({}).hideCompleted).toBe(true);
 		expect(THEME_COLORS[0]!.hex).toBe(DEFAULT_THEME_COLOR);
+		expect(THEME_COLORS.map((color) => color.hex)).toContain(LIST_THEME_COLOR);
+		expect(ViewDefaults.themeColor("my-day")).toBe("#2564cf");
+		expect(ViewDefaults.themeColor("important")).toBe("#2564cf");
+		expect(ViewDefaults.themeColor("all")).toBe("#f9e7de");
+		expect(ViewDefaults.themeColor("planned")).toBe("#d5f1ee");
+		expect(ViewDefaults.themeColor("tasks")).toBe("#6074c3");
+		expect(ViewDefaults.themeColor("some-custom-list")).toBe("#6074c3");
 		expect(SORT_OPTIONS.map((option) => option.key)).toEqual([
 			"importance",
 			"alphabetical",

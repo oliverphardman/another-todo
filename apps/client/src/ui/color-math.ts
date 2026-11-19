@@ -9,6 +9,35 @@ export class ColorMath {
 		return `#${channel(r1, r2)}${channel(g1, g2)}${channel(b1, b2)}`;
 	}
 
+	static luminance(color: string): number {
+		const [r, g, b] = ColorMath.channels(color).map((value) => {
+			const scaled = value / 255;
+			return scaled <= 0.03928 ? scaled / 12.92 : ((scaled + 0.055) / 1.055) ** 2.4;
+		}) as [number, number, number];
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
+
+	static contrast(a: string, b: string): number {
+		const [light, dark] = [ColorMath.luminance(a), ColorMath.luminance(b)].sort(
+			(x, y) => y - x,
+		) as [number, number];
+		return (light + 0.05) / (dark + 0.05);
+	}
+
+	static readableOn(background: string): string {
+		return ColorMath.contrast(background, "#ffffff") >= ColorMath.contrast(background, "#1b1a19")
+			? "#ffffff"
+			: "#1b1a19";
+	}
+
+	static ensureContrast(color: string, against: string, minimum: number, towards: string): string {
+		let result = color;
+		for (let step = 1; step <= 20 && ColorMath.contrast(result, against) < minimum; step += 1) {
+			result = ColorMath.mix(color, towards, step * 0.05);
+		}
+		return result;
+	}
+
 	private static channels(color: string): [number, number, number] {
 		const value = Number.parseInt(color.slice(1), 16);
 		return [(value >> 16) & 255, (value >> 8) & 255, value & 255];

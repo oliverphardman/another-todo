@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Icon, type IconGlyph } from "../src/ui/icon";
+import { CheckedCircle, Icon, type IconGlyph } from "../src/ui/icon";
 
 const GLYPHS: IconGlyph[] = [
 	"check",
@@ -36,6 +36,18 @@ const GLYPHS: IconGlyph[] = [
 	"signOut",
 	"syncOff",
 ];
+
+describe("CheckedCircle", () => {
+	it("draws a filled circle with a white check", () => {
+		const { container } = render(<CheckedCircle color="#6074c3" />);
+		const paths = container.querySelectorAll("path");
+		expect(paths).toHaveLength(2);
+		expect(paths[0]!.getAttribute("d")).toContain("a9 9");
+		expect(
+			render(<CheckedCircle color="#000" size={30} />).container.querySelector("svg"),
+		).toBeTruthy();
+	});
+});
 
 describe("Icon", () => {
 	it.each(GLYPHS)("draws %s", (glyph) => {

@@ -37,10 +37,10 @@ export const LIGHT: Palette = {
 };
 
 export const DARK: Palette = {
-	background: "#1b3a73",
-	sidebar: "#1f1f1f",
-	sidebarSelected: "#383838",
-	sidebarHover: "#2c2c2c",
+	background: "#1e1e1e",
+	sidebar: "#252525",
+	sidebarSelected: "#3a3a3a",
+	sidebarHover: "#2f2f2f",
 	surface: "#292929",
 	surfaceHover: "#333333",
 	detail: "#242424",

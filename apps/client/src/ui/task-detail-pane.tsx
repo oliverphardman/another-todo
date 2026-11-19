@@ -6,7 +6,7 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
-import { Icon } from "./icon";
+import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { AddStepRow, StepRow } from "./step-list";
 import { FONT_FAMILY } from "./theme";
@@ -49,12 +49,11 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 							onPress={() => store.toggleCompleted(task.id)}
 							style={{ padding: 14 }}
 						>
-							<Icon
-								glyph={task.completed ? "check" : "circle"}
-								size={22}
-								color={palette.accent}
-								strokeWidth={1.3}
-							/>
+							{task.completed ? (
+								<CheckedCircle size={22} color={palette.accent} />
+							) : (
+								<Icon glyph="circle" size={22} color={palette.accent} strokeWidth={1.3} />
+							)}
 						</PressableSurface>
 						<TextInput
 							accessibilityLabel="Task title"

@@ -1,3 +1,4 @@
+import { ViewDefaults } from "../domain/view-settings";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { ListTheme, type ResolvedTheme } from "./list-theme";
@@ -10,5 +11,5 @@ export function useListTheme(): ResolvedTheme {
 	const dark = useIsDark();
 	const { theme } = store.settingsFor(state.selectedViewId);
 	const photoUrl = theme?.type === "photo" ? photos.urlFor(theme.photoId) : null;
-	return ListTheme.resolve(theme, photoUrl, dark);
+	return ListTheme.resolve(theme, photoUrl, dark, ViewDefaults.themeColor(state.selectedViewId));
 }
