@@ -29,6 +29,23 @@ export class Outbox {
 		);
 	}
 
+	markSending(opId: string): Outbox {
+		return new Outbox(
+			this.operations.map((operation) =>
+				operation.opId === opId ? { ...operation, sending: true } : operation,
+			),
+		);
+	}
+
+	clearSending(): Outbox {
+		return new Outbox(
+			this.operations.map((operation) => {
+				const { sending: _sending, ...rest } = operation;
+				return rest as Operation;
+			}),
+		);
+	}
+
 	remove(opId: string): Outbox {
 		return new Outbox(this.operations.filter((operation) => operation.opId !== opId));
 	}
@@ -84,7 +101,10 @@ export class Outbox {
 	private enqueueTaskDelete(operation: Extract<Operation, { kind: "deleteTask" }>): Outbox {
 		const ids = new Set([operation.taskId]);
 		const created = this.operations.some(
-			(candidate) => candidate.kind === "createTask" && candidate.task.id === operation.taskId,
+			(candidate) =>
+				candidate.kind === "createTask" &&
+				candidate.task.id === operation.taskId &&
+				!candidate.sending,
 		);
 		const remaining = this.discardTasks(ids);
 		return created ? remaining : new Outbox([...remaining.operations, operation]);
@@ -92,7 +112,10 @@ export class Outbox {
 
 	private enqueueListRename(operation: Extract<Operation, { kind: "renameList" }>): Outbox {
 		const createIndex = this.operations.findIndex(
-			(candidate) => candidate.kind === "createList" && candidate.list.id === operation.listId,
+			(candidate) =>
+				candidate.kind === "createList" &&
+				candidate.list.id === operation.listId &&
+				!candidate.sending,
 		);
 		if (createIndex !== -1) {
 			const create = this.operations[createIndex] as Extract<Operation, { kind: "createList" }>;
@@ -105,14 +128,22 @@ export class Outbox {
 			);
 		}
 		const without = this.operations.filter(
-			(candidate) => !(candidate.kind === "renameList" && candidate.listId === operation.listId),
+			(candidate) =>
+				!(
+					candidate.kind === "renameList" &&
+					candidate.listId === operation.listId &&
+					!candidate.sending
+				),
 		);
 		return new Outbox([...without, operation]);
 	}
 
 	private enqueueListDelete(operation: Extract<Operation, { kind: "deleteList" }>): Outbox {
 		const created = this.operations.some(
-			(candidate) => candidate.kind === "createList" && candidate.list.id === operation.listId,
+			(candidate) =>
+				candidate.kind === "createList" &&
+				candidate.list.id === operation.listId &&
+				!candidate.sending,
 		);
 		const remaining = this.operations.filter(
 			(candidate) =>
@@ -127,11 +158,11 @@ export class Outbox {
 	private findMergeTarget(taskId: string): number {
 		for (let index = this.operations.length - 1; index >= 0; index -= 1) {
 			const candidate = this.operations[index]!;
-			if (candidate.kind === "createTask" && candidate.task.id === taskId) {
-				return index;
-			}
-			if (candidate.kind === "updateTask" && candidate.taskId === taskId) {
-				return index;
+			if (
+				(candidate.kind === "createTask" && candidate.task.id === taskId) ||
+				(candidate.kind === "updateTask" && candidate.taskId === taskId)
+			) {
+				return candidate.sending ? -1 : index;
 			}
 			if (
 				candidate.kind === "createList" ||

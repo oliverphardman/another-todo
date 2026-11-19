@@ -140,6 +140,47 @@ describe("Outbox", () => {
 		]);
 	});
 
+	it("never merges an update into an operation that is already being sent", () => {
+		const sendingUpdate = build(updateTask("1", { title: "A" })).markSending("u-1");
+		const next = sendingUpdate.enqueue(updateTask("1", { completed: true }, "u-1b"));
+		expect(next.operations.map((operation) => operation.opId)).toEqual(["u-1", "u-1b"]);
+		expect((next.operations[0] as { changes: object }).changes).toEqual({ title: "A" });
+		const sendingCreate = build(createTask("2")).markSending("op-2");
+		const afterCreate = sendingCreate.enqueue(updateTask("2", { title: "B" }, "u-2"));
+		expect(afterCreate.operations.map((operation) => operation.kind)).toEqual([
+			"createTask",
+			"updateTask",
+		]);
+		expect((afterCreate.operations[0] as { task: { title: string } }).task.title).toBe("Task 2");
+	});
+
+	it("still sends a delete for a task whose create is already on its way", () => {
+		const outbox = build(createTask("1")).markSending("op-1").enqueue(deleteTask("1"));
+		expect(outbox.operations.map((operation) => operation.kind)).toEqual(["deleteTask"]);
+		const unsent = build(createTask("2")).enqueue(deleteTask("2"));
+		expect(unsent.isEmpty).toBe(true);
+	});
+
+	it("keeps list operations that are being sent apart from new ones", () => {
+		const creating = build(createList("l")).markSending("cl-l");
+		const renamed = creating.enqueue(renameList("l", "New name"));
+		expect(renamed.operations.map((operation) => operation.kind)).toEqual([
+			"createList",
+			"renameList",
+		]);
+		const deleted = creating.enqueue(deleteList("l"));
+		expect(deleted.operations.map((operation) => operation.kind)).toEqual(["deleteList"]);
+		const renaming = build(renameList("m", "One")).markSending("r-m");
+		const again = renaming.enqueue(renameList("m", "Two", "r-m2"));
+		expect(again.operations.map((operation) => operation.opId)).toEqual(["r-m", "r-m2"]);
+	});
+
+	it("clears every sending mark", () => {
+		const outbox = build(createTask("1"), createTask("2")).markSending("op-1").markSending("op-2");
+		expect(outbox.operations.every((operation) => operation.sending)).toBe(true);
+		expect(outbox.clearSending().operations.some((operation) => operation.sending)).toBe(false);
+	});
+
 	it("discards operations for the given tasks only", () => {
 		const outbox = build(
 			createTask("1"),

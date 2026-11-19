@@ -45,6 +45,7 @@ export class SyncEngine {
 	private async runOnce(): Promise<SyncReport> {
 		const counter = { rejected: 0 };
 		try {
+			await this.releaseStaleClaims();
 			await this.push(counter);
 			await this.pull();
 			return { outcome: "synced", rejected: counter.rejected };
@@ -63,12 +64,25 @@ export class SyncEngine {
 		throw error;
 	}
 
+	private async releaseStaleClaims(): Promise<void> {
+		if (this.database.get().outbox.some((operation) => operation.sending)) {
+			await this.database.apply((snapshot) => ({
+				...snapshot,
+				outbox: new Outbox(snapshot.outbox).clearSending().operations,
+			}));
+		}
+	}
+
 	private async push(counter: { rejected: number }): Promise<void> {
 		for (;;) {
 			const operation = this.database.get().outbox[0];
 			if (operation === undefined) {
 				return;
 			}
+			await this.database.apply((snapshot) => ({
+				...snapshot,
+				outbox: new Outbox(snapshot.outbox).markSending(operation.opId).operations,
+			}));
 			try {
 				await this.dispatch(operation);
 			} catch (error) {

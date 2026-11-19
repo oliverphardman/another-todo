@@ -3,6 +3,7 @@ import { ApiError, AuthRequiredError, NetworkError } from "../src/api/errors";
 import { MemoryKeyValueStore } from "../src/storage/key-value-store";
 import { LocalDatabase } from "../src/storage/local-database";
 import type { Operation } from "../src/sync/operation";
+import { Outbox } from "../src/sync/outbox";
 import { SyncEngine } from "../src/sync/sync-engine";
 import { FakeGateway, taskData } from "./support/fakes";
 
@@ -87,6 +88,45 @@ describe("SyncEngine", () => {
 		expect(database.get().lists.map((list) => list.id)).toEqual(["mid"]);
 		expect(database.get().tasks.map((task) => task.id)).toEqual(["mid-task"]);
 		expect(database.get().outbox).toHaveLength(2);
+	});
+
+	it("sends edits made while an earlier edit to the same task is in flight", async () => {
+		const { engine, gateway, database } = await setup(
+			[{ kind: "updateTask", opId: "u1", taskId: "t", changes: { title: "First" } }],
+			[taskData({ id: "t" })],
+		);
+		gateway.tasks = [taskData({ id: "t" })];
+		const original = gateway.updateTask.bind(gateway);
+		let edited = false;
+		gateway.updateTask = async (id, changes) => {
+			if (!edited) {
+				edited = true;
+				await database.apply((snapshot) => ({
+					...snapshot,
+					outbox: new Outbox(snapshot.outbox).enqueue({
+						kind: "updateTask",
+						opId: "u2",
+						taskId: "t",
+						changes: { note: "Typed during the send" },
+					}).operations,
+				}));
+			}
+			return original(id, changes);
+		};
+		await engine.sync();
+		expect(gateway.tasks[0]).toMatchObject({ title: "First", note: "Typed during the send" });
+		expect(database.get().outbox).toEqual([]);
+	});
+
+	it("releases claims left behind by an interrupted send", async () => {
+		const { engine, gateway, database } = await setup(
+			[{ kind: "updateTask", opId: "u1", taskId: "t", changes: { title: "Again" }, sending: true }],
+			[taskData({ id: "t" })],
+		);
+		gateway.tasks = [taskData({ id: "t" })];
+		await engine.sync();
+		expect(gateway.calls).toContain("updateTask:t");
+		expect(database.get().outbox).toEqual([]);
 	});
 
 	it("stops and keeps the outbox when offline", async () => {

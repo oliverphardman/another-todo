@@ -1,7 +1,7 @@
 import type { TaskChanges, TaskData } from "../domain/task";
 import type { TodoListData } from "../domain/todo-list";
 
-export type Operation =
+export type OperationBody =
 	| {
 			readonly kind: "createList";
 			readonly opId: string;
@@ -34,3 +34,5 @@ export type Operation =
 			readonly opId: string;
 			readonly taskId: string;
 	  };
+
+export type Operation = OperationBody & { readonly sending?: boolean };
