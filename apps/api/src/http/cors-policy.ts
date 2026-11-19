@@ -16,7 +16,7 @@ export class CorsPolicy {
 				next();
 				return;
 			}
-			response.setHeader("access-control-allow-methods", "GET, POST, PATCH, DELETE, OPTIONS");
+			response.setHeader("access-control-allow-methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
 			response.setHeader("access-control-allow-headers", "authorization, content-type");
 			response.setHeader("access-control-max-age", "3600");
 			response.status(204).end();

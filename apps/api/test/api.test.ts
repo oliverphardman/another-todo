@@ -93,6 +93,9 @@ describe("REST API", () => {
 		expect(allowed.status).toBe(204);
 		expect(allowed.headers.get("access-control-allow-origin")).toBe(TEST_ORIGIN);
 		expect(allowed.headers.get("access-control-allow-headers")).toContain("authorization");
+		for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"]) {
+			expect(allowed.headers.get("access-control-allow-methods")).toContain(method);
+		}
 		const denied = await api(
 			event({
 				method: "OPTIONS",
