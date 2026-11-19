@@ -25,3 +25,7 @@ output "tasks_table" {
 output "lists_table" {
   value = aws_dynamodb_table.lists.name
 }
+
+output "name_servers" {
+  value = aws_route53_zone.main.name_servers
+}

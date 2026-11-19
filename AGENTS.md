@@ -49,3 +49,6 @@
 - Every package needs lint, test (100% coverage thresholds) and format scripts run by .githooks/pre-commit
 - pnpm 11 needs allowBuilds in pnpm-workspace.yaml for dependencies with install scripts
 - Diagrams are in docs/*.puml
+- Terraform state lives in the S3 bucket another-todo-tfstate-<account>-eu-west-1-an (account regional namespace, S3 native locking). The bucket is created by infra/bootstrap (local state, run once). Deploy with AWS_PROFILE=another-todo from infra/ after building apps/api
+- Web Function rate_limit must be a multiple of 100 (0, 100 ... 1000, then thousands)
+- Route 53 zone another-todo.oliverhardman.dev is managed in infra/main.tf; delegate to its name_servers output from the parent domain

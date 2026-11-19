@@ -72,5 +72,10 @@ variable "max_environments" {
 
 variable "rate_limit" {
   type    = number
-  default = 25
+  default = 100
+}
+
+variable "domain_name" {
+  type    = string
+  default = "another-todo.oliverhardman.dev"
 }

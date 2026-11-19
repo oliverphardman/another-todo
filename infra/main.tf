@@ -1,5 +1,13 @@
 terraform {
-  required_version = ">= 1.6"
+  required_version = ">= 1.10"
+
+  backend "s3" {
+    bucket       = "another-todo-tfstate-469144745165-eu-west-1-an"
+    key          = "another-todo/terraform.tfstate"
+    region       = "eu-west-1"
+    encrypt      = true
+    use_lockfile = true
+  }
 
   required_providers {
     aws = {
@@ -154,7 +162,7 @@ resource "aws_cognito_user_pool_client" "app" {
   supported_identity_providers         = local.supported_providers
   prevent_user_existence_errors        = "ENABLED"
   enable_token_revocation              = true
-  explicit_auth_flows                  = ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  explicit_auth_flows                  = ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_ADMIN_USER_PASSWORD_AUTH"]
 
   depends_on = [
     aws_cognito_identity_provider.google,
@@ -308,4 +316,8 @@ resource "aws_lambdaweb_function_endpoint" "api" {
   }
 
   depends_on = [aws_lambdaweb_function_revision.api]
+}
+
+resource "aws_route53_zone" "main" {
+  name = var.domain_name
 }
