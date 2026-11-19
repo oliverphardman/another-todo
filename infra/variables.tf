@@ -1,6 +1,6 @@
 variable "region" {
   type    = string
-  default = "eu-west-2"
+  default = "eu-west-1"
 }
 
 variable "environment" {
@@ -55,17 +55,22 @@ variable "microsoft_issuer" {
   default = "https://login.microsoftonline.com/9188040d-6c67-4c5d-b012-9c1e34e4c8e4/v2.0"
 }
 
-variable "log_retention_days" {
+variable "timeout_seconds" {
   type    = number
   default = 30
 }
 
-variable "throttle_burst_limit" {
+variable "max_concurrency_per_environment" {
   type    = number
-  default = 50
+  default = 64
 }
 
-variable "throttle_rate_limit" {
+variable "max_environments" {
+  type    = number
+  default = 5
+}
+
+variable "rate_limit" {
   type    = number
   default = 25
 }

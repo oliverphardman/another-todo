@@ -7,9 +7,10 @@ actor "Client\n(Expo app / MCP client)" as Client
 
 cloud "AWS" {
   component "Amazon Cognito\nuser pool + hosted UI" as Cognito
-  component "API Gateway\nHTTP API + JWT authorizer" as Gateway
 
-  package "Lambda (serverless-express)" {
+  package "Lambda Web Function (Express, ApplicationManaged auth)" {
+    component "CorsPolicy" as Cors
+    component "BearerAuthenticator\n+ CognitoTokenVerifier" as Auth
     component "express-openapi-validator\n(openapi.json)" as Validator
     component "TaskController\n/tasks" as Tasks
     component "ListController\n/lists" as Lists
@@ -24,13 +25,14 @@ cloud "AWS" {
 }
 
 Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Google, Microsoft)
-Client --> Gateway : Bearer access token
-Gateway ..> Cognito : verify JWT
-Gateway --> Validator : proxy event (v2)
+Client --> Cors : HTTPS + Bearer access token
+Cors --> Discovery
+Cors --> Auth
+Auth ..> Cognito : fetch and cache JWKS
+Auth --> Validator
+Auth --> Mcp
 Validator --> Tasks
 Validator --> Lists
-Gateway --> Mcp
-Gateway --> Discovery
 Tasks --> Service
 Lists --> Service
 Mcp --> Service

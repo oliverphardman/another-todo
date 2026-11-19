@@ -1,9 +1,9 @@
 output "api_url" {
-  value = aws_apigatewayv2_api.api.api_endpoint
+  value = "https://${aws_lambdaweb_function_endpoint.api.domain_name}"
 }
 
 output "mcp_url" {
-  value = "${aws_apigatewayv2_api.api.api_endpoint}/mcp"
+  value = "https://${aws_lambdaweb_function_endpoint.api.domain_name}/mcp"
 }
 
 output "user_pool_id" {

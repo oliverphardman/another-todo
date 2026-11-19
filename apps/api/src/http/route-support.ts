@@ -12,8 +12,13 @@ export class RouteSupport {
 
 	static authenticate(authenticator: Authenticator): RequestHandler {
 		return (request: Request, response: Response, next: NextFunction) => {
-			response.locals.ownerId = authenticator.subjectOf(request);
-			next();
+			authenticator
+				.authenticate(request)
+				.then((ownerId) => {
+					response.locals.ownerId = ownerId;
+					next();
+				})
+				.catch(next);
 		};
 	}
 

@@ -1,24 +1,34 @@
 import { describe, expect, it } from "vitest";
 import { readConfig } from "../src/bootstrap";
-import { ApiGatewayAuthenticator } from "../src/http/authenticator";
 
-describe("bootstrap", () => {
-	it("reads configuration", () => {
-		expect(readConfig({ TABLE_NAME: "t", LISTS_TABLE_NAME: "l", OAUTH_ISSUER: "i" })).toEqual({
+const base = {
+	TABLE_NAME: "t",
+	LISTS_TABLE_NAME: "l",
+	COGNITO_USER_POOL_ID: "eu-west-1_pool",
+	COGNITO_CLIENT_ID: "client",
+};
+
+describe("readConfig", () => {
+	it("reads configuration with no CORS origins by default", () => {
+		expect(readConfig(base)).toEqual({
 			tableName: "t",
 			listsTableName: "l",
-			issuer: "i",
+			userPoolId: "eu-west-1_pool",
+			clientId: "client",
+			corsOrigins: [],
 		});
 	});
 
-	it("rejects missing configuration", () => {
-		expect(() => readConfig({ TABLE_NAME: "t", LISTS_TABLE_NAME: "l" })).toThrow("must be set");
-		expect(() => readConfig({ LISTS_TABLE_NAME: "l", OAUTH_ISSUER: "i" })).toThrow("must be set");
+	it("parses a comma separated origin list", () => {
+		expect(
+			readConfig({ ...base, CORS_ORIGINS: " https://a.example.com, ,https://b.example.com " })
+				.corsOrigins,
+		).toEqual(["https://a.example.com", "https://b.example.com"]);
 	});
 
-	it("rejects authentication outside a Lambda invocation", () => {
-		expect(() => new ApiGatewayAuthenticator().subjectOf({} as never)).toThrow(
-			"Authentication required",
-		);
+	it("rejects missing configuration", () => {
+		for (const key of Object.keys(base)) {
+			expect(() => readConfig({ ...base, [key]: undefined })).toThrow("must be set");
+		}
 	});
 });

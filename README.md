@@ -8,7 +8,7 @@ Welcome to Another To Do (ATD)! This is designed to be a replacement for Microso
 
 Designed to run serverless for minimal cost.
 
-- REST (Amazon API Gateway)
+- REST (Express on Amazon Lambda Web Functions)
 - Oauth (Amazon Cognito)
 - MCP
 

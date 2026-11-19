@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FailingClient } from "./support/fake-document-client";
 import { event, rpcEvent } from "./support/events";
-import { createTestApi } from "./support/test-api";
+import { TEST_ISSUER, TEST_ORIGIN, createTestApi } from "./support/test-api";
 
 describe("REST API", () => {
 	it("creates, reads, updates, lists and deletes a task", async () => {
@@ -27,14 +27,6 @@ describe("REST API", () => {
 		expect((await api(event({ path: "/tasks" }))).body.tasks).toHaveLength(1);
 		expect((await api(event({ method: "DELETE", path: `/tasks/${id}` }))).status).toBe(204);
 		expect((await api(event({ path: `/tasks/${id}` }))).status).toBe(404);
-	});
-
-	it("accepts base64 encoded bodies", async () => {
-		const api = createTestApi();
-		const created = await api(
-			event({ method: "POST", path: "/tasks", body: { title: "A" }, base64: true }),
-		);
-		expect(created.status).toBe(201);
 	});
 
 	it("validates requests against the OpenAPI definition", async () => {
@@ -88,11 +80,38 @@ describe("REST API", () => {
 		const reply = await createTestApi()(
 			event({ path: "/.well-known/oauth-protected-resource", sub: null }),
 		);
-		expect(reply.body).toEqual({
-			resource: "https://api.example.com/mcp",
-			authorization_servers: ["https://issuer.example.com"],
-			bearer_methods_supported: ["header"],
-		});
+		expect(reply.body.resource).toMatch(/^https:\/\/127\.0\.0\.1\/mcp$/);
+		expect(reply.body.authorization_servers).toEqual([TEST_ISSUER]);
+		expect(reply.body.bearer_methods_supported).toEqual(["header"]);
+	});
+
+	it("answers CORS preflight only for allowed origins", async () => {
+		const api = createTestApi();
+		const allowed = await api(
+			event({ method: "OPTIONS", path: "/tasks", sub: null, headers: { origin: TEST_ORIGIN } }),
+		);
+		expect(allowed.status).toBe(204);
+		expect(allowed.headers.get("access-control-allow-origin")).toBe(TEST_ORIGIN);
+		expect(allowed.headers.get("access-control-allow-headers")).toContain("authorization");
+		const denied = await api(
+			event({
+				method: "OPTIONS",
+				path: "/tasks",
+				sub: null,
+				headers: { origin: "https://evil.example.com" },
+			}),
+		);
+		expect(denied.headers.get("access-control-allow-origin")).toBeNull();
+		expect(denied.status).not.toBe(204);
+	});
+
+	it("adds CORS headers to normal responses for allowed origins", async () => {
+		const reply = await createTestApi()(
+			event({ path: "/tasks", headers: { origin: TEST_ORIGIN } }),
+		);
+		expect(reply.status).toBe(200);
+		expect(reply.headers.get("access-control-allow-origin")).toBe(TEST_ORIGIN);
+		expect(reply.headers.get("vary")).toContain("Origin");
 	});
 });
 

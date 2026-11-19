@@ -1,18 +1,19 @@
-import serverlessExpress from "@codegenie/serverless-express";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import express, { type Express, type RequestHandler } from "express";
 import * as OpenApiValidator from "express-openapi-validator";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
 import spec from "../openapi.json";
-import { SystemClock, UuidGenerator } from "./application/ports";
 import { ListService } from "./application/list-service";
+import { SystemClock, UuidGenerator } from "./application/ports";
 import { TaskService } from "./application/task-service";
-import { ApiGatewayAuthenticator, type Authenticator } from "./http/authenticator";
+import { BearerAuthenticator, type Authenticator } from "./http/authenticator";
+import { CorsPolicy } from "./http/cors-policy";
 import { DiscoveryController } from "./http/discovery-controller";
 import { ErrorHandler } from "./http/error-handler";
-import { RouteSupport } from "./http/route-support";
 import { ListController } from "./http/list-controller";
+import { RouteSupport } from "./http/route-support";
 import { TaskController } from "./http/task-controller";
+import { CognitoTokenVerifier } from "./infrastructure/cognito-token-verifier";
 import { DynamoTaskRepository } from "./infrastructure/dynamo-task-repository";
 import { DynamoTodoListRepository } from "./infrastructure/dynamo-todo-list-repository";
 import { McpController } from "./mcp/mcp-controller";
@@ -22,15 +23,9 @@ import { createTools } from "./mcp/tools";
 export interface ApiConfig {
 	readonly tableName: string;
 	readonly listsTableName: string;
-	readonly issuer: string;
-}
-
-export function readConfig(env: Record<string, string | undefined>): ApiConfig {
-	const { TABLE_NAME: tableName, LISTS_TABLE_NAME: listsTableName, OAUTH_ISSUER: issuer } = env;
-	if (!tableName || !listsTableName || !issuer) {
-		throw new Error("TABLE_NAME, LISTS_TABLE_NAME and OAUTH_ISSUER must be set");
-	}
-	return { tableName, listsTableName, issuer };
+	readonly userPoolId: string;
+	readonly clientId: string;
+	readonly corsOrigins: readonly string[];
 }
 
 export interface Services {
@@ -38,14 +33,36 @@ export interface Services {
 	readonly lists: ListService;
 }
 
+export function readConfig(env: Record<string, string | undefined>): ApiConfig {
+	const {
+		TABLE_NAME: tableName,
+		LISTS_TABLE_NAME: listsTableName,
+		COGNITO_USER_POOL_ID: userPoolId,
+		COGNITO_CLIENT_ID: clientId,
+		CORS_ORIGINS: origins = "",
+	} = env;
+	if (!tableName || !listsTableName || !userPoolId || !clientId) {
+		throw new Error(
+			"TABLE_NAME, LISTS_TABLE_NAME, COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID must be set",
+		);
+	}
+	const corsOrigins = origins
+		.split(",")
+		.map((origin) => origin.trim())
+		.filter((origin) => origin.length > 0);
+	return { tableName, listsTableName, userPoolId, clientId, corsOrigins };
+}
+
 export function createApp(
 	config: ApiConfig,
 	services: Services,
 	authenticator: Authenticator,
+	issuer: string,
 ): Express {
 	const app = express();
 	app.disable("x-powered-by");
-	app.use(new DiscoveryController(config.issuer).router());
+	app.use(new CorsPolicy(config.corsOrigins).middleware());
+	app.use(new DiscoveryController(issuer).router());
 	app.use(["/tasks", "/lists", "/mcp"], RouteSupport.authenticate(authenticator));
 	app.use(
 		"/mcp",
@@ -66,14 +83,23 @@ export function createApp(
 	return app;
 }
 
-export function createHandler(config: ApiConfig, client: DynamoDBDocumentClient) {
+export function createServices(config: ApiConfig, client: DynamoDBDocumentClient): Services {
 	const tasks = new DynamoTaskRepository(client, config.tableName);
 	const lists = new DynamoTodoListRepository(client, config.listsTableName);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
-	const services = {
+	return {
 		tasks: new TaskService(tasks, lists, ids, clock),
 		lists: new ListService(lists, tasks, ids, clock),
 	};
-	return serverlessExpress({ app: createApp(config, services, new ApiGatewayAuthenticator()) });
+}
+
+export function createApplication(config: ApiConfig, client: DynamoDBDocumentClient): Express {
+	const verifier = new CognitoTokenVerifier(config.userPoolId, config.clientId);
+	return createApp(
+		config,
+		createServices(config, client),
+		new BearerAuthenticator(verifier),
+		verifier.issuer,
+	);
 }

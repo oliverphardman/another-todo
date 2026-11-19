@@ -4,7 +4,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.0"
+      version = ">= 6.72"
     }
     archive = {
       source  = "hashicorp/archive"
@@ -199,100 +199,113 @@ resource "aws_iam_role_policy" "lambda_tasks" {
   })
 }
 
+data "aws_caller_identity" "current" {}
+
 data "archive_file" "api" {
   type        = "zip"
   source_file = "${path.module}/../apps/api/dist/index.mjs"
   output_path = "${path.module}/.build/api.zip"
 }
 
-resource "aws_cloudwatch_log_group" "api" {
-  name              = "/aws/lambda/${local.name}-api"
-  retention_in_days = var.log_retention_days
+resource "aws_s3_bucket" "code" {
+  bucket_prefix = "${local.name}-code-"
 }
 
-resource "aws_lambda_function" "api" {
-  function_name    = "${local.name}-api"
-  role             = aws_iam_role.lambda.arn
-  runtime          = "nodejs22.x"
-  handler          = "index.handler"
-  architectures    = ["arm64"]
-  memory_size      = 256
-  timeout          = 10
-  filename         = data.archive_file.api.output_path
-  source_code_hash = data.archive_file.api.output_base64sha256
+resource "aws_s3_bucket_versioning" "code" {
+  bucket = aws_s3_bucket.code.id
 
-  environment {
-    variables = {
-      TABLE_NAME       = aws_dynamodb_table.tasks.name
-      LISTS_TABLE_NAME = aws_dynamodb_table.lists.name
-      OAUTH_ISSUER     = "https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "code" {
+  bucket                  = aws_s3_bucket.code.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "code" {
+  bucket = aws_s3_bucket.code.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+      Action    = ["s3:GetObject", "s3:GetObjectVersion"]
+      Resource  = "${aws_s3_bucket.code.arn}/*"
+      Condition = {
+        StringEquals = { "aws:SourceAccount" = data.aws_caller_identity.current.account_id }
+      }
+    }]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.code]
+}
+
+resource "aws_s3_object" "api" {
+  bucket      = aws_s3_bucket.code.id
+  key         = "api/${data.archive_file.api.output_base64sha256}.zip"
+  source      = data.archive_file.api.output_path
+  source_hash = data.archive_file.api.output_base64sha256
+
+  depends_on = [aws_s3_bucket_versioning.code]
+}
+
+resource "aws_lambdaweb_function" "api" {
+  function_name = "${local.name}-api"
+}
+
+resource "aws_lambdaweb_function_revision" "api" {
+  function_name = aws_lambdaweb_function.api.function_name
+
+  build_config {
+    code_config {
+      s3_object {
+        bucket     = aws_s3_object.api.bucket
+        key        = aws_s3_object.api.key
+        version_id = aws_s3_object.api.version_id
+      }
+    }
+
+    runtime_config {
+      runtime = "nodejs24.x"
     }
   }
 
-  depends_on = [aws_cloudwatch_log_group.api]
-}
+  service_config {
+    execution_role_arn              = aws_iam_role.lambda.arn
+    timeout_seconds                 = var.timeout_seconds
+    max_concurrency_per_environment = var.max_concurrency_per_environment
 
-resource "aws_apigatewayv2_api" "api" {
-  name          = local.name
-  protocol_type = "HTTP"
-
-  cors_configuration {
-    allow_origins = var.cors_origins
-    allow_methods = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
-    allow_headers = ["authorization", "content-type"]
-    max_age       = 3600
+    environment_variables = {
+      AWS_LAMBDA_NODEJS_ENTRYPOINT = "index.mjs"
+      TABLE_NAME                   = aws_dynamodb_table.tasks.name
+      LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
+      COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
+      COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
+      CORS_ORIGINS                 = join(",", var.cors_origins)
+    }
   }
 }
 
-resource "aws_apigatewayv2_authorizer" "cognito" {
-  api_id           = aws_apigatewayv2_api.api.id
-  name             = "cognito"
-  authorizer_type  = "JWT"
-  identity_sources = ["$request.header.Authorization"]
+resource "aws_lambdaweb_function_endpoint" "api" {
+  function_name        = aws_lambdaweb_function.api.function_name
+  endpoint_name        = var.environment
+  endpoint_type        = "HomeRegion"
+  auth_type            = "ApplicationManaged"
+  auto_deployment_mode = "LatestRevision"
 
-  jwt_configuration {
-    audience = [aws_cognito_user_pool_client.app.id]
-    issuer   = "https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+  scaling_config {
+    max_environments = var.max_environments
   }
-}
 
-resource "aws_apigatewayv2_integration" "lambda" {
-  api_id                 = aws_apigatewayv2_api.api.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.api.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "protected" {
-  for_each           = toset(["ANY /tasks", "ANY /tasks/{id}", "ANY /lists", "ANY /lists/{id}", "POST /mcp"])
-  api_id             = aws_apigatewayv2_api.api.id
-  route_key          = each.value
-  target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-  authorization_type = "JWT"
-  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
-}
-
-resource "aws_apigatewayv2_route" "discovery" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /.well-known/oauth-protected-resource"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_stage" "default" {
-  api_id      = aws_apigatewayv2_api.api.id
-  name        = "$default"
-  auto_deploy = true
-
-  default_route_settings {
-    throttling_burst_limit = var.throttle_burst_limit
-    throttling_rate_limit  = var.throttle_rate_limit
+  throttle_config {
+    rate_limit = var.rate_limit
   }
-}
 
-resource "aws_lambda_permission" "api_gateway" {
-  statement_id  = "AllowApiGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+  depends_on = [aws_lambdaweb_function_revision.api]
 }

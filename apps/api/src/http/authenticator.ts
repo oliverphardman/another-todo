@@ -1,18 +1,28 @@
-import { getCurrentInvoke } from "@codegenie/serverless-express";
 import type { Request } from "express";
 import { UnauthorizedError } from "../domain/errors";
 
 export interface Authenticator {
-	subjectOf(request: Request): string;
+	authenticate(request: Request): Promise<string>;
 }
 
-export class ApiGatewayAuthenticator implements Authenticator {
-	subjectOf(_request: Request): string {
-		const claims = getCurrentInvoke().event?.requestContext?.authorizer?.jwt?.claims;
-		const subject = claims?.sub;
-		if (typeof subject !== "string" || subject.length === 0) {
+export interface TokenVerifier {
+	verify(token: string): Promise<{ readonly sub: string }>;
+}
+
+const BEARER = /^Bearer (\S+)$/i;
+
+export class BearerAuthenticator implements Authenticator {
+	constructor(private readonly verifier: TokenVerifier) {}
+
+	async authenticate(request: Request): Promise<string> {
+		const token = BEARER.exec(request.header("authorization") ?? "")?.[1];
+		if (token === undefined) {
 			throw new UnauthorizedError("Authentication required");
 		}
-		return subject;
+		try {
+			return (await this.verifier.verify(token)).sub;
+		} catch {
+			throw new UnauthorizedError("Invalid or expired token");
+		}
 	}
 }

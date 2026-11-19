@@ -1,52 +1,32 @@
+export interface ApiRequest {
+	readonly method: string;
+	readonly path: string;
+	readonly headers: Record<string, string>;
+	readonly body?: string;
+}
+
 export interface EventOptions {
 	readonly method?: string;
 	readonly path: string;
 	readonly body?: unknown;
 	readonly rawBody?: string;
-	readonly base64?: boolean;
 	readonly sub?: string | null;
 	readonly contentType?: string;
+	readonly headers?: Record<string, string>;
 }
 
-export function event(options: EventOptions): Record<string, unknown> {
+export function event(options: EventOptions): ApiRequest {
 	const sub = options.sub === undefined ? "user-1" : options.sub;
-	const method = options.method ?? "GET";
-	const [path = "", query = ""] = options.path.split("?");
-	const rawBody =
+	const body =
 		options.rawBody ?? (options.body === undefined ? undefined : JSON.stringify(options.body));
-	const headers: Record<string, string> = { host: "api.example.com" };
-	if (rawBody !== undefined) {
+	const headers: Record<string, string> = { ...options.headers };
+	if (sub !== null) {
+		headers.authorization = `Bearer ${sub}`;
+	}
+	if (body !== undefined) {
 		headers["content-type"] = options.contentType ?? "application/json";
 	}
-	return {
-		version: "2.0",
-		routeKey: "$default",
-		rawPath: path,
-		rawQueryString: query,
-		headers,
-		requestContext: {
-			accountId: "1",
-			apiId: "api",
-			domainName: "api.example.com",
-			domainPrefix: "api",
-			http: {
-				method,
-				path,
-				protocol: "HTTP/1.1",
-				sourceIp: "127.0.0.1",
-				userAgent: "vitest",
-			},
-			requestId: "request",
-			routeKey: "$default",
-			stage: "$default",
-			time: "01/Jan/2026:00:00:00 +0000",
-			timeEpoch: 0,
-			authorizer: sub === null ? undefined : { jwt: { claims: { sub }, scopes: null } },
-		},
-		body:
-			options.base64 && rawBody !== undefined ? Buffer.from(rawBody).toString("base64") : rawBody,
-		isBase64Encoded: options.base64 ?? false,
-	};
+	return { method: options.method ?? "GET", path: options.path, headers, body };
 }
 
 export function rpcEvent(
@@ -54,7 +34,7 @@ export function rpcEvent(
 	params?: unknown,
 	id: number | null = 1,
 	sub?: string | null,
-): Record<string, unknown> {
+): ApiRequest {
 	return event({
 		method: "POST",
 		path: "/mcp",

@@ -2,18 +2,19 @@
 title Create task
 
 actor Client
-participant "API Gateway" as Gateway
+participant "Web Function endpoint" as Endpoint
 participant "Express app" as App
+participant BearerAuthenticator as Auth
 participant "OpenAPI validator" as Validator
 participant TaskController
 participant TaskService
-participant DynamoTaskRepository as Repo
+participant DynamoRepository as Repo
 database DynamoDB
 
-Client -> Gateway : POST /tasks (Bearer token)
-Gateway -> Gateway : validate JWT
-Gateway -> App : event with jwt claims
-App -> App : authenticate (sub claim)
+Client -> Endpoint : POST /tasks (Bearer access token)
+Endpoint -> App : HTTP request on AWS_LAMBDA_HTTP_ENDPOINT
+App -> Auth : verify JWT (signature, issuer, client, expiry)
+Auth --> App : sub claim as ownerId
 App -> Validator : validate body against openapi.json
 Validator -> TaskController : valid request
 TaskController -> TaskService : create(ownerId, input)
