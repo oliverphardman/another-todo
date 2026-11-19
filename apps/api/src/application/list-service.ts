@@ -3,6 +3,7 @@ import { NotFoundError, ValidationError } from "../domain/errors";
 import type { TaskRepository } from "../domain/task-repository";
 import { TodoList } from "../domain/todo-list";
 import type { TodoListRepository } from "../domain/todo-list-repository";
+import type { ViewSettingsRepository } from "../domain/view-settings-repository";
 import type { Clock, IdGenerator } from "./ports";
 
 export interface ListInput {
@@ -14,6 +15,7 @@ export class ListService {
 	constructor(
 		private readonly lists: TodoListRepository,
 		private readonly tasks: TaskRepository,
+		private readonly settings: ViewSettingsRepository,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 	) {}
@@ -56,6 +58,7 @@ export class ListService {
 		for (const task of tasks.filter((candidate) => candidate.listId === id)) {
 			await this.tasks.delete(ownerId, task.id);
 		}
+		await this.settings.delete(ownerId, id);
 		await this.lists.delete(ownerId, id);
 	}
 

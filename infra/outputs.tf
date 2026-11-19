@@ -59,3 +59,7 @@ output "web_distribution_id" {
 output "web_url" {
   value = "https://${var.domain_name}"
 }
+
+output "photos_bucket" {
+  value = aws_s3_bucket.photos.id
+}

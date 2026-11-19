@@ -40,6 +40,8 @@ describe("API against DynamoDB Local", () => {
 	beforeAll(async () => {
 		await createTable("tasks");
 		await createTable("lists");
+		await createTable("settings");
+		await createTable("photos");
 	});
 
 	it("runs the full task and list lifecycle", async () => {
@@ -85,6 +87,37 @@ describe("API against DynamoDB Local", () => {
 			rpcEvent("tools/call", { name: "list_tasks", arguments: {} }, 1, "alice"),
 		);
 		expect(JSON.parse(viaMcp.body.result.content[0].text)).toHaveLength(1);
+	});
+
+	it("stores view settings and photo records, and clears a deleted photo's theme", async () => {
+		const created = await api(
+			event({
+				method: "POST",
+				path: "/photos",
+				body: { name: "Hills", contentType: "image/webp", size: 4096 },
+				sub: "scenery",
+			}),
+		);
+		expect(created.status).toBe(201);
+		const photoId = created.body.photo.id;
+		const themed = await api(
+			event({
+				method: "PUT",
+				path: "/view-settings/my-day",
+				body: { sort: "due", hideCompleted: true, theme: { type: "photo", photoId } },
+				sub: "scenery",
+			}),
+		);
+		expect(themed.body.theme).toEqual({ type: "photo", photoId });
+		expect((await api(event({ path: "/photos", sub: "scenery" }))).body.photos).toHaveLength(1);
+		await api(event({ method: "DELETE", path: `/photos/${photoId}`, sub: "scenery" }));
+		const settings = await api(event({ path: "/view-settings", sub: "scenery" }));
+		expect(settings.body.settings[0]).toMatchObject({
+			sort: "due",
+			hideCompleted: true,
+			theme: null,
+		});
+		expect((await api(event({ path: "/photos", sub: "scenery" }))).body.photos).toEqual([]);
 	});
 
 	it("pages through results larger than one query page", async () => {

@@ -1,3 +1,8 @@
+import { PhotoService } from "../../src/application/photo-service";
+import { ViewSettingsService } from "../../src/application/view-settings-service";
+import { InMemoryPhotoRepository } from "../../src/domain/in-memory-photo-repository";
+import { InMemoryViewSettingsRepository } from "../../src/domain/in-memory-view-settings-repository";
+import { FakePhotoStorage } from "./fake-photo-storage";
 import { ListService } from "../../src/application/list-service";
 import type { Clock, IdGenerator } from "../../src/application/ports";
 import { TaskService } from "../../src/application/task-service";
@@ -28,15 +33,26 @@ export class SequenceIds implements IdGenerator {
 export interface TestServices {
 	readonly tasks: TaskService;
 	readonly lists: ListService;
+	readonly settings: ViewSettingsService;
+	readonly photos: PhotoService;
+	readonly storage: FakePhotoStorage;
+	readonly settingsRepository: InMemoryViewSettingsRepository;
 }
 
 export function createServices(clock = new FixedClock()): TestServices {
 	const tasks = new InMemoryTaskRepository();
 	const lists = new InMemoryTodoListRepository();
+	const settings = new InMemoryViewSettingsRepository();
+	const photos = new InMemoryPhotoRepository();
+	const storage = new FakePhotoStorage();
 	const ids = new SequenceIds();
 	return {
 		tasks: new TaskService(tasks, lists, ids, clock),
-		lists: new ListService(lists, tasks, ids, clock),
+		lists: new ListService(lists, tasks, settings, ids, clock),
+		settings: new ViewSettingsService(settings, photos, clock),
+		photos: new PhotoService(photos, settings, storage, ids, clock),
+		storage,
+		settingsRepository: settings,
 	};
 }
 

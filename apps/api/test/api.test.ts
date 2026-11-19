@@ -312,3 +312,131 @@ describe("performance", () => {
 		expect(performance.now() - started).toBeLessThan(5000);
 	});
 });
+
+describe("View settings API", () => {
+	const settings = (body: unknown, id = "my-day", sub = "user-1") =>
+		event({ method: "PUT", path: `/view-settings/${id}`, body, sub });
+
+	it("stores and lists settings per view", async () => {
+		const api = createTestApi();
+		const put = await api(
+			settings({
+				sort: "importance",
+				hideCompleted: true,
+				theme: { type: "color", color: "#2564cf" },
+			}),
+		);
+		expect(put.status).toBe(200);
+		expect(put.body).toMatchObject({ id: "my-day", sort: "importance", hideCompleted: true });
+		await api(settings({ sort: null, hideCompleted: false, theme: null }, "list-1"));
+		const listed = await api(event({ path: "/view-settings" }));
+		expect(listed.body.settings.map((entry: { id: string }) => entry.id)).toEqual([
+			"list-1",
+			"my-day",
+		]);
+		expect(
+			(await api(event({ path: "/view-settings", sub: "someone-else" }))).body.settings,
+		).toEqual([]);
+	});
+
+	it("validates the body and the user", async () => {
+		const api = createTestApi();
+		expect(
+			(await api(settings({ sort: "random", hideCompleted: false, theme: null }))).status,
+		).toBe(400);
+		expect((await api(settings({ sort: null, hideCompleted: false }))).status).toBe(400);
+		expect(
+			(
+				await api(
+					settings({ sort: null, hideCompleted: false, theme: { type: "color", color: "nope" } }),
+				)
+			).status,
+		).toBe(400);
+		expect(
+			(
+				await api(
+					settings({
+						sort: null,
+						hideCompleted: false,
+						theme: { type: "photo", photoId: "ghost" },
+					}),
+				)
+			).status,
+		).toBe(400);
+		expect((await api(event({ path: "/view-settings", sub: null }))).status).toBe(401);
+	});
+
+	it("removes a list's settings when the list is deleted", async () => {
+		const api = createTestApi();
+		const list = (await api(event({ method: "POST", path: "/lists", body: { name: "Temp" } })))
+			.body;
+		await api(settings({ sort: "due", hideCompleted: false, theme: null }, list.id));
+		await api(event({ method: "DELETE", path: `/lists/${list.id}` }));
+		expect((await api(event({ path: "/view-settings" }))).body.settings).toEqual([]);
+	});
+});
+
+describe("Photos API", () => {
+	const create = (api: ReturnType<typeof createTestApi>, body: unknown = {}, sub = "user-1") =>
+		api(
+			event({
+				method: "POST",
+				path: "/photos",
+				body: { name: "Beach", contentType: "image/jpeg", size: 2048, ...(body as object) },
+				sub,
+			}),
+		);
+
+	it("creates a photo with a signed upload, lists it and deletes it for good", async () => {
+		const api = createTestApi();
+		const created = await create(api);
+		expect(created.status).toBe(201);
+		expect(created.body.photo).toMatchObject({
+			name: "Beach",
+			contentType: "image/jpeg",
+			size: 2048,
+		});
+		expect(created.body.photo.url).toContain("https://photos.test/user-1/");
+		expect(created.body.upload.url).toBe("https://upload.test/photos");
+		expect(created.body.upload.fields["Content-Type"]).toBe("image/jpeg");
+		const listed = await api(event({ path: "/photos" }));
+		expect(listed.body.photos).toHaveLength(1);
+		expect((await api(event({ path: "/photos", sub: "someone-else" }))).body.photos).toEqual([]);
+		const removed = await api(
+			event({ method: "DELETE", path: `/photos/${created.body.photo.id}` }),
+		);
+		expect(removed.status).toBe(204);
+		expect((await api(event({ path: "/photos" }))).body.photos).toEqual([]);
+		expect(
+			(await api(event({ method: "DELETE", path: `/photos/${created.body.photo.id}` }))).status,
+		).toBe(404);
+	});
+
+	it("rejects unsupported or oversized photos", async () => {
+		const api = createTestApi();
+		expect((await create(api, { contentType: "image/gif" })).status).toBe(400);
+		expect((await create(api, { size: 6 * 1024 * 1024 })).status).toBe(400);
+		expect((await create(api, { size: 0 })).status).toBe(400);
+		expect((await create(api, { name: "" })).status).toBe(400);
+		expect(
+			(await api(event({ method: "POST", path: "/photos", body: {}, sub: null }))).status,
+		).toBe(401);
+	});
+
+	it("lets a photo be used as a theme and clears the theme when the photo is deleted", async () => {
+		const api = createTestApi();
+		const created = await create(api);
+		const photoId = created.body.photo.id;
+		const themed = await api(
+			event({
+				method: "PUT",
+				path: "/view-settings/my-day",
+				body: { sort: null, hideCompleted: false, theme: { type: "photo", photoId } },
+			}),
+		);
+		expect(themed.body.theme).toEqual({ type: "photo", photoId });
+		await api(event({ method: "DELETE", path: `/photos/${photoId}` }));
+		const after = await api(event({ path: "/view-settings" }));
+		expect(after.body.settings[0].theme).toBeNull();
+	});
+});

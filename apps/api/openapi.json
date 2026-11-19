@@ -308,6 +308,132 @@
 					}
 				}
 			}
+		},
+		"/view-settings": {
+			"get": {
+				"operationId": "listViewSettings",
+				"summary": "List the caller's per-view settings (sort, hide completed, theme)",
+				"responses": {
+					"200": {
+						"description": "Settings",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ViewSettingsCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/view-settings/{id}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				}
+			],
+			"put": {
+				"operationId": "putViewSettings",
+				"summary": "Replace the settings of a view (a list id or a built in view such as my-day)",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PutViewSettings"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The stored settings",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ViewSettings"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/photos": {
+			"get": {
+				"operationId": "listPhotos",
+				"summary": "List the caller's uploaded photos with short lived download links",
+				"responses": {
+					"200": {
+						"description": "Photos",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PhotoCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"post": {
+				"operationId": "createPhoto",
+				"summary": "Register a photo and get a signed form to upload it to storage",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreatePhoto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The photo and the upload form",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreatedPhoto"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/photos/{id}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				}
+			],
+			"delete": {
+				"operationId": "deletePhoto",
+				"summary": "Permanently delete a photo and clear any theme that uses it",
+				"responses": {
+					"204": {
+						"description": "Deleted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -638,6 +764,179 @@
 					},
 					"completed": {
 						"type": "boolean"
+					}
+				}
+			},
+			"ViewSettings": {
+				"type": "object",
+				"required": ["id", "sort", "hideCompleted", "theme", "updatedAt"],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"sort": {
+						"type": "string",
+						"nullable": true,
+						"enum": ["importance", "alphabetical", "due", "created", "myDay", null]
+					},
+					"hideCompleted": {
+						"type": "boolean"
+					},
+					"theme": {
+						"type": "object",
+						"nullable": true,
+						"required": ["type"],
+						"additionalProperties": false,
+						"properties": {
+							"type": {
+								"type": "string",
+								"enum": ["color", "photo"]
+							},
+							"color": {
+								"type": "string",
+								"pattern": "^#[0-9a-fA-F]{6}$"
+							},
+							"photoId": {
+								"type": "string",
+								"pattern": "^[A-Za-z0-9_-]{1,64}$"
+							}
+						}
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"ViewSettingsCollection": {
+				"type": "object",
+				"required": ["settings"],
+				"properties": {
+					"settings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ViewSettings"
+						}
+					}
+				}
+			},
+			"PutViewSettings": {
+				"type": "object",
+				"required": ["sort", "hideCompleted", "theme"],
+				"additionalProperties": false,
+				"properties": {
+					"sort": {
+						"type": "string",
+						"nullable": true,
+						"enum": ["importance", "alphabetical", "due", "created", "myDay", null]
+					},
+					"hideCompleted": {
+						"type": "boolean"
+					},
+					"theme": {
+						"type": "object",
+						"nullable": true,
+						"required": ["type"],
+						"additionalProperties": false,
+						"properties": {
+							"type": {
+								"type": "string",
+								"enum": ["color", "photo"]
+							},
+							"color": {
+								"type": "string",
+								"pattern": "^#[0-9a-fA-F]{6}$"
+							},
+							"photoId": {
+								"type": "string",
+								"pattern": "^[A-Za-z0-9_-]{1,64}$"
+							}
+						}
+					}
+				}
+			},
+			"Photo": {
+				"type": "object",
+				"required": ["id", "name", "contentType", "size", "createdAt", "url"],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"contentType": {
+						"type": "string"
+					},
+					"size": {
+						"type": "integer"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"url": {
+						"type": "string"
+					}
+				}
+			},
+			"PhotoCollection": {
+				"type": "object",
+				"required": ["photos"],
+				"properties": {
+					"photos": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Photo"
+						}
+					}
+				}
+			},
+			"CreatePhoto": {
+				"type": "object",
+				"required": ["name", "contentType", "size"],
+				"additionalProperties": false,
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"contentType": {
+						"type": "string",
+						"enum": ["image/jpeg", "image/png", "image/webp"]
+					},
+					"size": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 5242880
+					}
+				}
+			},
+			"PhotoUpload": {
+				"type": "object",
+				"required": ["url", "fields"],
+				"properties": {
+					"url": {
+						"type": "string"
+					},
+					"fields": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"CreatedPhoto": {
+				"type": "object",
+				"required": ["photo", "upload"],
+				"properties": {
+					"photo": {
+						"$ref": "#/components/schemas/Photo"
+					},
+					"upload": {
+						"$ref": "#/components/schemas/PhotoUpload"
 					}
 				}
 			}

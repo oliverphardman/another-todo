@@ -7,6 +7,7 @@ import { createApp, createServices, type ApiConfig } from "../../src/bootstrap";
 import { UnauthorizedError } from "../../src/domain/errors";
 import type { Authenticator } from "../../src/http/authenticator";
 import { FakeDocumentClient } from "./fake-document-client";
+import { FakePhotoStorage } from "./fake-photo-storage";
 import type { ApiRequest } from "./events";
 
 export interface ApiReply {
@@ -22,6 +23,9 @@ export const TEST_ORIGIN = "https://app.example.com";
 export const TEST_CONFIG: ApiConfig = {
 	tableName: "tasks",
 	listsTableName: "lists",
+	settingsTableName: "settings",
+	photosTableName: "photos",
+	photosBucket: "photos-bucket",
 	userPoolId: "eu-west-1_test",
 	clientId: "client",
 	publicUrl: "https://api.example.com",
@@ -46,12 +50,14 @@ afterAll(async () => {
 	);
 });
 
+export const testStorage = new FakePhotoStorage();
+
 export function createTestApi(
 	client: { asClient(): DynamoDBDocumentClient } = new FakeDocumentClient(2),
 ) {
 	const app = createApp(
 		TEST_CONFIG,
-		createServices(TEST_CONFIG, client.asClient()),
+		createServices(TEST_CONFIG, client.asClient(), testStorage),
 		new TokenIsSubjectAuthenticator(),
 		TEST_ISSUER,
 	);

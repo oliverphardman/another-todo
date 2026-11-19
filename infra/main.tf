@@ -97,6 +97,56 @@ resource "aws_dynamodb_table" "lists" {
   }
 }
 
+resource "aws_dynamodb_table" "settings" {
+  name         = "${local.name}-settings"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ownerId"
+  range_key    = "id"
+
+  attribute {
+    name = "ownerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}
+
+resource "aws_dynamodb_table" "photos" {
+  name         = "${local.name}-photos"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ownerId"
+  range_key    = "id"
+
+  attribute {
+    name = "ownerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}
+
 resource "aws_cognito_user_pool" "main" {
   name                     = local.name
   username_attributes      = ["email"]
@@ -218,7 +268,12 @@ resource "aws_iam_role_policy" "lambda_tasks" {
         "dynamodb:DeleteItem",
         "dynamodb:Query",
       ]
-      Resource = [aws_dynamodb_table.tasks.arn, aws_dynamodb_table.lists.arn]
+      Resource = [
+        aws_dynamodb_table.tasks.arn,
+        aws_dynamodb_table.lists.arn,
+        aws_dynamodb_table.settings.arn,
+        aws_dynamodb_table.photos.arn,
+      ]
     }]
   })
 }
@@ -309,6 +364,9 @@ resource "aws_lambdaweb_function_revision" "api" {
       AWS_LAMBDA_NODEJS_ENTRYPOINT = "index.mjs"
       TABLE_NAME                   = aws_dynamodb_table.tasks.name
       LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
+      SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
+      PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
+      PHOTOS_BUCKET                = aws_s3_bucket.photos.id
       COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
       CORS_ORIGINS                 = join(",", local.cors_origins)
