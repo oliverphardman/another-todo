@@ -63,3 +63,13 @@ export class EmptyQueryClient {
 		return this as unknown as DynamoDBDocumentClient;
 	}
 }
+
+export class FailingClient {
+	async send(): Promise<never> {
+		throw new Error("database offline");
+	}
+
+	asClient(): DynamoDBDocumentClient {
+		return this as unknown as DynamoDBDocumentClient;
+	}
+}

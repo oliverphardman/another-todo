@@ -1,0 +1,193 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Another To Do API",
+		"version": "0.0.0",
+		"description": "REST and MCP API for Another To Do. All endpoints except discovery require a Cognito access token."
+	},
+	"security": [{ "bearerAuth": [] }],
+	"paths": {
+		"/tasks": {
+			"get": {
+				"operationId": "listTasks",
+				"summary": "List the caller's tasks",
+				"responses": {
+					"200": {
+						"description": "Tasks ordered by creation time",
+						"content": {
+							"application/json": { "schema": { "$ref": "#/components/schemas/TaskList" } }
+						}
+					},
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			},
+			"post": {
+				"operationId": "createTask",
+				"summary": "Create a task",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": { "schema": { "$ref": "#/components/schemas/CreateTask" } }
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The created task",
+						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+					},
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			}
+		},
+		"/tasks/{id}": {
+			"parameters": [{ "$ref": "#/components/parameters/TaskId" }],
+			"get": {
+				"operationId": "getTask",
+				"summary": "Get a task",
+				"responses": {
+					"200": {
+						"description": "The task",
+						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+					},
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			},
+			"patch": {
+				"operationId": "updateTask",
+				"summary": "Update a task",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": { "schema": { "$ref": "#/components/schemas/UpdateTask" } }
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The updated task",
+						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+					},
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			},
+			"delete": {
+				"operationId": "deleteTask",
+				"summary": "Delete a task",
+				"responses": {
+					"204": { "description": "Deleted" },
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			}
+		},
+		"/mcp": {
+			"post": {
+				"operationId": "mcp",
+				"summary": "Model Context Protocol endpoint (JSON-RPC 2.0)",
+				"requestBody": {
+					"required": true,
+					"content": { "application/json": { "schema": { "type": "object" } } }
+				},
+				"responses": {
+					"200": {
+						"description": "JSON-RPC response",
+						"content": { "application/json": { "schema": { "type": "object" } } }
+					},
+					"202": { "description": "Notification accepted" },
+					"default": { "$ref": "#/components/responses/Error" }
+				}
+			}
+		},
+		"/.well-known/oauth-protected-resource": {
+			"get": {
+				"operationId": "protectedResourceMetadata",
+				"summary": "OAuth protected resource metadata for MCP clients",
+				"security": [],
+				"responses": {
+					"200": {
+						"description": "Metadata",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ProtectedResourceMetadata" }
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+		},
+		"parameters": {
+			"TaskId": {
+				"name": "id",
+				"in": "path",
+				"required": true,
+				"schema": { "type": "string", "minLength": 1 }
+			}
+		},
+		"responses": {
+			"Error": {
+				"description": "Error",
+				"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+			}
+		},
+		"schemas": {
+			"Importance": { "type": "string", "enum": ["normal", "high"] },
+			"Task": {
+				"type": "object",
+				"required": ["id", "title", "completed", "importance", "dueDate", "createdAt"],
+				"properties": {
+					"id": { "type": "string" },
+					"title": { "type": "string" },
+					"completed": { "type": "boolean" },
+					"importance": { "$ref": "#/components/schemas/Importance" },
+					"dueDate": { "type": "string", "format": "date-time", "nullable": true },
+					"createdAt": { "type": "string", "format": "date-time" }
+				}
+			},
+			"TaskList": {
+				"type": "object",
+				"required": ["tasks"],
+				"properties": {
+					"tasks": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } }
+				}
+			},
+			"CreateTask": {
+				"type": "object",
+				"required": ["title"],
+				"additionalProperties": false,
+				"properties": {
+					"title": { "type": "string", "minLength": 1 },
+					"completed": { "type": "boolean" },
+					"importance": { "$ref": "#/components/schemas/Importance" },
+					"dueDate": { "type": "string", "format": "date-time", "nullable": true }
+				}
+			},
+			"UpdateTask": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"title": { "type": "string", "minLength": 1 },
+					"completed": { "type": "boolean" },
+					"importance": { "$ref": "#/components/schemas/Importance" },
+					"dueDate": { "type": "string", "format": "date-time", "nullable": true }
+				}
+			},
+			"Error": {
+				"type": "object",
+				"required": ["error"],
+				"properties": { "error": { "type": "string" } }
+			},
+			"ProtectedResourceMetadata": {
+				"type": "object",
+				"required": ["resource", "authorization_servers"],
+				"properties": {
+					"resource": { "type": "string" },
+					"authorization_servers": { "type": "array", "items": { "type": "string" } },
+					"bearer_methods_supported": { "type": "array", "items": { "type": "string" } }
+				}
+			}
+		}
+	}
+}

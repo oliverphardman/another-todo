@@ -46,7 +46,7 @@ describe("Task", () => {
 		expect(restored.toRecord()).toEqual(due.toRecord());
 	});
 
-	it("serialises to JSON without the owner", () => {
+	it("serializes to JSON without the owner", () => {
 		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
 		expect(json).toEqual({
 			id: "1",

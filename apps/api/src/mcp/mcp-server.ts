@@ -1,12 +1,4 @@
-import { DomainError, MethodNotAllowedError } from "../domain/errors";
-import {
-	HttpResponses,
-	Principal,
-	RequestBody,
-	type HttpEvent,
-	type HttpResult,
-	type RouteHandler,
-} from "../http/types";
+import { DomainError } from "../domain/errors";
 import type { McpTool, ToolArguments } from "./tools";
 
 const PARSE_ERROR = -32700;
@@ -15,6 +7,8 @@ const METHOD_NOT_FOUND = -32601;
 const INVALID_PARAMS = -32602;
 
 type RpcId = string | number | null;
+
+export type McpResponse = Record<string, unknown>;
 
 interface RpcRequest {
 	readonly id?: RpcId;
@@ -31,36 +25,26 @@ class RpcError extends Error {
 	}
 }
 
-export class McpHandler implements RouteHandler {
+export class McpServer {
 	private readonly tools: ReadonlyMap<string, McpTool>;
 
 	constructor(tools: readonly McpTool[]) {
 		this.tools = new Map(tools.map((tool) => [tool.name, tool]));
 	}
 
-	canHandle(path: string): boolean {
-		return path === "/mcp";
-	}
-
-	async handle(event: HttpEvent): Promise<HttpResult> {
-		const ownerId = Principal.subjectOf(event);
-		if (event.requestContext.http.method !== "POST") {
-			throw new MethodNotAllowedError("MCP requires POST");
-		}
+	async process(ownerId: string, text: string): Promise<McpResponse | null> {
 		let request: RpcRequest;
 		try {
-			request = McpHandler.parse(RequestBody.text(event));
+			request = McpServer.parse(text);
 		} catch (error) {
-			return McpHandler.failure(null, error as RpcError);
+			return McpServer.failure(null, error as RpcError);
 		}
 		try {
 			const result = await this.dispatch(ownerId, request);
-			return request.id === undefined
-				? HttpResponses.empty(202)
-				: HttpResponses.json(200, { jsonrpc: "2.0", id: request.id, result });
+			return request.id === undefined ? null : { jsonrpc: "2.0", id: request.id, result };
 		} catch (error) {
 			if (error instanceof RpcError) {
-				return McpHandler.failure(request.id ?? null, error);
+				return McpServer.failure(request.id ?? null, error);
 			}
 			throw error;
 		}
@@ -86,12 +70,8 @@ export class McpHandler implements RouteHandler {
 		return candidate as RpcRequest;
 	}
 
-	private static failure(id: RpcId, error: RpcError): HttpResult {
-		return HttpResponses.json(200, {
-			jsonrpc: "2.0",
-			id,
-			error: { code: error.code, message: error.message },
-		});
+	private static failure(id: RpcId, error: RpcError): McpResponse {
+		return { jsonrpc: "2.0", id, error: { code: error.code, message: error.message } };
 	}
 
 	private async dispatch(ownerId: string, request: RpcRequest): Promise<unknown> {
