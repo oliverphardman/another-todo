@@ -12,7 +12,11 @@
 			"bundleIdentifier": "dev.oliverhardman.anothertodo"
 		},
 		"android": {
-			"package": "dev.oliverhardman.anothertodo"
+			"package": "dev.oliverhardman.anothertodo",
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/brand/adaptive-foreground.png",
+				"backgroundColor": "#2564cf"
+			}
 		},
 		"web": {
 			"bundler": "metro",
@@ -33,6 +37,6 @@
 			"expo-asset",
 			"@react-native-community/datetimepicker"
 		],
-		"icon": null
+		"icon": "./assets/brand/icon-1024.png"
 	}
 }

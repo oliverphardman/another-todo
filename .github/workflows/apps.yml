@@ -104,7 +104,7 @@ jobs:
       - name: Build without signing
         working-directory: apps/client/ios
         run: |
-          xcodebuild -workspace *.xcworkspace -scheme AnotherToDo -configuration Release \
+          xcodebuild -workspace ./*.xcworkspace -scheme AnotherToDo -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
