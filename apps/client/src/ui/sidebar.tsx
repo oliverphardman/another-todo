@@ -10,6 +10,7 @@ import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
 const GLYPHS: Record<IconName, IconGlyph> = {
+	myDay: "sun",
 	important: "star",
 	planned: "calendar",
 	all: "all",
@@ -48,7 +49,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					const count = store.taskCount(view);
 					return (
 						<View key={view.id}>
-							{index === 4 ? (
+							{index === state.views.findIndex((candidate) => candidate.isCustomList) ? (
 								<View
 									style={{
 										height: 1,

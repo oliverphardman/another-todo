@@ -3,6 +3,7 @@ import Svg, { Path } from "react-native-svg";
 export type IconGlyph =
 	| "check"
 	| "circle"
+	| "sun"
 	| "star"
 	| "starFilled"
 	| "plus"
@@ -24,6 +25,9 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	check: {
 		d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM7.8 12.4l3 3 5.4-5.8",
 		fill: false,
+	},
+	sun: {
+		d: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6",
 	},
 	star: {
 		d: "M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z",

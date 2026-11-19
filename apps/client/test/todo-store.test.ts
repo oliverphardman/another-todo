@@ -14,9 +14,9 @@ async function setup() {
 }
 
 describe("TodoStore", () => {
-	it("starts on the default list with nothing selected", async () => {
+	it("starts on My Day with nothing selected", async () => {
 		const { store } = await setup();
-		expect(store.selectedView.id).toBe("tasks");
+		expect(store.selectedView.id).toBe("my-day");
 		expect(store.selectedTask).toBeNull();
 		expect(store.today).toBe("2026-11-19");
 	});
@@ -76,6 +76,55 @@ describe("TodoStore", () => {
 		expect(sounds.plays).toBe(2);
 	});
 
+	it("adds to and removes tasks from My Day, which resets each day", async () => {
+		const { store, clock, database } = await setup();
+		store.select("tasks");
+		const id = store.addTask("Plan")!;
+		expect(store.visibleTasks().open).toHaveLength(1);
+		store.select("my-day");
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.toggleMyDay(id);
+		expect(store.visibleTasks().open.map((task) => task.id)).toEqual([id]);
+		expect(store.taskCount(store.selectedView)).toBe(1);
+		clock.advance(86_400_000);
+		expect(store.visibleTasks().open).toHaveLength(1);
+		store.refreshToday();
+		expect(store.today).toBe("2026-11-20");
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.toggleMyDay(id);
+		expect(store.visibleTasks().open).toHaveLength(1);
+		store.toggleMyDay(id);
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.toggleMyDay("missing");
+		expect(database.get().outbox.at(-1)).toMatchObject({
+			kind: "createTask",
+			task: { myDay: null },
+		});
+	});
+
+	it("only notifies when the day actually changes", async () => {
+		const { store, clock } = await setup();
+		const listener = vi.fn();
+		store.subscribe(listener);
+		store.refreshToday();
+		expect(listener).not.toHaveBeenCalled();
+		clock.advance(86_400_000);
+		store.refreshToday();
+		expect(listener).toHaveBeenCalledTimes(1);
+	});
+
+	it("puts tasks added in My Day into My Day", async () => {
+		const { store } = await setup();
+		const id = store.addTask("Today thing")!;
+		expect(
+			store
+				.get()
+				.tasks.find((task) => task.id === id)!
+				.isInMyDay("2026-11-19"),
+		).toBe(true);
+		expect(store.visibleTasks().open).toHaveLength(1);
+	});
+
 	it("renames, sets due days and moves tasks", async () => {
 		const { store } = await setup();
 		const id = store.addTask("A")!;
@@ -117,7 +166,7 @@ describe("TodoStore", () => {
 		store.deleteList("missing");
 		store.deleteList(id);
 		expect(store.get().lists).toEqual([]);
-		expect(store.selectedView.id).toBe("tasks");
+		expect(store.selectedView.id).toBe("my-day");
 	});
 
 	it("renames only the targeted list", async () => {
@@ -142,6 +191,7 @@ describe("TodoStore", () => {
 
 	it("sorts open tasks newest first and completed tasks separately", async () => {
 		const { store, database } = await setup();
+		store.select("all");
 		await database.apply((snapshot) => ({
 			...snapshot,
 			tasks: [
@@ -194,7 +244,7 @@ describe("TodoStore", () => {
 	it("follows changes made to the database directly", async () => {
 		const { store, database } = await setup();
 		store.select("ghost");
-		expect(store.selectedView.id).toBe("tasks");
+		expect(store.selectedView.id).toBe("my-day");
 		store.select("important");
 		expect(store.selectedView.id).toBe("important");
 		await database.apply((snapshot) => ({ ...snapshot, tasks: [taskData({ id: "x" })] }));

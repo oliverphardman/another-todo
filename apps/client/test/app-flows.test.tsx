@@ -52,11 +52,12 @@ describe("signed out", () => {
 describe("expanded layout", () => {
 	it("shows the sidebar, an empty list and the smart views", async () => {
 		await start();
-		for (const name of ["Important", "Planned", "All tasks", "Tasks"]) {
+		for (const name of ["My Day", "Important", "Planned", "All tasks", "Tasks"]) {
 			expect(screen.getByLabelText(name)).toBeTruthy();
 		}
 		expect(screen.getByText("No tasks here yet")).toBeTruthy();
-		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
+		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
+		expect(screen.getByText("Thursday, November 19")).toBeTruthy();
 	});
 
 	it("adds, completes and stars tasks", async () => {
@@ -159,7 +160,7 @@ describe("expanded layout", () => {
 		fireEvent.click(screen.getByLabelText("Planned"));
 		const rows = screen.getAllByLabelText(/^Open /);
 		expect(rows.map((row) => row.getAttribute("aria-label"))).toEqual(["Open Old", "Open Soon"]);
-		expect(screen.getByText(/Tasks · Tue, Nov 10/)).toBeTruthy();
+		expect(screen.getByText(/Tasks · My Day · Tue, Nov 10/)).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Open Old"));
 		expect(screen.getByLabelText("Due Tue, Nov 10")).toBeTruthy();
 	});
@@ -241,15 +242,37 @@ describe("expanded layout", () => {
 		expect(screen.getByRole("heading", { name: "Errands" })).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Delete list"));
 		expect(app.container.store.get().lists).toEqual([]);
-		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
+		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
 	});
 
 	it("shows list names on tasks in smart views and open counts in the sidebar", async () => {
 		await start();
 		addTask("Counted");
-		expect(screen.getAllByLabelText("1 open")).toHaveLength(2);
+		expect(screen.getAllByLabelText("1 open")).toHaveLength(3);
 		fireEvent.click(screen.getByLabelText("All tasks"));
-		expect(screen.getAllByText("Tasks")).toHaveLength(2);
+		expect(screen.getByText("Tasks · My Day")).toBeTruthy();
+	});
+
+	it("adds tasks to My Day, and lets them be added or removed from the details", async () => {
+		const app = await start();
+		addTask("Sunny task");
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		addTask("Not in My Day");
+		expect(screen.getByText("Not in My Day")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("My Day"));
+		expect(screen.getByText("Sunny task")).toBeTruthy();
+		expect(screen.queryByText("Not in My Day")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		fireEvent.click(screen.getByLabelText("Open Not in My Day"));
+		fireEvent.click(screen.getByLabelText("Add to My Day"));
+		expect(screen.getByLabelText("Added to My Day")).toBeTruthy();
+		expect(app.container.store.get().tasks.every((task) => task.isInMyDay("2026-11-19"))).toBe(
+			true,
+		);
+		fireEvent.click(screen.getByLabelText("Added to My Day"));
+		expect(screen.getByLabelText("Add to My Day")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("My Day"));
+		expect(screen.queryByText("Not in My Day")).toBeNull();
 	});
 
 	it("signs out from the sidebar", async () => {

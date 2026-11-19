@@ -16,6 +16,13 @@ const LABEL_FORMAT_WITH_YEAR = new Intl.DateTimeFormat("en-US", {
 	timeZone: "UTC",
 });
 
+const LONG_FORMAT = new Intl.DateTimeFormat("en-US", {
+	weekday: "long",
+	month: "long",
+	day: "numeric",
+	timeZone: "UTC",
+});
+
 export class DueDay {
 	static isValid(day: string): boolean {
 		if (!DAY_PATTERN.test(day)) {
@@ -63,6 +70,10 @@ export class DueDay {
 		}
 		const sameYear = day.slice(0, 4) === today.slice(0, 4);
 		return (sameYear ? LABEL_FORMAT : LABEL_FORMAT_WITH_YEAR).format(DueDay.fromDay(day));
+	}
+
+	static longLabel(day: string): string {
+		return LONG_FORMAT.format(DueDay.fromDay(day));
 	}
 
 	static nextWeek(today: string): string {

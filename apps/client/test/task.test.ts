@@ -35,6 +35,10 @@ describe("Task", () => {
 		expect(changed.dueDay).toBe("2026-11-20");
 		expect(changed.with({ dueDate: null }).dueDay).toBeNull();
 		expect(changed.with({}).title).toBe("B");
+		const inMyDay = changed.with({ myDay: "2026-11-19" });
+		expect(inMyDay.isInMyDay("2026-11-19")).toBe(true);
+		expect(inMyDay.isInMyDay("2026-11-20")).toBe(false);
+		expect(inMyDay.with({ myDay: null }).isInMyDay("2026-11-19")).toBe(false);
 		expect(changed.dueSortKey).toBe("2026-11-20T00:00:00.000Z");
 		expect(changed.with({ dueDate: null }).dueSortKey).toBe("9999-12-31");
 	});

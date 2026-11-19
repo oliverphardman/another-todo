@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const expo = vi.hoisted(() => ({ registerRootComponent: vi.fn() }));
 const browser = vi.hoisted(() => ({ maybeCompleteAuthSession: vi.fn() }));
@@ -23,6 +24,24 @@ describe("App", () => {
 		const { unmount } = render(<App />);
 		await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
 		expect(screen.getByTestId("status-bar")).toBeTruthy();
+		unmount();
+	});
+});
+
+describe("day rollover", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it("keeps checking whether the day has changed while the app is open", async () => {
+		const { unmount } = render(<App />);
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(120_000);
+		});
 		unmount();
 	});
 });

@@ -2,7 +2,7 @@ import { DueDay } from "./due-day";
 import type { Task, TaskChanges } from "./task";
 import type { TodoList } from "./todo-list";
 
-export type IconName = "important" | "planned" | "all" | "tasks" | "list";
+export type IconName = "myDay" | "important" | "planned" | "all" | "tasks" | "list";
 
 export type TaskOrder = "newest" | "due";
 
@@ -13,11 +13,35 @@ export abstract class TaskView {
 	readonly order: TaskOrder = "newest";
 	readonly isCustomList: boolean = false;
 	readonly showsListName: boolean = true;
+	readonly showsMyDay: boolean = true;
 
-	abstract matches(task: Task): boolean;
+	abstract matches(task: Task, today: string): boolean;
+
+	subtitle(_today: string): string | null {
+		return null;
+	}
 
 	defaultsForNewTask(_today: string): TaskChanges {
 		return {};
+	}
+}
+
+export class MyDayView extends TaskView {
+	readonly id = "my-day";
+	readonly title = "My Day";
+	readonly icon = "myDay";
+	override readonly showsMyDay = false;
+
+	matches(task: Task, today: string): boolean {
+		return task.isInMyDay(today);
+	}
+
+	override subtitle(today: string): string {
+		return DueDay.longLabel(today);
+	}
+
+	override defaultsForNewTask(today: string): TaskChanges {
+		return { myDay: today };
 	}
 }
 
@@ -100,6 +124,7 @@ export class CustomListView extends TaskView {
 export class ViewCatalog {
 	static build(lists: readonly TodoList[]): TaskView[] {
 		return [
+			new MyDayView(),
 			new ImportantView(),
 			new PlannedView(),
 			new AllTasksView(),

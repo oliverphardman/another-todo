@@ -19,7 +19,11 @@ export default function App() {
 	useEffect(() => {
 		void container.database.load().then(() => container.auth.restore());
 		container.sync.start();
-		return () => container.sync.stop();
+		const rollover = setInterval(() => container.store.refreshToday(), 60_000);
+		return () => {
+			clearInterval(rollover);
+			container.sync.stop();
+		};
 	}, [container]);
 	return (
 		<SafeAreaProvider>

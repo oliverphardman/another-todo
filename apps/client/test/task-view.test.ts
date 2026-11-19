@@ -5,6 +5,7 @@ import {
 	CustomListView,
 	DefaultListView,
 	ImportantView,
+	MyDayView,
 	PlannedView,
 	ViewCatalog,
 } from "../src/domain/task-view";
@@ -54,8 +55,27 @@ describe("task views", () => {
 		expect(view.isCustomList).toBe(true);
 	});
 
-	it("the catalog lists smart views, the default list, then custom lists", () => {
+	it("My Day matches tasks added today, is dated and adds new tasks to today", () => {
+		const view = new MyDayView();
+		expect(view.matches(task.with({ myDay: "2026-11-19" }), "2026-11-19")).toBe(true);
+		expect(view.matches(task.with({ myDay: "2026-11-18" }), "2026-11-19")).toBe(false);
+		expect(view.matches(task, "2026-11-19")).toBe(false);
+		expect(view.subtitle("2026-11-19")).toBe("Thursday, November 19");
+		expect(view.defaultsForNewTask("2026-11-19")).toEqual({ myDay: "2026-11-19" });
+		expect(view.showsMyDay).toBe(false);
+		expect(new ImportantView().subtitle("2026-11-19")).toBeNull();
+		expect(new ImportantView().showsMyDay).toBe(true);
+	});
+
+	it("the catalog lists My Day and the smart views, the default list, then custom lists", () => {
 		const views = ViewCatalog.build([TodoList.create("l", "Work", "x")]);
-		expect(views.map((view) => view.id)).toEqual(["important", "planned", "all", "tasks", "l"]);
+		expect(views.map((view) => view.id)).toEqual([
+			"my-day",
+			"important",
+			"planned",
+			"all",
+			"tasks",
+			"l",
+		]);
 	});
 });

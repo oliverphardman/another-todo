@@ -27,6 +27,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		setPicking(false);
 	}, [task.id, task.title]);
 	const today = store.today;
+	const inMyDay = task.isInMyDay(today);
 	const dueLabel =
 		task.dueDay === null ? "Add due date" : `Due ${DueDay.label(task.dueDay, today)}`;
 	const section = {
@@ -83,6 +84,21 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 						style={{ padding: 14 }}
 					>
 						<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
+					</PressableSurface>
+				</View>
+				<View style={section}>
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={inMyDay ? "Added to My Day" : "Add to My Day"}
+						accessibilityState={{ selected: inMyDay }}
+						onPress={() => store.toggleMyDay(task.id)}
+						hoverColor={palette.surfaceHover}
+						style={{ flexDirection: "row", alignItems: "center", padding: 14 }}
+					>
+						<Icon glyph="sun" color={palette.accent} />
+						<AppText style={{ marginLeft: 12, color: inMyDay ? palette.accent : palette.text }}>
+							{inMyDay ? "Added to My Day" : "Add to My Day"}
+						</AppText>
 					</PressableSurface>
 				</View>
 				<View style={section}>

@@ -32,6 +32,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const subtitleFor = (task: Task): string | null => {
 		const parts = [
 			view.showsListName ? store.listName(task) : null,
+			view.showsMyDay && task.isInMyDay(today) ? "My Day" : null,
 			task.dueDay === null ? null : DueDay.label(task.dueDay, today),
 		].filter((part): part is string => part !== null);
 		return parts.length === 0 ? null : parts.join(" · ");
@@ -73,9 +74,16 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					</PressableSurface>
 				) : null}
 				{renaming === null ? (
-					<AppText role="heading" size={28} weight="600" tone="onAccent" style={{ flex: 1 }}>
-						{view.title}
-					</AppText>
+					<View style={{ flex: 1 }}>
+						<AppText role="heading" size={28} weight="600" tone="onAccent">
+							{view.title}
+						</AppText>
+						{view.subtitle(today) === null ? null : (
+							<AppText size={13} tone="onAccent">
+								{view.subtitle(today)}
+							</AppText>
+						)}
+					</View>
 				) : (
 					<TextInput
 						accessibilityLabel="List name"

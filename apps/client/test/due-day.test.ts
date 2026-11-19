@@ -38,6 +38,11 @@ describe("DueDay", () => {
 		expect(DueDay.label("2027-01-04", today)).toBe("Mon, Jan 4, 2027");
 	});
 
+	it("writes the long form used by My Day", () => {
+		expect(DueDay.longLabel("2026-11-19")).toBe("Thursday, November 19");
+		expect(DueDay.longLabel("2026-01-01")).toBe("Thursday, January 1");
+	});
+
 	it("finds the next Monday", () => {
 		expect(DueDay.nextWeek("2026-11-19")).toBe("2026-11-23");
 		expect(DueDay.nextWeek("2026-11-23")).toBe("2026-11-30");
