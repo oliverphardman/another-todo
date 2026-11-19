@@ -1,0 +1,22 @@
+{
+	"expo": {
+		"name": "Another To Do",
+		"description": "Get things done, wherever you are.",
+		"slug": "another-todo",
+		"scheme": "anothertodo",
+		"version": "0.0.0",
+		"orientation": "default",
+		"userInterfaceStyle": "automatic",
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "dev.oliverhardman.anothertodo"
+		},
+		"android": { "package": "dev.oliverhardman.anothertodo" },
+		"web": {
+			"bundler": "metro",
+			"output": "single",
+			"name": "Another To Do",
+			"themeColor": "#2564cf"
+		}
+	}
+}

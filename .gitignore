@@ -163,3 +163,6 @@ vite.config.ts.timestamp-*
 infra/.build/
 *.tfstate
 *.tfstate.*
+
+# Expo
+.expo/
