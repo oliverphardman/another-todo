@@ -481,8 +481,14 @@ export class TodoStore extends Observable<TodoState> {
 			step.title,
 			this.clock.now().toISOString(),
 			task.listId,
-		);
-		this.insertTask(step.completed ? promoted.with({ completed: true }) : promoted);
+		).with({
+			completed: step.completed,
+			importance: task.data.importance,
+			myDay: task.data.myDay,
+			myDayDismissed: task.data.myDayDismissed,
+			dueDate: task.data.dueDate,
+		});
+		this.insertTask(promoted);
 		this.deleteStep(taskId, stepId);
 		return promoted.id;
 	}

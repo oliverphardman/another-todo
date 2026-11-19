@@ -1235,6 +1235,30 @@ describe("step menu", () => {
 		expect(store.get().tasks.find((task) => task.title === "Book")!.completed).toBe(false);
 	});
 
+	it("gives a promoted step its parent's importance, My Day and due date", async () => {
+		const { store, id } = await withSteps();
+		store.setImportant([id], true);
+		store.setInMyDay([id], true);
+		store.setDueDayFor([id], "2030-05-06");
+		const parent = store.get().tasks.find((task) => task.id === id)!;
+		const promotedId = store.promoteStep(id, parent.steps[0]!.id)!;
+		const promoted = store.get().tasks.find((task) => task.id === promotedId)!;
+		expect([
+			promoted.data.importance,
+			promoted.data.myDay,
+			promoted.data.myDayDismissed,
+			promoted.data.dueDate,
+		]).toEqual([
+			parent.data.importance,
+			parent.data.myDay,
+			parent.data.myDayDismissed,
+			parent.data.dueDate,
+		]);
+		expect(promoted.data.importance).toBe("high");
+		expect(promoted.data.myDay).not.toBeNull();
+		expect(promoted.data.dueDate).not.toBeNull();
+	});
+
 	it("ignores promoting a step that is gone", async () => {
 		const { store, id } = await withSteps();
 		expect(store.promoteStep(id, "ghost")).toBeNull();
