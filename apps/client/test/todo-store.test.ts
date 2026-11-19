@@ -547,3 +547,89 @@ describe("TodoStore", () => {
 		expect(store.get().tasks).toHaveLength(1);
 	});
 });
+
+describe("TodoStore groups", () => {
+	it("creates groups, assigns lists, renames and ungroups on delete", async () => {
+		const { store, database } = await setup();
+		expect(store.addGroup("  ")).toBeNull();
+		const list = store.addList("Chores")!;
+		const other = store.addList("Garden")!;
+		const group = store.createGroupFor(list, "New group")!;
+		expect(store.get().groups.map((entry) => entry.name)).toEqual(["New group"]);
+		expect(store.get().renamingGroupId).toBe(group);
+		expect(store.get().lists.find((entry) => entry.id === list)!.groupId).toBe(group);
+		store.stopRenamingGroup();
+		expect(store.get().renamingGroupId).toBeNull();
+		store.renameGroup(group, "  House ");
+		expect(store.get().groups[0]!.name).toBe("House");
+		store.renameGroup(group, "  ");
+		store.renameGroup("ghost", "X");
+		expect(store.get().groups[0]!.name).toBe("House");
+		store.setListGroup(other, group);
+		store.setListGroup(other, group);
+		store.setListGroup("ghost", group);
+		store.setListGroup(other, "ghost");
+		expect(store.get().lists.filter((entry) => entry.groupId === group)).toHaveLength(2);
+		store.setListGroup(other, null);
+		expect(store.get().lists.find((entry) => entry.id === other)!.groupId).toBeNull();
+		store.deleteGroup(group);
+		store.deleteGroup(group);
+		expect(store.get().groups).toEqual([]);
+		expect(store.get().lists.every((entry) => entry.groupId === null)).toBe(true);
+		expect(
+			database
+				.get()
+				.outbox.some((operation) =>
+					["createGroup", "renameGroup", "deleteGroup"].includes(operation.kind),
+				),
+		).toBe(false);
+	});
+
+	it("refuses to group a missing list or with a blank name and starts renaming only known groups", async () => {
+		const { store } = await setup();
+		const list = store.addList("A")!;
+		expect(store.createGroupFor("ghost", "G")).toBeNull();
+		expect(store.createGroupFor(list, " ")).toBeNull();
+		store.startRenamingGroup("ghost");
+		expect(store.get().renamingGroupId).toBeNull();
+		const group = store.addGroup("G")!;
+		store.startRenamingGroup(group);
+		expect(store.get().renamingGroupId).toBe(group);
+	});
+
+	it("keeps reordering inside a group and sorts groups by position", async () => {
+		const { store, clock } = await setup();
+		const [a, b, c] = ["A", "B", "C"].map((name) => {
+			clock.advance(1000);
+			return store.addList(name)!;
+		});
+		clock.advance(1000);
+		const group = store.addGroup("Second")!;
+		clock.advance(-5000);
+		const first = store.addGroup("First")!;
+		expect(store.get().groups.map((entry) => entry.name)).toEqual(["First", "Second"]);
+		store.setListGroup(b!, group);
+		store.setListGroup(c!, group);
+		store.moveList(c!, 0);
+		const names = (id: string | null) =>
+			store
+				.orderedLists()
+				.filter((list) => list.groupId === id)
+				.map((list) => list.name);
+		expect(names(group)).toEqual(["C", "B"]);
+		expect(names(null)).toEqual(["A"]);
+		store.shiftList(b!, -1);
+		expect(names(group)).toEqual(["B", "C"]);
+		expect(first).not.toBe(group);
+		expect(a).toBeDefined();
+	});
+
+	it("breaks position ties by id and renames only the chosen group", async () => {
+		const { store } = await setup();
+		const first = store.addGroup("One")!;
+		const second = store.addGroup("Two")!;
+		expect(store.get().groups.map((entry) => entry.id)).toEqual([first, second]);
+		store.renameGroup(second, "Deux");
+		expect(store.get().groups.map((entry) => entry.name)).toEqual(["One", "Deux"]);
+	});
+});

@@ -67,6 +67,7 @@ describe("createContainer", () => {
 		await container.auth.signIn();
 		await container.sync.syncNow();
 		expect(requests.map((request) => `${request.method} ${request.url}`).sort()).toEqual([
+			"GET https://api.test/groups",
 			"GET https://api.test/lists",
 			"GET https://api.test/tasks",
 			"GET https://api.test/view-settings",

@@ -198,7 +198,9 @@ describe("every user-visible string comes from the message catalog", () => {
 			respond: (method) =>
 				method === "POST"
 					? new Response(JSON.stringify({ error: "invalid" }), { status: 400 })
-					: new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
+					: new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
+							status: 200,
+						}),
 		});
 		await waitFor(() => expect(rejecting.container.sync.get().phase).toBe("idle"));
 		addTask("Zebra");

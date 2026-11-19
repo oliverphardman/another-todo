@@ -112,7 +112,7 @@ export interface paths {
         delete: operations["deleteList"];
         options?: never;
         head?: never;
-        /** Rename a list */
+        /** Rename or reorder a list */
         patch: operations["renameList"];
         trace?: never;
     };
@@ -189,6 +189,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List the caller's groups */
+        get: operations["listGroups"];
+        put?: never;
+        /** Create a group */
+        post: operations["createGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        /** Get a group */
+        get: operations["getGroup"];
+        put?: never;
+        post?: never;
+        /** Delete a group, leaving its lists ungrouped */
+        delete: operations["deleteGroup"];
+        options?: never;
+        head?: never;
+        /** Rename or reorder a group */
+        patch: operations["updateGroup"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -254,10 +293,13 @@ export interface components {
             bearer_methods_supported?: string[];
         };
         TodoList: {
+            /** @description Sort key: lists are shown in ascending position */
+            position: number;
             id: string;
             name: string;
             /** Format: date-time */
             createdAt: string;
+            groupId: string | null;
         };
         TodoListCollection: {
             lists: components["schemas"]["TodoList"][];
@@ -268,7 +310,9 @@ export interface components {
             name: string;
         };
         UpdateList: {
-            name: string;
+            name?: string;
+            position?: number;
+            groupId?: string | null;
         };
         TaskStep: {
             id: string;
@@ -330,6 +374,24 @@ export interface components {
         CreatedPhoto: {
             photo: components["schemas"]["Photo"];
             upload: components["schemas"]["PhotoUpload"];
+        };
+        Group: {
+            id: string;
+            name: string;
+            /** Format: date-time */
+            createdAt: string;
+            position: number;
+        };
+        GroupCollection: {
+            groups: components["schemas"]["Group"][];
+        };
+        CreateGroup: {
+            id?: string;
+            name: string;
+        };
+        UpdateGroup: {
+            name?: string;
+            position?: number;
         };
     };
     responses: {
@@ -752,6 +814,123 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    listGroups: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Groups ordered by position */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupCollection"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    createGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroup"];
+            };
+        };
+        responses: {
+            /** @description The created group */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Group"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    getGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The group */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Group"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    updateGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGroup"];
+            };
+        };
+        responses: {
+            /** @description The updated group */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Group"];
+                };
             };
             default: components["responses"]["Error"];
         };

@@ -26,6 +26,7 @@ describe("TodoList", () => {
 			name: "Work",
 			createdAt: "2026-01-01T00:00:00.000Z",
 			position: now.getTime(),
+			groupId: null,
 		});
 	});
 
@@ -36,6 +37,9 @@ describe("TodoList", () => {
 		expect(() => list.moveTo(Number.NaN)).toThrow(ValidationError);
 		const { position: _position, ...legacy } = list.toRecord();
 		expect(TodoList.restore(legacy).position).toBe(now.getTime());
+		expect(TodoList.restore(legacy).groupId).toBeNull();
+		expect(list.assignToGroup("g").groupId).toBe("g");
+		expect(list.assignToGroup("g").rename("N").groupId).toBe("g");
 	});
 
 	it("is stored per owner in memory", async () => {

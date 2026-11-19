@@ -7,6 +7,9 @@ import { ChangeNotifier, type ConnectionPusher } from "./application/change-noti
 import { ChangeBroadcast } from "./http/change-broadcast";
 import { ApiGatewayPusher } from "./infrastructure/api-gateway-pusher";
 import { DynamoConnectionRepository } from "./infrastructure/dynamo-connection-repository";
+import { GroupService } from "./application/group-service";
+import { GroupController } from "./http/group-controller";
+import { DynamoGroupRepository } from "./infrastructure/dynamo-group-repository";
 import { ListService } from "./application/list-service";
 import { PhotoService } from "./application/photo-service";
 import type { PhotoStorage } from "./application/photo-storage";
@@ -38,6 +41,7 @@ export interface ApiConfig {
 	readonly listsTableName: string;
 	readonly settingsTableName: string;
 	readonly photosTableName: string;
+	readonly groupsTableName: string;
 	readonly photosBucket: string;
 	readonly connectionsTableName: string;
 	readonly websocketManagementUrl: string;
@@ -52,6 +56,7 @@ export interface Services {
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
+	readonly groups: GroupService;
 	readonly notifier: ChangeNotifier;
 }
 
@@ -61,6 +66,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		LISTS_TABLE_NAME: listsTableName,
 		SETTINGS_TABLE_NAME: settingsTableName,
 		PHOTOS_TABLE_NAME: photosTableName,
+		GROUPS_TABLE_NAME: groupsTableName,
 		PHOTOS_BUCKET: photosBucket,
 		CONNECTIONS_TABLE_NAME: connectionsTableName,
 		WEBSOCKET_MANAGEMENT_URL: websocketManagementUrl,
@@ -74,6 +80,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		!listsTableName ||
 		!settingsTableName ||
 		!photosTableName ||
+		!groupsTableName ||
 		!photosBucket ||
 		!connectionsTableName ||
 		!websocketManagementUrl ||
@@ -82,7 +89,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		!publicUrl
 	) {
 		throw new Error(
-			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
+			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, GROUPS_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
 		);
 	}
 	const corsOrigins = origins
@@ -94,6 +101,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		listsTableName,
 		settingsTableName,
 		photosTableName,
+		groupsTableName,
 		photosBucket,
 		connectionsTableName,
 		websocketManagementUrl,
@@ -115,7 +123,7 @@ export function createApp(
 	app.use(new CorsPolicy(config.corsOrigins).middleware());
 	app.use(new DiscoveryController(issuer, config.publicUrl).router());
 	app.use(
-		["/tasks", "/lists", "/view-settings", "/photos", "/mcp"],
+		["/tasks", "/lists", "/groups", "/view-settings", "/photos", "/mcp"],
 		RouteSupport.authenticate(authenticator),
 	);
 	app.use(
@@ -137,6 +145,7 @@ export function createApp(
 	);
 	app.use("/tasks", new TaskController(services.tasks).router());
 	app.use("/lists", new ListController(services.lists).router());
+	app.use("/groups", new GroupController(services.groups).router());
 	app.use("/view-settings", new SettingsController(services.settings).router());
 	app.use("/photos", new PhotoController(services.photos).router());
 	app.use(new ErrorHandler().middleware());
@@ -153,12 +162,14 @@ export function createServices(
 	const lists = new DynamoTodoListRepository(client, config.listsTableName);
 	const settings = new DynamoViewSettingsRepository(client, config.settingsTableName);
 	const photos = new DynamoPhotoRepository(client, config.photosTableName);
+	const groups = new DynamoGroupRepository(client, config.groupsTableName);
 	const connections = new DynamoConnectionRepository(client, config.connectionsTableName);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
 	return {
 		tasks: new TaskService(tasks, lists, ids, clock),
-		lists: new ListService(lists, tasks, settings, ids, clock),
+		lists: new ListService(lists, tasks, settings, groups, ids, clock),
+		groups: new GroupService(groups, lists, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),
 		notifier: new ChangeNotifier(connections, pusher),

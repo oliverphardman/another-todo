@@ -7,6 +7,8 @@ import { ListService } from "../../src/application/list-service";
 import type { Clock, IdGenerator } from "../../src/application/ports";
 import { TaskService } from "../../src/application/task-service";
 import { InMemoryTaskRepository } from "../../src/domain/in-memory-task-repository";
+import { GroupService } from "../../src/application/group-service";
+import { InMemoryGroupRepository } from "../../src/domain/in-memory-group-repository";
 import { InMemoryTodoListRepository } from "../../src/domain/in-memory-todo-list-repository";
 
 export class FixedClock implements Clock {
@@ -35,6 +37,7 @@ export interface TestServices {
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
+	readonly groups: GroupService;
 	readonly storage: FakePhotoStorage;
 	readonly settingsRepository: InMemoryViewSettingsRepository;
 }
@@ -44,11 +47,13 @@ export function createServices(clock = new FixedClock()): TestServices {
 	const lists = new InMemoryTodoListRepository();
 	const settings = new InMemoryViewSettingsRepository();
 	const photos = new InMemoryPhotoRepository();
+	const groupRepository = new InMemoryGroupRepository();
 	const storage = new FakePhotoStorage();
 	const ids = new SequenceIds();
 	return {
 		tasks: new TaskService(tasks, lists, ids, clock),
-		lists: new ListService(lists, tasks, settings, ids, clock),
+		lists: new ListService(lists, tasks, settings, groupRepository, ids, clock),
+		groups: new GroupService(groupRepository, lists, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),
 		storage,

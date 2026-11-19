@@ -30,7 +30,9 @@ describe("ListService", () => {
 		expect((await lists.list("u")).map((list) => list.id)).toEqual([second.id, first.id]);
 		const both = await lists.update("u", first.id, { name: "Both", position: 5 });
 		expect([both.name, both.position]).toEqual(["Both", 5]);
-		await expect(lists.update("u", first.id, {})).rejects.toThrow("name or position is required");
+		await expect(lists.update("u", first.id, {})).rejects.toThrow(
+			"name, position or groupId is required",
+		);
 		await expect(lists.update("u", first.id, { position: "x" })).rejects.toThrow(
 			"position must be a number",
 		);

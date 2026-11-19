@@ -434,6 +434,123 @@
 					}
 				}
 			}
+		},
+		"/groups": {
+			"get": {
+				"operationId": "listGroups",
+				"summary": "List the caller's groups",
+				"responses": {
+					"200": {
+						"description": "Groups ordered by position",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/GroupCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"post": {
+				"operationId": "createGroup",
+				"summary": "Create a group",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateGroup"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The created group",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Group"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/groups/{id}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				}
+			],
+			"get": {
+				"operationId": "getGroup",
+				"summary": "Get a group",
+				"responses": {
+					"200": {
+						"description": "The group",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Group"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"patch": {
+				"operationId": "updateGroup",
+				"summary": "Rename or reorder a group",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateGroup"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The updated group",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Group"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deleteGroup",
+				"summary": "Delete a group, leaving its lists ungrouped",
+				"responses": {
+					"204": {
+						"description": "Deleted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -695,7 +812,7 @@
 			},
 			"TodoList": {
 				"type": "object",
-				"required": ["id", "name", "createdAt", "position"],
+				"required": ["id", "name", "createdAt", "position", "groupId"],
 				"properties": {
 					"position": {
 						"type": "number",
@@ -710,6 +827,10 @@
 					"createdAt": {
 						"type": "string",
 						"format": "date-time"
+					},
+					"groupId": {
+						"type": "string",
+						"nullable": true
 					}
 				}
 			},
@@ -752,6 +873,10 @@
 					},
 					"position": {
 						"type": "number"
+					},
+					"groupId": {
+						"type": "string",
+						"nullable": true
 					}
 				}
 			},
@@ -944,6 +1069,66 @@
 					},
 					"upload": {
 						"$ref": "#/components/schemas/PhotoUpload"
+					}
+				}
+			},
+			"Group": {
+				"type": "object",
+				"required": ["id", "name", "createdAt", "position"],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"position": {
+						"type": "number"
+					}
+				}
+			},
+			"GroupCollection": {
+				"type": "object",
+				"required": ["groups"],
+				"properties": {
+					"groups": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Group"
+						}
+					}
+				}
+			},
+			"CreateGroup": {
+				"type": "object",
+				"required": ["name"],
+				"additionalProperties": false,
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,64}$"
+					},
+					"name": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			},
+			"UpdateGroup": {
+				"type": "object",
+				"minProperties": 1,
+				"additionalProperties": false,
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"position": {
+						"type": "number"
 					}
 				}
 			}

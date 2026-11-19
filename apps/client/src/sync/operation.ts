@@ -1,3 +1,4 @@
+import type { GroupData } from "../domain/group";
 import type { TaskChanges, TaskData } from "../domain/task";
 import type { TodoListData } from "../domain/todo-list";
 import type { ViewSettingsData } from "../domain/view-settings";
@@ -7,6 +8,28 @@ export type OperationBody =
 			readonly kind: "putSettings";
 			readonly opId: string;
 			readonly settings: ViewSettingsData;
+	  }
+	| {
+			readonly kind: "createGroup";
+			readonly opId: string;
+			readonly group: GroupData;
+	  }
+	| {
+			readonly kind: "renameGroup";
+			readonly opId: string;
+			readonly groupId: string;
+			readonly name: string;
+	  }
+	| {
+			readonly kind: "deleteGroup";
+			readonly opId: string;
+			readonly groupId: string;
+	  }
+	| {
+			readonly kind: "setListGroup";
+			readonly opId: string;
+			readonly listId: string;
+			readonly groupId: string | null;
 	  }
 	| {
 			readonly kind: "createList";

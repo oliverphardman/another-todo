@@ -26,6 +26,7 @@ export const TEST_CONFIG: ApiConfig = {
 	listsTableName: "lists",
 	settingsTableName: "settings",
 	photosTableName: "photos",
+	groupsTableName: "groups",
 	photosBucket: "photos-bucket",
 	connectionsTableName: "connections",
 	websocketManagementUrl: "https://ws.example.com/prod",

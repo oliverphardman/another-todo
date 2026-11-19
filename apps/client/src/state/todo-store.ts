@@ -4,6 +4,7 @@ import type { Clock, IdGenerator } from "../domain/ports";
 import { Task, type TaskChanges } from "../domain/task";
 import { TaskSorter } from "../domain/task-sorter";
 import type { TaskStepData } from "../domain/task-step";
+import { Group } from "../domain/group";
 import { SearchView, TaskView, ViewCatalog } from "../domain/task-view";
 import { TodoList } from "../domain/todo-list";
 import { ViewSettings, type ViewSettingsChanges } from "../domain/view-settings";
@@ -18,6 +19,8 @@ const POSITION_STEP = 1000;
 
 export interface TodoState {
 	readonly lists: readonly TodoList[];
+	readonly groups: readonly Group[];
+	readonly renamingGroupId: string | null;
 	readonly tasks: readonly Task[];
 	readonly views: readonly TaskView[];
 	readonly settings: readonly ViewSettings[];
@@ -48,8 +51,14 @@ export class TodoStore extends Observable<TodoState> {
 			TodoStore.derive(database.get(), DEFAULT_VIEW_ID, [], null, DueDay.fromDate(clock.now())),
 		);
 		database.subscribe(() => {
-			const { selectedViewId, selectedTaskIds, anchorTaskId, renamingViewId, searchQuery } =
-				this.get();
+			const {
+				selectedViewId,
+				selectedTaskIds,
+				anchorTaskId,
+				renamingViewId,
+				renamingGroupId,
+				searchQuery,
+			} = this.get();
 			this.set({
 				...TodoStore.derive(
 					database.get(),
@@ -59,6 +68,7 @@ export class TodoStore extends Observable<TodoState> {
 					DueDay.fromDate(clock.now()),
 				),
 				renamingViewId,
+				renamingGroupId,
 				searchQuery,
 			});
 		});
@@ -87,6 +97,10 @@ export class TodoStore extends Observable<TodoState> {
 				tasks.some((task) => task.id === anchorId) ? anchorId : null,
 			),
 			renamingViewId: null,
+			renamingGroupId: null,
+			groups: snapshot.groups
+				.map((data) => new Group(data))
+				.sort((a, b) => a.position - b.position || a.id.localeCompare(b.id)),
 			searchQuery: "",
 			pendingChanges: snapshot.outbox.length,
 			today,
@@ -540,6 +554,104 @@ export class TodoStore extends Observable<TodoState> {
 		return list.id;
 	}
 
+	addGroup(name: string): string | null {
+		const trimmed = name.trim();
+		if (trimmed.length === 0) {
+			return null;
+		}
+		const group = Group.create(this.ids.next(), trimmed, this.clock.now().toISOString());
+		this.commit((snapshot) => ({
+			...snapshot,
+			groups: [...snapshot.groups, group.data],
+			outbox: this.enqueue(snapshot, {
+				kind: "createGroup",
+				opId: this.ids.next(),
+				group: group.data,
+			}),
+		}));
+		return group.id;
+	}
+
+	createGroupFor(listId: string, name: string): string | null {
+		if (!this.get().lists.some((list) => list.id === listId)) {
+			return null;
+		}
+		const groupId = this.addGroup(name);
+		if (groupId === null) {
+			return null;
+		}
+		this.setListGroup(listId, groupId);
+		this.set({ ...this.get(), renamingGroupId: groupId });
+		return groupId;
+	}
+
+	setListGroup(listId: string, groupId: string | null): void {
+		const list = this.get().lists.find((candidate) => candidate.id === listId);
+		const known = groupId === null || this.get().groups.some((group) => group.id === groupId);
+		if (list === undefined || !known || list.groupId === groupId) {
+			return;
+		}
+		this.commit((snapshot) => ({
+			...snapshot,
+			lists: snapshot.lists.map((data) =>
+				data.id === listId ? new TodoList(data).withGroup(groupId).data : data,
+			),
+			outbox: this.enqueue(snapshot, {
+				kind: "setListGroup",
+				opId: this.ids.next(),
+				listId,
+				groupId,
+			}),
+		}));
+	}
+
+	renameGroup(groupId: string, name: string): void {
+		const trimmed = name.trim();
+		if (trimmed.length === 0 || !this.get().groups.some((group) => group.id === groupId)) {
+			return;
+		}
+		this.commit((snapshot) => ({
+			...snapshot,
+			groups: snapshot.groups.map((data) =>
+				data.id === groupId ? new Group(data).rename(trimmed).data : data,
+			),
+			outbox: this.enqueue(snapshot, {
+				kind: "renameGroup",
+				opId: this.ids.next(),
+				groupId,
+				name: trimmed,
+			}),
+		}));
+	}
+
+	deleteGroup(groupId: string): void {
+		if (!this.get().groups.some((group) => group.id === groupId)) {
+			return;
+		}
+		this.commit((snapshot) => ({
+			...snapshot,
+			groups: snapshot.groups.filter((data) => data.id !== groupId),
+			lists: snapshot.lists.map((data) =>
+				data.groupId === groupId ? new TodoList(data).withGroup(null).data : data,
+			),
+			outbox: this.enqueue(snapshot, {
+				kind: "deleteGroup",
+				opId: this.ids.next(),
+				groupId,
+			}),
+		}));
+	}
+
+	startRenamingGroup(groupId: string): void {
+		if (this.get().groups.some((group) => group.id === groupId)) {
+			this.set({ ...this.get(), renamingGroupId: groupId });
+		}
+	}
+
+	stopRenamingGroup(): void {
+		this.set({ ...this.get(), renamingGroupId: null });
+	}
+
 	renameList(listId: string, name: string): void {
 		const trimmed = name.trim();
 		if (trimmed.length === 0 || !this.get().lists.some((list) => list.id === listId)) {
@@ -564,7 +676,8 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	moveList(listId: string, index: number): void {
-		const ordered = this.orderedLists();
+		const subject = this.get().lists.find((list) => list.id === listId);
+		const ordered = this.orderedLists().filter((list) => list.groupId === subject?.groupId);
 		const current = ordered.findIndex((list) => list.id === listId);
 		if (current === -1) {
 			return;
@@ -597,7 +710,10 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	shiftList(listId: string, delta: number): void {
-		const current = this.orderedLists().findIndex((list) => list.id === listId);
+		const subject = this.get().lists.find((list) => list.id === listId);
+		const current = this.orderedLists()
+			.filter((list) => list.groupId === subject?.groupId)
+			.findIndex((list) => list.id === listId);
 		if (current !== -1) {
 			this.moveList(listId, current + delta);
 		}

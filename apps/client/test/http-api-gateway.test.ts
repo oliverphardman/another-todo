@@ -105,6 +105,31 @@ describe("HttpApiGateway", () => {
 		});
 	});
 
+	it("lists, creates, renames, assigns and deletes groups", async () => {
+		const groups = setup(() =>
+			json({ groups: [{ id: "g", name: "G", createdAt: "x", position: 1 }] }),
+		);
+		expect(await groups.gateway.listGroups()).toEqual([
+			{ id: "g", name: "G", createdAt: "x", position: 1 },
+		]);
+		const { gateway, calls } = setup();
+		await gateway.createGroup({ id: "g1", name: "Home", createdAt: "x" });
+		await gateway.renameGroup("g/1", "House");
+		await gateway.setListGroup("l1", "g1");
+		await gateway.setListGroup("l1", null);
+		await gateway.deleteGroup("g/1");
+		expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
+			"POST https://api.test/groups",
+			"PATCH https://api.test/groups/g%2F1",
+			"PATCH https://api.test/lists/l1",
+			"PATCH https://api.test/lists/l1",
+			"DELETE https://api.test/groups/g%2F1",
+		]);
+		expect(calls[0]!.body).toEqual({ id: "g1", name: "Home" });
+		expect(calls[2]!.body).toEqual({ groupId: "g1" });
+		expect(calls[3]!.body).toEqual({ groupId: null });
+	});
+
 	it("updates and deletes with encoded ids", async () => {
 		const { gateway, calls } = setup();
 		await gateway.updateTask("a b", { completed: true });

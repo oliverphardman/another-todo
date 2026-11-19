@@ -527,7 +527,9 @@ describe("connectivity and sync", () => {
 			respond: (method) =>
 				method === "POST"
 					? new Response(JSON.stringify({ error: "invalid" }), { status: 400 })
-					: new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
+					: new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
+							status: 200,
+						}),
 		});
 		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
 		addTask("Rejected one");
@@ -549,7 +551,9 @@ describe("connectivity and sync", () => {
 		const app = await start({
 			respond: () =>
 				accepted
-					? new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 })
+					? new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
+							status: 200,
+						})
 					: new Response(JSON.stringify({ error: "expired" }), { status: 401 }),
 		});
 		await waitFor(() => expect(screen.getByText(/Your session has expired/)).toBeTruthy());
@@ -572,7 +576,7 @@ describe("connectivity and sync", () => {
 				if (method === "POST") {
 					await gate;
 				}
-				return new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), {
+				return new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
 					status: 200,
 				});
 			},

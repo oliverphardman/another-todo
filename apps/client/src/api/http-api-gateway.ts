@@ -1,5 +1,6 @@
 import type { components } from "../generated/api";
 import type { TaskChanges, TaskData } from "../domain/task";
+import type { GroupData } from "../domain/group";
 import type { TodoListData } from "../domain/todo-list";
 import type { ViewSettingsData } from "../domain/view-settings";
 import type { ApiGateway } from "./api-gateway";
@@ -30,6 +31,30 @@ export class HttpApiGateway implements ApiGateway {
 
 	async renameList(id: string, name: string): Promise<void> {
 		await this.http.request("PATCH", `/lists/${encodeURIComponent(id)}`, { name });
+	}
+
+	async listGroups(): Promise<GroupData[]> {
+		const body = await this.http.request<components["schemas"]["GroupCollection"]>(
+			"GET",
+			"/groups",
+		);
+		return body.groups.map((group) => ({ ...group }));
+	}
+
+	async createGroup(group: GroupData): Promise<void> {
+		await this.http.request("POST", "/groups", { id: group.id, name: group.name });
+	}
+
+	async renameGroup(id: string, name: string): Promise<void> {
+		await this.http.request("PATCH", `/groups/${encodeURIComponent(id)}`, { name });
+	}
+
+	async deleteGroup(id: string): Promise<void> {
+		await this.http.request("DELETE", `/groups/${encodeURIComponent(id)}`);
+	}
+
+	async setListGroup(listId: string, groupId: string | null): Promise<void> {
+		await this.http.request("PATCH", `/lists/${encodeURIComponent(listId)}`, { groupId });
 	}
 
 	async moveList(id: string, position: number): Promise<void> {

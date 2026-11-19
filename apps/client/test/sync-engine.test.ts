@@ -26,6 +26,10 @@ describe("SyncEngine", () => {
 			{ kind: "createList", opId: "1", list: { id: "l", name: "L", createdAt: "x" } },
 			{ kind: "renameList", opId: "2", listId: "l", name: "R" },
 			{ kind: "moveList", opId: "2b", listId: "l", position: 5 },
+			{ kind: "createGroup", opId: "g1", group: { id: "g", name: "G", createdAt: "x" } },
+			{ kind: "renameGroup", opId: "g2", groupId: "g", name: "G2" },
+			{ kind: "setListGroup", opId: "g3", listId: "l", groupId: "g" },
+			{ kind: "deleteGroup", opId: "g4", groupId: "oldg" },
 			createTask("t"),
 			{ kind: "updateTask", opId: "3", taskId: "t", changes: { completed: true } },
 			{ kind: "deleteTask", opId: "4", taskId: "gone" },
@@ -38,17 +42,24 @@ describe("SyncEngine", () => {
 			"createList:l",
 			"renameList:l",
 			"moveList:l",
+			"createGroup:g",
+			"renameGroup:g",
+			"setListGroup:l",
+			"deleteGroup:oldg",
 			"createTask:t",
 			"updateTask:t",
 			"deleteTask:gone",
 			"deleteList:old",
 			"listLists",
+			"listGroups",
 			"listTasks",
 			"listSettings",
 		]);
 		expect(database.get().outbox).toEqual([]);
 		expect(database.get().tasks.map((task) => [task.id, task.completed])).toEqual([["t", true]]);
 		expect(database.get().lists.map((list) => [list.name, list.position])).toEqual([["R", 5]]);
+		expect(database.get().groups.map((group) => group.name)).toEqual(["G2"]);
+		expect(database.get().lists[0]!.groupId).toBe("g");
 	});
 
 	it("sends queued settings and pulls the server's, keeping settings with changes pending", async () => {
@@ -128,6 +139,33 @@ describe("SyncEngine", () => {
 		expect(database.get().lists.map((list) => list.id)).toEqual(["mid"]);
 		expect(database.get().tasks.map((task) => task.id)).toEqual(["mid-task"]);
 		expect(database.get().outbox).toHaveLength(2);
+	});
+
+	it("keeps groups that have unsent changes and replaces the rest from the server", async () => {
+		const { engine, gateway, database } = await setup([], []);
+		gateway.groups = [
+			{ id: "server", name: "Server", createdAt: "x" },
+			{ id: "pending", name: "Server copy", createdAt: "x" },
+		];
+		const original = gateway.listGroups.bind(gateway);
+		gateway.listGroups = async () => {
+			await database.apply((snapshot) => ({
+				...snapshot,
+				groups: [{ id: "pending", name: "Local", createdAt: "x" }],
+				outbox: [{ kind: "renameGroup", opId: "rg", groupId: "pending", name: "Local" }],
+			}));
+			return original();
+		};
+		await engine.sync();
+		expect(
+			database
+				.get()
+				.groups.map((group) => [group.id, group.name])
+				.sort(),
+		).toEqual([
+			["pending", "Local"],
+			["server", "Server"],
+		]);
 	});
 
 	it("sends edits made while an earlier edit to the same task is in flight", async () => {

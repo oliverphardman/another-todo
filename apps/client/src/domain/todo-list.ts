@@ -3,6 +3,7 @@ export interface TodoListData {
 	readonly name: string;
 	readonly createdAt: string;
 	readonly position?: number;
+	readonly groupId?: string | null;
 }
 
 export class TodoList {
@@ -23,6 +24,14 @@ export class TodoList {
 	private static epoch(createdAt: string): number {
 		const parsed = Date.parse(createdAt);
 		return Number.isNaN(parsed) ? 0 : parsed;
+	}
+
+	get groupId(): string | null {
+		return this.data.groupId ?? null;
+	}
+
+	withGroup(groupId: string | null): TodoList {
+		return new TodoList({ ...this.data, groupId });
 	}
 
 	get position(): number {

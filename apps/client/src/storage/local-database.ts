@@ -1,3 +1,4 @@
+import type { GroupData } from "../domain/group";
 import type { TaskData } from "../domain/task";
 import type { TodoListData } from "../domain/todo-list";
 import type { ViewSettingsData } from "../domain/view-settings";
@@ -8,6 +9,7 @@ import type { KeyValueStore } from "./key-value-store";
 export interface Snapshot {
 	readonly version: 1;
 	readonly lists: readonly TodoListData[];
+	readonly groups: readonly GroupData[];
 	readonly tasks: readonly TaskData[];
 	readonly settings: readonly ViewSettingsData[];
 	readonly outbox: readonly Operation[];
@@ -18,6 +20,7 @@ const STORAGE_KEY = "atd.snapshot";
 export const EMPTY_SNAPSHOT: Snapshot = {
 	version: 1,
 	lists: [],
+	groups: [],
 	tasks: [],
 	settings: [],
 	outbox: [],

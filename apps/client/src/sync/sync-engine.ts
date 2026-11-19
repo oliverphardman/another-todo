@@ -106,6 +106,14 @@ export class SyncEngine {
 				return this.gateway.createList(operation.list);
 			case "renameList":
 				return this.gateway.renameList(operation.listId, operation.name);
+			case "createGroup":
+				return this.gateway.createGroup(operation.group);
+			case "renameGroup":
+				return this.gateway.renameGroup(operation.groupId, operation.name);
+			case "deleteGroup":
+				return this.gateway.deleteGroup(operation.groupId);
+			case "setListGroup":
+				return this.gateway.setListGroup(operation.listId, operation.groupId);
 			case "moveList":
 				return this.gateway.moveList(operation.listId, operation.position);
 			case "deleteList":
@@ -120,8 +128,9 @@ export class SyncEngine {
 	}
 
 	private async pull(): Promise<void> {
-		const [lists, tasks, settings] = await Promise.all([
+		const [lists, groups, tasks, settings] = await Promise.all([
 			this.gateway.listLists(),
+			this.gateway.listGroups(),
 			this.gateway.listTasks(),
 			this.gateway.listSettings(),
 		]);
@@ -129,12 +138,17 @@ export class SyncEngine {
 			const outbox = new Outbox(snapshot.outbox);
 			const pendingTasks = outbox.pendingTaskIds();
 			const pendingLists = outbox.pendingListIds();
+			const pendingGroups = outbox.pendingGroupIds();
 			const pendingSettings = outbox.pendingSettingsIds();
 			return {
 				...snapshot,
 				lists: [
 					...lists.filter((list) => !pendingLists.has(list.id)),
 					...snapshot.lists.filter((list) => pendingLists.has(list.id)),
+				],
+				groups: [
+					...groups.filter((group) => !pendingGroups.has(group.id)),
+					...snapshot.groups.filter((group) => pendingGroups.has(group.id)),
 				],
 				settings: [
 					...settings.filter((entry) => !pendingSettings.has(entry.id)),

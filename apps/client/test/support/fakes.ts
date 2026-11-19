@@ -1,3 +1,4 @@
+import type { GroupData } from "../../src/domain/group";
 import type { SocketLike } from "../../src/sync/realtime-client";
 import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
 import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
@@ -138,6 +139,7 @@ export class ManualConnectivity implements Connectivity {
 
 export class FakeGateway implements ApiGateway {
 	lists: TodoListData[] = [];
+	groups: GroupData[] = [];
 	tasks: TaskData[] = [];
 	settings: ViewSettingsData[] = [];
 	calls: string[] = [];
@@ -154,6 +156,36 @@ export class FakeGateway implements ApiGateway {
 		if (this.failure !== null) {
 			throw this.failure;
 		}
+	}
+
+	async listGroups(): Promise<GroupData[]> {
+		this.guard("listGroups");
+		return this.groups.map((group) => ({ ...group }));
+	}
+
+	async createGroup(group: GroupData): Promise<void> {
+		this.guard(`createGroup:${group.id}`);
+		if (!this.groups.some((existing) => existing.id === group.id)) {
+			this.groups.push({ ...group });
+		}
+	}
+
+	async renameGroup(id: string, name: string): Promise<void> {
+		this.guard(`renameGroup:${id}`);
+		this.groups = this.groups.map((group) => (group.id === id ? { ...group, name } : group));
+	}
+
+	async deleteGroup(id: string): Promise<void> {
+		this.guard(`deleteGroup:${id}`);
+		this.groups = this.groups.filter((group) => group.id !== id);
+		this.lists = this.lists.map((list) =>
+			list.groupId === id ? { ...list, groupId: null } : list,
+		);
+	}
+
+	async setListGroup(listId: string, groupId: string | null): Promise<void> {
+		this.guard(`setListGroup:${listId}`);
+		this.lists = this.lists.map((list) => (list.id === listId ? { ...list, groupId } : list));
 	}
 
 	async listLists(): Promise<TodoListData[]> {

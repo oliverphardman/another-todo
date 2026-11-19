@@ -36,6 +36,11 @@ const moveList = (listId: string, position: number, opId = `m-${listId}`): Opera
 	listId,
 	position,
 });
+const deleteGroup = (groupId: string): Operation => ({
+	kind: "deleteGroup",
+	opId: `dg-${groupId}`,
+	groupId,
+});
 const deleteList = (listId: string): Operation => ({
 	kind: "deleteList",
 	opId: `dl-${listId}`,
@@ -155,6 +160,69 @@ describe("Outbox", () => {
 			"createTask",
 			"moveList",
 			"updateTask",
+		]);
+	});
+
+	it("folds group renames, replaces list assignments and drops a never synced group", () => {
+		const createGroup = (id: string): Operation => ({
+			kind: "createGroup",
+			opId: `cg-${id}`,
+			group: { id, name: "G", createdAt: "x" },
+		});
+		const renameGroup = (groupId: string, name: string, opId = `rg-${groupId}`): Operation => ({
+			kind: "renameGroup",
+			opId,
+			groupId,
+			name,
+		});
+		const setListGroup = (listId: string, groupId: string | null): Operation => ({
+			kind: "setListGroup",
+			opId: `sg-${listId}-${groupId}`,
+			listId,
+			groupId,
+		});
+		const folded = build(createTask("x"), createGroup("g"), renameGroup("g", "Renamed"));
+		expect(folded.operations).toHaveLength(2);
+		expect((folded.operations[1] as { group: { name: string } }).group.name).toBe("Renamed");
+		const replaced = build(renameGroup("g", "One"), renameGroup("g", "Two"), renameGroup("h", "X"));
+		expect(replaced.operations).toHaveLength(2);
+		expect((replaced.operations[0] as { name: string }).name).toBe("Two");
+		const assigned = build(setListGroup("l", "g"), setListGroup("l", null), setListGroup("m", "g"));
+		expect(assigned.operations.map((operation) => operation.opId)).toEqual(["sg-l-null", "sg-m-g"]);
+		expect(assigned.pendingListIds()).toEqual(new Set(["l", "m"]));
+		expect(build(createGroup("g"), setListGroup("l", "g"), deleteGroup("g")).isEmpty).toBe(true);
+		const synced = build(renameGroup("g", "R"), setListGroup("l", "g"), deleteGroup("g"));
+		expect(synced.operations.map((operation) => operation.kind)).toEqual(["deleteGroup"]);
+		expect(
+			build(createGroup("g"), renameGroup("g", "R"), deleteGroup("g")).pendingGroupIds().size,
+		).toBe(0);
+		expect(
+			build(createGroup("g"), renameGroup("h", "R"), deleteGroup("i")).pendingGroupIds(),
+		).toEqual(new Set(["g", "h", "i"]));
+		const sending = build(createGroup("g"))
+			.markSending("cg-g")
+			.enqueue(renameGroup("g", "N", "r2"));
+		expect(sending.operations.map((operation) => operation.kind)).toEqual([
+			"createGroup",
+			"renameGroup",
+		]);
+		const sendingDelete = build(createGroup("g")).markSending("cg-g").enqueue(deleteGroup("g"));
+		expect(sendingDelete.operations.map((operation) => operation.kind)).toEqual(["deleteGroup"]);
+		const task = build(createTask("1"), setListGroup("l", "g")).enqueue(
+			updateTask("1", { title: "X" }),
+		);
+		expect(task.operations.map((operation) => operation.kind)).toEqual([
+			"createTask",
+			"setListGroup",
+			"updateTask",
+		]);
+		const afterGroupOps = [createGroup("g"), renameGroup("g", "R"), deleteGroup("g")];
+		for (const operation of afterGroupOps) {
+			const queued = build(createTask("1"), operation).enqueue(updateTask("1", { title: "Y" }));
+			expect(queued.operations.at(-1)!.kind).toBe("updateTask");
+		}
+		expect(build(setListGroup("l", "g"), deleteList("l")).operations.map((o) => o.kind)).toEqual([
+			"deleteList",
 		]);
 	});
 

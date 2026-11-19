@@ -6,30 +6,42 @@ export interface TodoListRecord {
 	readonly name: string;
 	readonly createdAt: string;
 	readonly position?: number;
+	readonly groupId?: string | null;
+}
+
+interface ListFields {
+	readonly ownerId: string;
+	readonly id: string;
+	readonly name: string;
+	readonly createdAt: Date;
+	readonly position: number;
+	readonly groupId: string | null;
 }
 
 export class TodoList {
-	private constructor(
-		readonly ownerId: string,
-		readonly id: string,
-		readonly name: string,
-		readonly createdAt: Date,
-		readonly position: number,
-	) {}
+	private constructor(private readonly fields: ListFields) {}
 
 	static create(ownerId: string, id: string, name: string, createdAt: Date): TodoList {
-		return new TodoList(ownerId, id, TodoList.validateName(name), createdAt, createdAt.getTime());
+		return new TodoList({
+			ownerId,
+			id,
+			name: TodoList.validateName(name),
+			createdAt,
+			position: createdAt.getTime(),
+			groupId: null,
+		});
 	}
 
 	static restore(record: TodoListRecord): TodoList {
 		const createdAt = new Date(record.createdAt);
-		return new TodoList(
-			record.ownerId,
-			record.id,
-			record.name,
+		return new TodoList({
+			ownerId: record.ownerId,
+			id: record.id,
+			name: record.name,
 			createdAt,
-			record.position ?? createdAt.getTime(),
-		);
+			position: record.position ?? createdAt.getTime(),
+			groupId: record.groupId ?? null,
+		});
 	}
 
 	private static validateName(name: string): string {
@@ -40,21 +52,43 @@ export class TodoList {
 		return trimmed;
 	}
 
+	get ownerId(): string {
+		return this.fields.ownerId;
+	}
+
+	get id(): string {
+		return this.fields.id;
+	}
+
+	get name(): string {
+		return this.fields.name;
+	}
+
+	get createdAt(): Date {
+		return this.fields.createdAt;
+	}
+
+	get position(): number {
+		return this.fields.position;
+	}
+
+	get groupId(): string | null {
+		return this.fields.groupId;
+	}
+
 	rename(name: string): TodoList {
-		return new TodoList(
-			this.ownerId,
-			this.id,
-			TodoList.validateName(name),
-			this.createdAt,
-			this.position,
-		);
+		return new TodoList({ ...this.fields, name: TodoList.validateName(name) });
 	}
 
 	moveTo(position: number): TodoList {
 		if (!Number.isFinite(position)) {
 			throw new ValidationError("position must be a number");
 		}
-		return new TodoList(this.ownerId, this.id, this.name, this.createdAt, position);
+		return new TodoList({ ...this.fields, position });
+	}
+
+	assignToGroup(groupId: string | null): TodoList {
+		return new TodoList({ ...this.fields, groupId });
 	}
 
 	toRecord(): TodoListRecord {
@@ -64,6 +98,7 @@ export class TodoList {
 			name: this.name,
 			createdAt: this.createdAt.toISOString(),
 			position: this.position,
+			groupId: this.groupId,
 		};
 	}
 

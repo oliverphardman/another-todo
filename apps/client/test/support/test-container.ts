@@ -39,7 +39,9 @@ export interface TestContainer {
 
 export function createTestContainer(
 	respond: (method: string, url: string, body: unknown) => Response | Promise<Response> = () =>
-		new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
+		new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
+			status: 200,
+		}),
 	motion: Motion = NO_MOTION,
 ): TestContainer {
 	const clock = new FixedClock();

@@ -1,5 +1,6 @@
 import { EntityId } from "../domain/entity-id";
 import { NotFoundError, ValidationError } from "../domain/errors";
+import type { GroupRepository } from "../domain/group-repository";
 import type { TaskRepository } from "../domain/task-repository";
 import { TodoList } from "../domain/todo-list";
 import type { TodoListRepository } from "../domain/todo-list-repository";
@@ -10,6 +11,7 @@ export interface ListInput {
 	readonly id?: unknown;
 	readonly name?: unknown;
 	readonly position?: unknown;
+	readonly groupId?: unknown;
 }
 
 export class ListService {
@@ -17,6 +19,7 @@ export class ListService {
 		private readonly lists: TodoListRepository,
 		private readonly tasks: TaskRepository,
 		private readonly settings: ViewSettingsRepository,
+		private readonly groups: GroupRepository,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 	) {}
@@ -46,8 +49,8 @@ export class ListService {
 	}
 
 	async update(ownerId: string, id: string, input: ListInput): Promise<TodoList> {
-		if (input.name === undefined && input.position === undefined) {
-			throw new ValidationError("name or position is required");
+		if (input.name === undefined && input.position === undefined && input.groupId === undefined) {
+			throw new ValidationError("name, position or groupId is required");
 		}
 		let list = await this.get(ownerId, id);
 		if (input.name !== undefined) {
@@ -59,8 +62,24 @@ export class ListService {
 			}
 			list = list.moveTo(input.position);
 		}
+		if (input.groupId !== undefined) {
+			list = list.assignToGroup(await this.groupIdOf(ownerId, input.groupId));
+		}
 		await this.lists.save(list);
 		return list;
+	}
+
+	private async groupIdOf(ownerId: string, value: unknown): Promise<string | null> {
+		if (value === null) {
+			return null;
+		}
+		if (typeof value !== "string") {
+			throw new ValidationError("groupId must be a string or null");
+		}
+		if ((await this.groups.findById(ownerId, value)) === null) {
+			throw new NotFoundError(`Group ${value} not found`);
+		}
+		return value;
 	}
 
 	async delete(ownerId: string, id: string): Promise<void> {
