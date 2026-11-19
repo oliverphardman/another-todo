@@ -124,6 +124,10 @@ export class CustomListView extends TaskView {
 }
 
 export class ViewCatalog {
+	static ordered(lists: readonly TodoList[]): TodoList[] {
+		return [...lists].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+	}
+
 	static build(lists: readonly TodoList[]): TaskView[] {
 		return [
 			new MyDayView(),
@@ -131,7 +135,7 @@ export class ViewCatalog {
 			new PlannedView(),
 			new AllTasksView(),
 			new DefaultListView(),
-			...lists.map((list) => new CustomListView(list)),
+			...ViewCatalog.ordered(lists).map((list) => new CustomListView(list)),
 		];
 	}
 }

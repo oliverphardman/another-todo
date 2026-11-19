@@ -25,6 +25,7 @@ describe("SyncEngine", () => {
 		const operations: Operation[] = [
 			{ kind: "createList", opId: "1", list: { id: "l", name: "L", createdAt: "x" } },
 			{ kind: "renameList", opId: "2", listId: "l", name: "R" },
+			{ kind: "moveList", opId: "2b", listId: "l", position: 5 },
 			createTask("t"),
 			{ kind: "updateTask", opId: "3", taskId: "t", changes: { completed: true } },
 			{ kind: "deleteTask", opId: "4", taskId: "gone" },
@@ -36,6 +37,7 @@ describe("SyncEngine", () => {
 		expect(gateway.calls).toEqual([
 			"createList:l",
 			"renameList:l",
+			"moveList:l",
 			"createTask:t",
 			"updateTask:t",
 			"deleteTask:gone",
@@ -46,7 +48,7 @@ describe("SyncEngine", () => {
 		]);
 		expect(database.get().outbox).toEqual([]);
 		expect(database.get().tasks.map((task) => [task.id, task.completed])).toEqual([["t", true]]);
-		expect(database.get().lists.map((list) => list.name)).toEqual(["R"]);
+		expect(database.get().lists.map((list) => [list.name, list.position])).toEqual([["R", 5]]);
 	});
 
 	it("sends queued settings and pulls the server's, keeping settings with changes pending", async () => {

@@ -18,6 +18,8 @@ export class Outbox {
 				return this.enqueueTaskDelete(operation);
 			case "renameList":
 				return this.enqueueListRename(operation);
+			case "moveList":
+				return this.enqueueListMove(operation);
 			case "deleteList":
 				return this.enqueueListDelete(operation);
 			default:
@@ -85,7 +87,11 @@ export class Outbox {
 		for (const operation of this.operations) {
 			if (operation.kind === "createList") {
 				ids.add(operation.list.id);
-			} else if (operation.kind === "renameList" || operation.kind === "deleteList") {
+			} else if (
+				operation.kind === "renameList" ||
+				operation.kind === "moveList" ||
+				operation.kind === "deleteList"
+			) {
 				ids.add(operation.listId);
 			}
 		}
@@ -168,6 +174,18 @@ export class Outbox {
 		return new Outbox([...without, operation]);
 	}
 
+	private enqueueListMove(operation: Extract<Operation, { kind: "moveList" }>): Outbox {
+		const without = this.operations.filter(
+			(candidate) =>
+				!(
+					candidate.kind === "moveList" &&
+					candidate.listId === operation.listId &&
+					!candidate.sending
+				),
+		);
+		return new Outbox([...without, operation]);
+	}
+
 	private enqueueListDelete(operation: Extract<Operation, { kind: "deleteList" }>): Outbox {
 		const created = this.operations.some(
 			(candidate) =>
@@ -179,7 +197,8 @@ export class Outbox {
 			(candidate) =>
 				!(
 					(candidate.kind === "createList" && candidate.list.id === operation.listId) ||
-					(candidate.kind === "renameList" && candidate.listId === operation.listId)
+					(candidate.kind === "renameList" && candidate.listId === operation.listId) ||
+					(candidate.kind === "moveList" && candidate.listId === operation.listId)
 				),
 		);
 		return created ? new Outbox(remaining) : new Outbox([...remaining, operation]);
@@ -197,6 +216,7 @@ export class Outbox {
 			if (
 				candidate.kind === "createList" ||
 				candidate.kind === "renameList" ||
+				candidate.kind === "moveList" ||
 				candidate.kind === "deleteList"
 			) {
 				return -1;

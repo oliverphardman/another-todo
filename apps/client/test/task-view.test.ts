@@ -80,3 +80,25 @@ describe("task views", () => {
 		]);
 	});
 });
+
+describe("list positions", () => {
+	it("defaults to the creation time, tolerates bad dates and sorts views by position then id", () => {
+		const early = TodoList.create("b", "Early", "2026-01-01T00:00:00.000Z");
+		const late = TodoList.create("a", "Late", "2026-02-01T00:00:00.000Z");
+		expect(early.position).toBe(Date.parse("2026-01-01T00:00:00.000Z"));
+		expect(TodoList.create("x", "Bad", "x").position).toBe(0);
+		expect(new TodoList({ id: "l", name: "L", createdAt: "x" }).position).toBe(0);
+		expect(
+			new TodoList({ id: "l", name: "L", createdAt: "2026-01-01T00:00:00.000Z" }).position,
+		).toBe(Date.parse("2026-01-01T00:00:00.000Z"));
+		expect(early.moveTo(9).position).toBe(9);
+		expect(early.moveTo(9).rename("N").position).toBe(9);
+		const tie = TodoList.create("c", "Tie", "2026-01-01T00:00:00.000Z");
+		expect(ViewCatalog.ordered([late, tie, early]).map((list) => list.id)).toEqual(["b", "c", "a"]);
+		expect(
+			ViewCatalog.build([late, early])
+				.filter((view) => view.isCustomList)
+				.map((view) => view.title),
+		).toEqual(["Early", "Late"]);
+	});
+});

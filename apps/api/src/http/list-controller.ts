@@ -38,7 +38,7 @@ export class ListController {
 		router.patch(
 			"/:id",
 			RouteSupport.wrap(async (request, response) => {
-				const list = await this.service.rename(
+				const list = await this.service.update(
 					RouteSupport.ownerOf(response),
 					request.params.id!,
 					request.body as UpdateListBody,

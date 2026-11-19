@@ -269,7 +269,7 @@
 			},
 			"patch": {
 				"operationId": "renameList",
-				"summary": "Rename a list",
+				"summary": "Rename or reorder a list",
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -695,8 +695,12 @@
 			},
 			"TodoList": {
 				"type": "object",
-				"required": ["id", "name", "createdAt"],
+				"required": ["id", "name", "createdAt", "position"],
 				"properties": {
+					"position": {
+						"type": "number",
+						"description": "Sort key: lists are shown in ascending position"
+					},
 					"id": {
 						"type": "string"
 					},
@@ -739,12 +743,15 @@
 			},
 			"UpdateList": {
 				"type": "object",
-				"required": ["name"],
+				"minProperties": 1,
 				"additionalProperties": false,
 				"properties": {
 					"name": {
 						"type": "string",
 						"minLength": 1
+					},
+					"position": {
+						"type": "number"
 					}
 				}
 			},

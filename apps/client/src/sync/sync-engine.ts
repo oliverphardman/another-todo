@@ -106,6 +106,8 @@ export class SyncEngine {
 				return this.gateway.createList(operation.list);
 			case "renameList":
 				return this.gateway.renameList(operation.listId, operation.name);
+			case "moveList":
+				return this.gateway.moveList(operation.listId, operation.position);
 			case "deleteList":
 				return this.gateway.deleteList(operation.listId);
 			case "createTask":

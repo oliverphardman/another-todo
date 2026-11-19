@@ -14,6 +14,7 @@ import type { SyncTrigger } from "../sync/sync-coordinator";
 import { Observable } from "./observable";
 
 const DEFAULT_VIEW_ID = "my-day";
+const POSITION_STEP = 1000;
 
 export interface TodoState {
 	readonly lists: readonly TodoList[];
@@ -523,6 +524,50 @@ export class TodoStore extends Observable<TodoState> {
 				name: trimmed,
 			}),
 		}));
+	}
+
+	orderedLists(): readonly TodoList[] {
+		return ViewCatalog.ordered(this.get().lists);
+	}
+
+	moveList(listId: string, index: number): void {
+		const ordered = this.orderedLists();
+		const current = ordered.findIndex((list) => list.id === listId);
+		if (current === -1) {
+			return;
+		}
+		const others = ordered.filter((list) => list.id !== listId);
+		const target = Math.max(0, Math.min(index, others.length));
+		if (target === current) {
+			return;
+		}
+		const before = others[target - 1];
+		const after = others[target];
+		const position =
+			before !== undefined && after !== undefined
+				? (before.position + after.position) / 2
+				: before !== undefined
+					? before.position + POSITION_STEP
+					: after!.position - POSITION_STEP;
+		this.commit((snapshot) => ({
+			...snapshot,
+			lists: snapshot.lists.map((data) =>
+				data.id === listId ? new TodoList(data).moveTo(position).data : data,
+			),
+			outbox: this.enqueue(snapshot, {
+				kind: "moveList",
+				opId: this.ids.next(),
+				listId,
+				position,
+			}),
+		}));
+	}
+
+	shiftList(listId: string, delta: number): void {
+		const current = this.orderedLists().findIndex((list) => list.id === listId);
+		if (current !== -1) {
+			this.moveList(listId, current + delta);
+		}
 	}
 
 	deleteList(listId: string): void {

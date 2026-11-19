@@ -9,6 +9,7 @@ import type { Clock, IdGenerator } from "./ports";
 export interface ListInput {
 	readonly id?: unknown;
 	readonly name?: unknown;
+	readonly position?: unknown;
 }
 
 export class ListService {
@@ -41,15 +42,25 @@ export class ListService {
 
 	async list(ownerId: string): Promise<TodoList[]> {
 		const lists = await this.lists.list(ownerId);
-		return lists.sort(
-			(a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
-		);
+		return lists.sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
 	}
 
-	async rename(ownerId: string, id: string, input: ListInput): Promise<TodoList> {
-		const renamed = (await this.get(ownerId, id)).rename(ListService.nameOf(input));
-		await this.lists.save(renamed);
-		return renamed;
+	async update(ownerId: string, id: string, input: ListInput): Promise<TodoList> {
+		if (input.name === undefined && input.position === undefined) {
+			throw new ValidationError("name or position is required");
+		}
+		let list = await this.get(ownerId, id);
+		if (input.name !== undefined) {
+			list = list.rename(ListService.nameOf(input));
+		}
+		if (input.position !== undefined) {
+			if (typeof input.position !== "number") {
+				throw new ValidationError("position must be a number");
+			}
+			list = list.moveTo(input.position);
+		}
+		await this.lists.save(list);
+		return list;
 	}
 
 	async delete(ownerId: string, id: string): Promise<void> {

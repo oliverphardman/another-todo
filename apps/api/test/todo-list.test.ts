@@ -25,7 +25,17 @@ describe("TodoList", () => {
 			id: "1",
 			name: "Work",
 			createdAt: "2026-01-01T00:00:00.000Z",
+			position: now.getTime(),
 		});
+	});
+
+	it("moves to a position and treats records without one as positioned at creation", () => {
+		const list = TodoList.create("u", "1", "Work", now);
+		expect(list.moveTo(3).position).toBe(3);
+		expect(list.moveTo(3).rename("Home").position).toBe(3);
+		expect(() => list.moveTo(Number.NaN)).toThrow(ValidationError);
+		const { position: _position, ...legacy } = list.toRecord();
+		expect(TodoList.restore(legacy).position).toBe(now.getTime());
 	});
 
 	it("is stored per owner in memory", async () => {

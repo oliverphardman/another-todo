@@ -112,7 +112,7 @@ export interface paths {
 		delete: operations["deleteList"];
 		options?: never;
 		head?: never;
-		/** Rename a list */
+		/** Rename or reorder a list */
 		patch: operations["renameList"];
 		trace?: never;
 	};
@@ -254,6 +254,8 @@ export interface components {
 			bearer_methods_supported?: string[];
 		};
 		TodoList: {
+			/** @description Sort key: lists are shown in ascending position */
+			position: number;
 			id: string;
 			name: string;
 			/** Format: date-time */
@@ -268,7 +270,8 @@ export interface components {
 			name: string;
 		};
 		UpdateList: {
-			name: string;
+			name?: string;
+			position?: number;
 		};
 		TaskStep: {
 			id: string;

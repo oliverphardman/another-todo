@@ -33,6 +33,7 @@ export type IconGlyph =
 	| "close"
 	| "chevronRight"
 	| "chevronDown"
+	| "chevronUp"
 	| "signOut"
 	| "syncOff";
 
@@ -96,6 +97,7 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	trash: { d: "M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6" },
 	close: { d: "M6 6l12 12M18 6L6 18" },
 	chevronRight: { d: "M9 5l7 7-7 7" },
+	chevronUp: { d: "M5 15l7-7 7 7" },
 	chevronDown: { d: "M5 9l7 7 7-7" },
 	signOut: { d: "M10 4H5v16h5M15 8l4 4-4 4M19 12H9" },
 	syncOff: {

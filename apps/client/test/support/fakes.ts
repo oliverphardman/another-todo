@@ -172,6 +172,11 @@ export class FakeGateway implements ApiGateway {
 		this.lists = this.lists.map((list) => (list.id === id ? { ...list, name } : list));
 	}
 
+	async moveList(id: string, position: number): Promise<void> {
+		this.guard(`moveList:${id}`);
+		this.lists = this.lists.map((list) => (list.id === id ? { ...list, position } : list));
+	}
+
 	async deleteList(id: string): Promise<void> {
 		this.guard(`deleteList:${id}`);
 		this.lists = this.lists.filter((list) => list.id !== id);

@@ -26,7 +26,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Shift, Ctrl or Cmd clicking selects multiple tasks (on macOS Ctrl+click is the system's right-click, so Cmd+click is the toggle there)
 - [x] Swipe gestures open and close the sidebars (narrow screens: swipe right opens the lists, left closes them, right closes the task details)
 - [x] Completing a task fades in the check circle fill, then animates the task to the completed section behind the other items
-- [ ] Rearrange lists by dragging them around
+- [x] Rearrange lists by dragging them around (mouse drag on web and desktop; Move List Up/Down in the list menu for touch)
 
 ## 4. Context menus
 

@@ -11,12 +11,32 @@ describe("ListService", () => {
 		const second = await lists.create("u", { name: "Second" });
 		const sameTime = await lists.create("u", { name: "Third" });
 		expect((await lists.get("u", first.id)).name).toBe("First");
-		expect((await lists.rename("u", first.id, { name: "Renamed" })).name).toBe("Renamed");
+		expect((await lists.update("u", first.id, { name: "Renamed" })).name).toBe("Renamed");
 		expect((await lists.list("u")).map((list) => list.id)).toEqual([
 			first.id,
 			second.id,
 			sameTime.id,
 		]);
+	});
+
+	it("reorders lists by position and validates the input", async () => {
+		const clock = new FixedClock();
+		const { lists } = createServices(clock);
+		const first = await lists.create("u", { name: "First" });
+		clock.advance(1000);
+		const second = await lists.create("u", { name: "Second" });
+		const moved = await lists.update("u", second.id, { position: first.position - 1 });
+		expect(moved.position).toBe(first.position - 1);
+		expect((await lists.list("u")).map((list) => list.id)).toEqual([second.id, first.id]);
+		const both = await lists.update("u", first.id, { name: "Both", position: 5 });
+		expect([both.name, both.position]).toEqual(["Both", 5]);
+		await expect(lists.update("u", first.id, {})).rejects.toThrow("name or position is required");
+		await expect(lists.update("u", first.id, { position: "x" })).rejects.toThrow(
+			"position must be a number",
+		);
+		await expect(lists.update("u", first.id, { position: Infinity })).rejects.toThrow(
+			"position must be a number",
+		);
 	});
 
 	it("creates idempotently when the client supplies an id", async () => {
@@ -38,7 +58,7 @@ describe("ListService", () => {
 		const { lists } = createServices();
 		const list = await lists.create("u", { name: "A" });
 		await expect(lists.get("other", list.id)).rejects.toThrow(NotFoundError);
-		await expect(lists.rename("other", list.id, { name: "B" })).rejects.toThrow(NotFoundError);
+		await expect(lists.update("other", list.id, { name: "B" })).rejects.toThrow(NotFoundError);
 		await expect(lists.delete("other", list.id)).rejects.toThrow(NotFoundError);
 	});
 

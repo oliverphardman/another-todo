@@ -5,6 +5,7 @@ export interface TodoListRecord {
 	readonly id: string;
 	readonly name: string;
 	readonly createdAt: string;
+	readonly position?: number;
 }
 
 export class TodoList {
@@ -13,14 +14,22 @@ export class TodoList {
 		readonly id: string,
 		readonly name: string,
 		readonly createdAt: Date,
+		readonly position: number,
 	) {}
 
 	static create(ownerId: string, id: string, name: string, createdAt: Date): TodoList {
-		return new TodoList(ownerId, id, TodoList.validateName(name), createdAt);
+		return new TodoList(ownerId, id, TodoList.validateName(name), createdAt, createdAt.getTime());
 	}
 
 	static restore(record: TodoListRecord): TodoList {
-		return new TodoList(record.ownerId, record.id, record.name, new Date(record.createdAt));
+		const createdAt = new Date(record.createdAt);
+		return new TodoList(
+			record.ownerId,
+			record.id,
+			record.name,
+			createdAt,
+			record.position ?? createdAt.getTime(),
+		);
 	}
 
 	private static validateName(name: string): string {
@@ -32,7 +41,20 @@ export class TodoList {
 	}
 
 	rename(name: string): TodoList {
-		return new TodoList(this.ownerId, this.id, TodoList.validateName(name), this.createdAt);
+		return new TodoList(
+			this.ownerId,
+			this.id,
+			TodoList.validateName(name),
+			this.createdAt,
+			this.position,
+		);
+	}
+
+	moveTo(position: number): TodoList {
+		if (!Number.isFinite(position)) {
+			throw new ValidationError("position must be a number");
+		}
+		return new TodoList(this.ownerId, this.id, this.name, this.createdAt, position);
 	}
 
 	toRecord(): TodoListRecord {
@@ -41,6 +63,7 @@ export class TodoList {
 			id: this.id,
 			name: this.name,
 			createdAt: this.createdAt.toISOString(),
+			position: this.position,
 		};
 	}
 

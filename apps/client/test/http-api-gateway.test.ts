@@ -109,16 +109,18 @@ describe("HttpApiGateway", () => {
 		const { gateway, calls } = setup();
 		await gateway.updateTask("a b", { completed: true });
 		await gateway.renameList("l/1", "New");
+		await gateway.moveList("l/2", 7);
 		await gateway.deleteTask("t1");
 		await gateway.deleteList("l1");
 		expect(calls.map((call) => `${call.method} ${call.url}`)).toEqual([
 			"PATCH https://api.test/tasks/a%20b",
 			"PATCH https://api.test/lists/l%2F1",
+			"PATCH https://api.test/lists/l%2F2",
 			"DELETE https://api.test/tasks/t1",
 			"DELETE https://api.test/lists/l1",
 		]);
 		expect(calls[0]!.body).toEqual({ completed: true });
-		expect(calls[2]!.headers["content-type"]).toBeUndefined();
+		expect(calls[3]!.headers["content-type"]).toBeUndefined();
 	});
 
 	it("raises ApiError with the server message", async () => {

@@ -137,6 +137,8 @@ export const EN_US = {
 	"ctx.moveTo": "Move Task to…",
 	"ctx.deleteTask": "Delete Task",
 	"ctx.renameList": "Rename List",
+	"ctx.moveListUp": "Move List Up",
+	"ctx.moveListDown": "Move List Down",
 	"ctx.printList": "Print List",
 	"ctx.deleteList": "Delete List",
 	"ctx.listMenu": "List actions",

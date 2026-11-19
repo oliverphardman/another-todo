@@ -347,6 +347,57 @@ describe("TodoStore", () => {
 		expect(store.createListFromTask("ghost")).toBeNull();
 	});
 
+	it("orders lists by position and reorders by dragging", async () => {
+		const { store, database, clock } = await setup();
+		const ids = ["A", "B", "C"].map((name) => {
+			clock.advance(1000);
+			return store.addList(name)!;
+		});
+		const names = () => store.orderedLists().map((list) => list.name);
+		expect(names()).toEqual(["A", "B", "C"]);
+		store.moveList(ids[2]!, 0);
+		expect(names()).toEqual(["C", "A", "B"]);
+		store.moveList(ids[0]!, 2);
+		expect(names()).toEqual(["C", "B", "A"]);
+		store.moveList(ids[0]!, 99);
+		expect(names()).toEqual(["C", "B", "A"]);
+		store.moveList(ids[1]!, 1);
+		expect(names()).toEqual(["C", "B", "A"]);
+		store.moveList("ghost", 0);
+		expect(
+			store
+				.get()
+				.views.filter((view) => view.isCustomList)
+				.map((view) => view.title),
+		).toEqual(["C", "B", "A"]);
+		const moves = database.get().outbox.filter((operation) => operation.kind === "moveList");
+		expect(moves).toHaveLength(2);
+		store.shiftList(ids[0]!, -1);
+		expect(names()).toEqual(["C", "A", "B"]);
+		store.shiftList(ids[0]!, 1);
+		expect(names()).toEqual(["C", "B", "A"]);
+		store.shiftList("ghost", 1);
+		const single = await setup();
+		const only = single.store.addList("Only")!;
+		single.store.moveList(only, 0);
+		expect(single.database.get().outbox.some((operation) => operation.kind === "moveList")).toBe(
+			false,
+		);
+	});
+
+	it("positions a list at either end or between neighbors", async () => {
+		const { store, clock } = await setup();
+		const [a, b] = ["A", "B"].map((name) => {
+			clock.advance(1000);
+			return store.addList(name)!;
+		});
+		const position = (id: string) => store.get().lists.find((list) => list.id === id)!.position;
+		store.moveList(a!, 1);
+		expect(position(a!)).toBe(position(b!) + 1000);
+		store.moveList(a!, 0);
+		expect(position(a!)).toBe(position(b!) - 1000);
+	});
+
 	it("only notifies when the day actually changes", async () => {
 		const { store, clock } = await setup();
 		const listener = vi.fn();

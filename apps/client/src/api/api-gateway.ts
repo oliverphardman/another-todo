@@ -5,6 +5,7 @@ import type { ViewSettingsData } from "../domain/view-settings";
 export interface ApiGateway {
 	listLists(): Promise<TodoListData[]>;
 	createList(list: TodoListData): Promise<void>;
+	moveList(id: string, position: number): Promise<void>;
 	renameList(id: string, name: string): Promise<void>;
 	deleteList(id: string): Promise<void>;
 	listSettings(): Promise<ViewSettingsData[]>;

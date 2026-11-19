@@ -32,6 +32,10 @@ export class HttpApiGateway implements ApiGateway {
 		await this.http.request("PATCH", `/lists/${encodeURIComponent(id)}`, { name });
 	}
 
+	async moveList(id: string, position: number): Promise<void> {
+		await this.http.request("PATCH", `/lists/${encodeURIComponent(id)}`, { position });
+	}
+
 	async deleteList(id: string): Promise<void> {
 		await this.http.request("DELETE", `/lists/${encodeURIComponent(id)}`);
 	}

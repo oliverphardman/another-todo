@@ -215,6 +215,21 @@ describe("Idempotent creation", () => {
 });
 
 describe("Lists API", () => {
+	it("reorders lists with PATCH position", async () => {
+		const api = createTestApi();
+		const a = (await api(event({ method: "POST", path: "/lists", body: { name: "A" } }))).body;
+		const b = (await api(event({ method: "POST", path: "/lists", body: { name: "B" } }))).body;
+		const moved = await api(
+			event({ method: "PATCH", path: `/lists/${b.id}`, body: { position: a.position - 1 } }),
+		);
+		expect(moved.body.position).toBe(a.position - 1);
+		const listed = (await api(event({ path: "/lists" }))).body.lists;
+		expect(listed.map((list: { name: string }) => list.name)).toEqual(["B", "A"]);
+		expect((await api(event({ method: "PATCH", path: `/lists/${b.id}`, body: {} }))).status).toBe(
+			400,
+		);
+	});
+
 	it("creates, reads, renames, lists and deletes a list", async () => {
 		const api = createTestApi();
 		const created = await api(event({ method: "POST", path: "/lists", body: { name: "Work" } }));

@@ -159,7 +159,7 @@ export class RenameListTool extends McpTool {
 	};
 
 	execute(ownerId: string, args: ToolArguments): Promise<unknown> {
-		return this.lists.rename(ownerId, this.requireId(args), args);
+		return this.lists.update(ownerId, this.requireId(args), args);
 	}
 }
 

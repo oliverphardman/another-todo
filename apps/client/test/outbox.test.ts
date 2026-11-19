@@ -30,6 +30,12 @@ const renameList = (listId: string, name: string, opId = `r-${listId}`): Operati
 	listId,
 	name,
 });
+const moveList = (listId: string, position: number, opId = `m-${listId}`): Operation => ({
+	kind: "moveList",
+	opId,
+	listId,
+	position,
+});
 const deleteList = (listId: string): Operation => ({
 	kind: "deleteList",
 	opId: `dl-${listId}`,
@@ -126,6 +132,30 @@ describe("Outbox", () => {
 		);
 		expect(replaced.operations).toHaveLength(2);
 		expect((replaced.operations[0] as { name: string }).name).toBe("Two");
+	});
+
+	it("keeps only the latest unsent move of a list and sends it after the create", () => {
+		const outbox = build(createList("l"), moveList("l", 1), moveList("l", 2), moveList("m", 3));
+		expect(outbox.operations.map((operation) => operation.kind)).toEqual([
+			"createList",
+			"moveList",
+			"moveList",
+		]);
+		expect((outbox.operations[1] as { position: number }).position).toBe(2);
+		expect(outbox.pendingListIds()).toEqual(new Set(["l", "m"]));
+		const sending = build(moveList("l", 1))
+			.markSending("m-l")
+			.enqueue(moveList("l", 2, "m-l2"));
+		expect(sending.operations).toHaveLength(2);
+		expect(build(moveList("l", 1), deleteList("l")).operations.map((o) => o.kind)).toEqual([
+			"deleteList",
+		]);
+		const task = build(createTask("1"), moveList("l", 1)).enqueue(updateTask("1", { title: "X" }));
+		expect(task.operations.map((operation) => operation.kind)).toEqual([
+			"createTask",
+			"moveList",
+			"updateTask",
+		]);
 	});
 
 	it("drops a never synced list entirely when it is deleted", () => {

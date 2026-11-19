@@ -20,6 +20,12 @@ export type OperationBody =
 			readonly name: string;
 	  }
 	| {
+			readonly kind: "moveList";
+			readonly opId: string;
+			readonly listId: string;
+			readonly position: number;
+	  }
+	| {
 			readonly kind: "deleteList";
 			readonly opId: string;
 			readonly listId: string;
