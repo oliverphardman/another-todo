@@ -53,6 +53,31 @@ resource "aws_dynamodb_table" "tasks" {
   }
 }
 
+resource "aws_dynamodb_table" "lists" {
+  name         = "${local.name}-lists"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ownerId"
+  range_key    = "id"
+
+  attribute {
+    name = "ownerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}
+
 resource "aws_cognito_user_pool" "main" {
   name                     = local.name
   username_attributes      = ["email"]
@@ -169,7 +194,7 @@ resource "aws_iam_role_policy" "lambda_tasks" {
         "dynamodb:DeleteItem",
         "dynamodb:Query",
       ]
-      Resource = aws_dynamodb_table.tasks.arn
+      Resource = [aws_dynamodb_table.tasks.arn, aws_dynamodb_table.lists.arn]
     }]
   })
 }
@@ -198,8 +223,9 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      TABLE_NAME   = aws_dynamodb_table.tasks.name
-      OAUTH_ISSUER = "https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
+      TABLE_NAME       = aws_dynamodb_table.tasks.name
+      LISTS_TABLE_NAME = aws_dynamodb_table.lists.name
+      OAUTH_ISSUER     = "https://cognito-idp.${var.region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
     }
   }
 
@@ -238,7 +264,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
 }
 
 resource "aws_apigatewayv2_route" "protected" {
-  for_each           = toset(["ANY /tasks", "ANY /tasks/{id}", "POST /mcp"])
+  for_each           = toset(["ANY /tasks", "ANY /tasks/{id}", "ANY /lists", "ANY /lists/{id}", "POST /mcp"])
   api_id             = aws_apigatewayv2_api.api.id
   route_key          = each.value
   target             = "integrations/${aws_apigatewayv2_integration.lambda.id}"

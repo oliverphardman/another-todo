@@ -21,3 +21,7 @@ output "hosted_ui_domain" {
 output "tasks_table" {
   value = aws_dynamodb_table.tasks.name
 }
+
+output "lists_table" {
+  value = aws_dynamodb_table.lists.name
+}
