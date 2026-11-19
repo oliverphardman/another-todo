@@ -10,6 +10,20 @@ const TASK_PROPERTIES = {
 	completed: { type: "boolean", description: "Whether the task is done" },
 	importance: { type: "string", enum: ["normal", "high"] },
 	listId: { type: ["string", "null"], description: "Id of the list the task belongs to" },
+	note: { type: "string", description: "Free text note" },
+	steps: {
+		type: "array",
+		description: "Steps (sub-tasks); replaces the whole list",
+		items: {
+			type: "object",
+			properties: {
+				id: { type: "string" },
+				title: { type: "string" },
+				completed: { type: "boolean" },
+			},
+			required: ["id", "title", "completed"],
+		},
+	},
 	myDayDismissed: {
 		type: ["string", "null"],
 		description: "YYYY-MM-DD day the user removed the task from My Day",

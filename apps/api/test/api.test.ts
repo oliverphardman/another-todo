@@ -154,6 +154,35 @@ describe("My Day", () => {
 		expect(bad.status).toBe(400);
 	});
 
+	it("round trips steps and notes over REST", async () => {
+		const api = createTestApi();
+		const created = await api(
+			event({ method: "POST", path: "/tasks", body: { title: "Big job" } }),
+		);
+		expect(created.body.steps).toEqual([]);
+		expect(created.body.note).toBe("");
+		const patched = await api(
+			event({
+				method: "PATCH",
+				path: `/tasks/${created.body.id}`,
+				body: {
+					steps: [{ id: "s1", title: "Start", completed: true }],
+					note: "Line one\nLine two",
+				},
+			}),
+		);
+		expect(patched.body.steps).toEqual([{ id: "s1", title: "Start", completed: true }]);
+		expect(patched.body.note).toBe("Line one\nLine two");
+		const bad = await api(
+			event({
+				method: "PATCH",
+				path: `/tasks/${created.body.id}`,
+				body: { steps: [{ id: "s2" }] },
+			}),
+		);
+		expect(bad.status).toBe(400);
+	});
+
 	it("is available to MCP clients", async () => {
 		const api = createTestApi();
 		const reply = await api(

@@ -70,6 +70,18 @@ describe("Task", () => {
 		expect(JSON.parse(JSON.stringify(task)).myDay).toBe("2026-11-19");
 	});
 
+	it("holds steps and a note and restores legacy records without them", () => {
+		const steps = [{ id: "s1", title: "First", completed: false }];
+		const task = Task.create("u", "1", "A", now).setSteps(steps).setNote("Remember the milk");
+		expect(task.steps).toEqual(steps);
+		expect(task.note).toBe("Remember the milk");
+		expect(Task.restore(task.toRecord()).steps).toEqual(steps);
+		expect(Task.restore(task.toRecord()).note).toBe("Remember the milk");
+		const { steps: _steps, note: _note, ...legacy } = task.toRecord();
+		expect(Task.restore(legacy).steps).toEqual([]);
+		expect(Task.restore(legacy).note).toBe("");
+	});
+
 	it("serializes to JSON without the owner", () => {
 		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
 		expect(json).toEqual({
@@ -80,6 +92,8 @@ describe("Task", () => {
 			listId: null,
 			myDay: null,
 			myDayDismissed: null,
+			steps: [],
+			note: "",
 			dueDate: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});

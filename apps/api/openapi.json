@@ -366,7 +366,9 @@
 					"createdAt",
 					"listId",
 					"myDay",
-					"myDayDismissed"
+					"myDayDismissed",
+					"steps",
+					"note"
 				],
 				"properties": {
 					"id": {
@@ -405,6 +407,17 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
+					},
+					"steps": {
+						"type": "array",
+						"maxItems": 100,
+						"items": {
+							"$ref": "#/components/schemas/TaskStep"
+						}
+					},
+					"note": {
+						"type": "string",
+						"maxLength": 10000
 					}
 				}
 			},
@@ -461,6 +474,17 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
+					},
+					"steps": {
+						"type": "array",
+						"maxItems": 100,
+						"items": {
+							"$ref": "#/components/schemas/TaskStep"
+						}
+					},
+					"note": {
+						"type": "string",
+						"maxLength": 10000
 					}
 				}
 			},
@@ -499,6 +523,17 @@
 						"pattern": "^\\d{4}-\\d{2}-\\d{2}$",
 						"nullable": true,
 						"description": "Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day"
+					},
+					"steps": {
+						"type": "array",
+						"maxItems": 100,
+						"items": {
+							"$ref": "#/components/schemas/TaskStep"
+						}
+					},
+					"note": {
+						"type": "string",
+						"maxLength": 10000
 					}
 				}
 			},
@@ -584,6 +619,25 @@
 					"name": {
 						"type": "string",
 						"minLength": 1
+					}
+				}
+			},
+			"TaskStep": {
+				"type": "object",
+				"required": ["id", "title", "completed"],
+				"additionalProperties": false,
+				"properties": {
+					"id": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,64}$"
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 256
+					},
+					"completed": {
+						"type": "boolean"
 					}
 				}
 			}

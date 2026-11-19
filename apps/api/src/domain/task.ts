@@ -1,4 +1,5 @@
 import { ValidationError } from "./errors";
+import type { TaskStep } from "./task-step";
 
 export type Importance = "normal" | "high";
 
@@ -11,6 +12,8 @@ export interface TaskProps {
 	readonly listId: string | null;
 	readonly myDay: string | null;
 	readonly myDayDismissed: string | null;
+	readonly steps: readonly TaskStep[];
+	readonly note: string;
 	readonly dueDate: Date | null;
 	readonly createdAt: Date;
 }
@@ -24,6 +27,8 @@ export interface TaskRecord {
 	readonly listId?: string | null;
 	readonly myDay?: string | null;
 	readonly myDayDismissed?: string | null;
+	readonly steps?: readonly TaskStep[];
+	readonly note?: string;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -41,6 +46,8 @@ export class Task {
 			listId: null,
 			myDay: null,
 			myDayDismissed: null,
+			steps: [],
+			note: "",
 			dueDate: null,
 			createdAt,
 		});
@@ -56,6 +63,8 @@ export class Task {
 			listId: record.listId ?? null,
 			myDay: record.myDay ?? null,
 			myDayDismissed: record.myDayDismissed ?? null,
+			steps: record.steps ?? [],
+			note: record.note ?? "",
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
 			createdAt: new Date(record.createdAt),
 		});
@@ -101,6 +110,14 @@ export class Task {
 		return this.props.myDayDismissed;
 	}
 
+	get steps(): readonly TaskStep[] {
+		return this.props.steps;
+	}
+
+	get note(): string {
+		return this.props.note;
+	}
+
 	get dueDate(): Date | null {
 		return this.props.dueDate;
 	}
@@ -137,6 +154,14 @@ export class Task {
 		return new Task({ ...this.props, myDayDismissed });
 	}
 
+	setSteps(steps: readonly TaskStep[]): Task {
+		return new Task({ ...this.props, steps });
+	}
+
+	setNote(note: string): Task {
+		return new Task({ ...this.props, note });
+	}
+
 	setDueDate(dueDate: Date | null): Task {
 		return new Task({ ...this.props, dueDate });
 	}
@@ -151,6 +176,8 @@ export class Task {
 			listId: this.props.listId,
 			myDay: this.props.myDay,
 			myDayDismissed: this.props.myDayDismissed,
+			steps: this.props.steps,
+			note: this.props.note,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
 			createdAt: this.props.createdAt.toISOString(),
 		};

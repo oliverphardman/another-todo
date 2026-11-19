@@ -122,6 +122,38 @@ describe("TaskService", () => {
 		);
 	});
 
+	it("stores steps and notes and validates them", async () => {
+		const { tasks } = createServices();
+		const steps = [
+			{ id: "a", title: " First ", completed: false },
+			{ id: "b", title: "Second", completed: true },
+		];
+		const task = await tasks.create("u", { title: "A", steps, note: "Details" });
+		expect(task.steps).toEqual([
+			{ id: "a", title: "First", completed: false },
+			{ id: "b", title: "Second", completed: true },
+		]);
+		expect(task.note).toBe("Details");
+		expect((await tasks.update("u", task.id, { steps: [] })).steps).toEqual([]);
+		const invalid: unknown[] = [
+			"nope",
+			Array.from({ length: 101 }, (_, i) => ({ id: `s${i}`, title: "x", completed: false })),
+			[null],
+			[{ id: "a", title: "", completed: false }],
+			[{ id: "a", title: "   ", completed: false }],
+			[{ id: "a", title: "x".repeat(257), completed: false }],
+			[{ id: "a", title: "x", completed: "no" }],
+			[{ id: "bad id", title: "x", completed: false }],
+		];
+		for (const value of invalid) {
+			await expect(tasks.update("u", task.id, { steps: value })).rejects.toThrow(ValidationError);
+		}
+		await expect(tasks.update("u", task.id, { note: 5 })).rejects.toThrow(ValidationError);
+		await expect(tasks.update("u", task.id, { note: "x".repeat(10001) })).rejects.toThrow(
+			ValidationError,
+		);
+	});
+
 	it("deletes tasks", async () => {
 		const service = createService();
 		const task = await service.create("u", { title: "A" });

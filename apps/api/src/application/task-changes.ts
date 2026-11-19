@@ -1,4 +1,6 @@
+import { EntityId } from "../domain/entity-id";
 import { ValidationError } from "../domain/errors";
+import type { TaskStep } from "../domain/task-step";
 import type { Importance, Task } from "../domain/task";
 
 export interface TaskInput {
@@ -9,6 +11,8 @@ export interface TaskInput {
 	readonly listId?: unknown;
 	readonly myDay?: unknown;
 	readonly myDayDismissed?: unknown;
+	readonly steps?: unknown;
+	readonly note?: unknown;
 	readonly dueDate?: unknown;
 }
 
@@ -32,6 +36,12 @@ export class TaskChanges {
 		}
 		if (input.myDayDismissed !== undefined) {
 			result = result.setMyDayDismissed(TaskChanges.day(input.myDayDismissed, "myDayDismissed"));
+		}
+		if (input.steps !== undefined) {
+			result = result.setSteps(TaskChanges.steps(input.steps));
+		}
+		if (input.note !== undefined) {
+			result = result.setNote(TaskChanges.note(input.note));
 		}
 		if (input.dueDate !== undefined) {
 			result = result.setDueDate(TaskChanges.dueDate(input.dueDate));
@@ -66,6 +76,29 @@ export class TaskChanges {
 			!new Date(`${value}T00:00:00.000Z`).toISOString().startsWith(value)
 		) {
 			throw new ValidationError(`${field} must be a YYYY-MM-DD date or null`);
+		}
+		return value;
+	}
+
+	static steps(value: unknown): TaskStep[] {
+		if (!Array.isArray(value) || value.length > 100) {
+			throw new ValidationError("steps must be an array of at most 100 steps");
+		}
+		return value.map((item: unknown) => {
+			const { id, title, completed } = (item ?? {}) as Record<string, unknown>;
+			if (typeof title !== "string" || title.trim().length === 0 || title.length > 256) {
+				throw new ValidationError("a step title must be 1 to 256 characters");
+			}
+			if (typeof completed !== "boolean") {
+				throw new ValidationError("a step's completed must be a boolean");
+			}
+			return { id: EntityId.parse(id), title: title.trim(), completed };
+		});
+	}
+
+	static note(value: unknown): string {
+		if (typeof value !== "string" || value.length > 10000) {
+			throw new ValidationError("note must be a string of at most 10000 characters");
 		}
 		return value;
 	}

@@ -136,6 +136,8 @@ export interface components {
 			myDay: string | null;
 			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
 			myDayDismissed: string | null;
+			steps: components["schemas"]["TaskStep"][];
+			note: string;
 		};
 		TaskList: {
 			tasks: components["schemas"]["Task"][];
@@ -153,6 +155,8 @@ export interface components {
 			myDay?: string | null;
 			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
 			myDayDismissed?: string | null;
+			steps?: components["schemas"]["TaskStep"][];
+			note?: string;
 		};
 		UpdateTask: {
 			title?: string;
@@ -165,6 +169,8 @@ export interface components {
 			myDay?: string | null;
 			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
 			myDayDismissed?: string | null;
+			steps?: components["schemas"]["TaskStep"][];
+			note?: string;
 		};
 		Error: {
 			error: string;
@@ -190,6 +196,11 @@ export interface components {
 		};
 		UpdateList: {
 			name: string;
+		};
+		TaskStep: {
+			id: string;
+			title: string;
+			completed: boolean;
 		};
 	};
 	responses: {
