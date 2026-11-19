@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
 import { Image, ScrollView, View } from "react-native";
 import { THEME_COLORS, ViewDefaults, type ThemeSetting } from "../domain/view-settings";
@@ -20,6 +21,8 @@ export interface ThemePanelProps {
 export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 	const { store, photos } = useContainer();
 	const palette = useTheme();
+	const i18n = useI18n();
+	const { t } = i18n;
 	useObservable(store);
 	const library = useObservable(photos);
 	const [confirming, setConfirming] = useState<string | null>(null);
@@ -36,11 +39,11 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 		<ScrollView style={{ maxHeight: 460 }} contentContainerStyle={{ padding: 12 }}>
 			<View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
 				<AppText weight="600" size={15} style={{ flex: 1 }}>
-					Theme
+					{t("theme.title")}
 				</AppText>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Close theme"
+					accessibilityLabel={t("theme.close")}
 					onPress={onClose}
 					style={{ padding: 4 }}
 				>
@@ -48,14 +51,14 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 				</PressableSurface>
 			</View>
 			<AppText size={12} tone="secondary" style={{ marginBottom: 8 }}>
-				Colors
+				{t("theme.colors")}
 			</AppText>
 			<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
 				{THEME_COLORS.map((color) => (
 					<PressableSurface
 						key={color.hex}
 						accessibilityRole="radio"
-						accessibilityLabel={`${color.name} theme`}
+						accessibilityLabel={t("theme.named", { name: t(color.nameKey) })}
 						aria-checked={selectedColor === color.hex}
 						onPress={() =>
 							choose(color.hex === defaultColor ? null : { type: "color", color: color.hex })
@@ -78,7 +81,7 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 				))}
 			</View>
 			<AppText size={12} tone="secondary" style={{ marginBottom: 8 }}>
-				Photos
+				{t("theme.photos")}
 			</AppText>
 			<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
 				{library.photos.map((photo) => {
@@ -87,7 +90,7 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 						<View key={photo.id} style={{ width: THUMBNAIL, height: THUMBNAIL }}>
 							<PressableSurface
 								accessibilityRole="radio"
-								accessibilityLabel={`Use photo ${photo.name}`}
+								accessibilityLabel={t("photo.use", { name: photo.name })}
 								aria-checked={selected}
 								onPress={() => choose({ type: "photo", photoId: photo.id })}
 								style={{
@@ -108,7 +111,7 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 							</PressableSurface>
 							<PressableSurface
 								accessibilityRole="button"
-								accessibilityLabel={`Delete photo ${photo.name}`}
+								accessibilityLabel={t("photo.delete", { name: photo.name })}
 								onPress={() => setConfirming(photo.id)}
 								style={{
 									position: "absolute",
@@ -129,7 +132,7 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 				})}
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Upload photo"
+					accessibilityLabel={t("photo.uploadA11y")}
 					accessibilityState={{ busy: library.busy === "uploading" }}
 					disabled={library.busy === "uploading"}
 					onPress={() => void photos.upload()}
@@ -146,19 +149,17 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 				>
 					<Icon glyph="plus" size={22} color={palette.accent} />
 					<AppText size={11} tone="secondary">
-						{library.busy === "uploading" ? "Uploading…" : "Upload"}
+						{library.busy === "uploading" ? t("photo.uploading") : t("photo.upload")}
 					</AppText>
 				</PressableSurface>
 			</View>
 			{doomed === undefined ? null : (
 				<View style={{ marginTop: 12 }}>
-					<AppText
-						size={13}
-					>{`Delete ${doomed.name} permanently? Any list using it goes back to the default theme.`}</AppText>
+					<AppText size={13}>{t("photo.confirm", { name: doomed.name })}</AppText>
 					<View style={{ flexDirection: "row", marginTop: 8, gap: 8 }}>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel="Confirm delete photo"
+							accessibilityLabel={t("photo.confirmDelete")}
 							onPress={() => {
 								setConfirming(null);
 								void photos.remove(doomed.id);
@@ -171,23 +172,23 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 							}}
 						>
 							<AppText size={13} tone="onAccent" weight="600">
-								Delete
+								{t("photo.confirmButton")}
 							</AppText>
 						</PressableSurface>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel="Cancel delete photo"
+							accessibilityLabel={t("photo.cancelDelete")}
 							onPress={() => setConfirming(null)}
 							style={{ paddingHorizontal: 12, paddingVertical: 6 }}
 						>
-							<AppText size={13}>Cancel</AppText>
+							<AppText size={13}>{t("photo.cancel")}</AppText>
 						</PressableSurface>
 					</View>
 				</View>
 			)}
 			{library.error === null ? null : (
 				<AppText size={13} tone="danger" accessibilityRole="alert" style={{ marginTop: 12 }}>
-					{library.error}
+					{i18n.text(library.error)}
 				</AppText>
 			)}
 		</ScrollView>

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
@@ -26,6 +27,8 @@ export interface TaskListPaneProps {
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { store } = useContainer();
 	const palette = useTheme();
+	const i18n = useI18n();
+	const { t } = i18n;
 	const state = useObservable(store);
 	const [showDone, setShowDone] = useState(true);
 	const [renaming, setRenaming] = useState<string | null>(null);
@@ -39,10 +42,12 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const today = store.today;
 	const subtitleFor = (task: Task): string | null => {
 		const parts = [
-			view.showsListName ? store.listName(task) : null,
-			task.steps.length === 0 ? null : `${task.stepsCompleted} of ${task.steps.length}`,
-			view.showsMyDay && task.isInMyDay(today) ? "My Day" : null,
-			task.dueDay === null ? null : DueDay.label(task.dueDay, today),
+			view.showsListName ? (store.listName(task) ?? t("view.tasks")) : null,
+			task.steps.length === 0
+				? null
+				: t("task.stepsProgress", { done: task.stepsCompleted, total: task.steps.length }),
+			view.showsMyDay && task.isInMyDay(today) ? t("task.myDayTag") : null,
+			task.dueDay === null ? null : i18n.dueLabel(task.dueDay, today),
 		].filter((part): part is string => part !== null);
 		return parts.length === 0 ? null : parts.join(" · ");
 	};
@@ -58,7 +63,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			onSelect={() => store.selectTask(task.id)}
 		/>
 	);
-	const addBar = <AddTaskBar placeholder="Add a task" onSubmit={(text) => store.addTask(text)} />;
+	const addBar = (
+		<AddTaskBar placeholder={t("task.add")} onSubmit={(text) => store.addTask(text)} />
+	);
 	const compact = mode === "compact";
 	return (
 		<PaneBackground imageUrl={imageUrl}>
@@ -75,7 +82,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				{compact ? (
 					<PressableSurface
 						accessibilityRole="button"
-						accessibilityLabel="Show lists"
+						accessibilityLabel={t("list.showLists")}
 						onPress={onShowSidebar}
 						style={{ padding: 8, marginRight: 8 }}
 					>
@@ -85,17 +92,17 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				{renaming === null ? (
 					<View style={{ flex: 1 }}>
 						<AppText role="heading" size={28} weight="600" tone="onAccent">
-							{view.title}
+							{i18n.viewTitle(view)}
 						</AppText>
-						{view.subtitle(today) === null ? null : (
+						{view.showsDate ? (
 							<AppText size={13} tone="onAccent">
-								{view.subtitle(today)}
+								{i18n.longDay(today)}
 							</AppText>
-						)}
+						) : null}
 					</View>
 				) : (
 					<TextInput
-						accessibilityLabel="List name"
+						accessibilityLabel={t("list.name")}
 						autoFocus
 						value={renaming}
 						onChangeText={setRenaming}
@@ -123,17 +130,17 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					<View style={{ flexDirection: "row" }}>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel="Rename list"
+							accessibilityLabel={t("list.rename")}
 							onPress={() => setRenaming(view.title)}
 							style={{ padding: 8 }}
 						>
 							<AppText tone="onAccent" size={13}>
-								Rename
+								{t("list.renameShort")}
 							</AppText>
 						</PressableSurface>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel="Delete list"
+							accessibilityLabel={t("list.delete")}
 							onPress={() => store.deleteList(view.id)}
 							style={{ padding: 8 }}
 						>
@@ -144,7 +151,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				<SyncIndicator />
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="List options"
+					accessibilityLabel={t("list.options")}
 					accessibilityState={{ expanded: panel !== null }}
 					onPress={() => setPanel(panel === null ? "menu" : null)}
 					style={{ padding: 8, marginLeft: 4 }}
@@ -162,14 +169,16 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				{open.map(row)}
 				{open.length === 0 && done.length === 0 ? (
 					<AppText tone="onAccent" style={{ textAlign: "center", marginTop: 32 }}>
-						No tasks here yet
+						{t("list.empty")}
 					</AppText>
 				) : null}
 				{done.length === 0 ? null : (
 					<View style={{ marginTop: 12 }}>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel={showDone ? "Hide completed tasks" : "Show completed tasks"}
+							accessibilityLabel={
+								showDone ? t("list.hideCompletedSection") : t("list.showCompletedSection")
+							}
 							onPress={() => setShowDone((value) => !value)}
 							style={{
 								flexDirection: "row",
@@ -183,7 +192,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 								color={palette.onAccent}
 							/>
 							<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
-								{`Completed ${done.length}`}
+								{t("list.completed", { count: done.length })}
 							</AppText>
 						</PressableSurface>
 						{showDone ? done.map(row) : null}

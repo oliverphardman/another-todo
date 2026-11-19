@@ -86,6 +86,10 @@ export class TodoStore extends Observable<TodoState> {
 		return tasks.find((task) => task.id === selectedTaskId) ?? null;
 	}
 
+	get now(): Date {
+		return this.clock.now();
+	}
+
 	get today(): string {
 		return this.get().today;
 	}
@@ -129,13 +133,13 @@ export class TodoStore extends Observable<TodoState> {
 		}));
 	}
 
-	duplicateList(listId: string): string | null {
+	duplicateList(listId: string, copyName: string): string | null {
 		const source = this.get().lists.find((list) => list.id === listId);
 		if (source === undefined) {
 			return null;
 		}
 		const now = this.clock.now().toISOString();
-		const copy = TodoList.create(this.ids.next(), `Copy of ${source.name}`, now);
+		const copy = TodoList.create(this.ids.next(), copyName, now);
 		const tasks = this.get()
 			.tasks.filter((task) => task.listId === listId)
 			.map(
@@ -170,9 +174,9 @@ export class TodoStore extends Observable<TodoState> {
 		return copy.id;
 	}
 
-	listName(task: Task): string {
+	listName(task: Task): string | null {
 		const list = this.get().lists.find((candidate) => candidate.id === task.listId);
-		return list === undefined ? DEFAULT_VIEW_NAME : list.name;
+		return list === undefined ? null : list.name;
 	}
 
 	taskCount(view: TaskView): number {
@@ -398,5 +402,3 @@ export class TodoStore extends Observable<TodoState> {
 		this.trigger.request();
 	}
 }
-
-const DEFAULT_VIEW_NAME = "Tasks";

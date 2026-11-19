@@ -1,5 +1,5 @@
-import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
+import type { I18n } from "../i18n/i18n";
 
 export interface PrintableList {
 	readonly title: string;
@@ -22,11 +22,11 @@ const ESCAPES: Record<string, string> = {
 };
 
 export class ListPrintDocument {
-	static html(list: PrintableList): string {
+	static html(list: PrintableList, i18n: I18n): string {
 		const section = (heading: string, tasks: readonly Task[]) =>
 			tasks.length === 0
 				? ""
-				: `<h2>${heading}</h2><ul>${tasks.map((task) => ListPrintDocument.item(task, list.today)).join("")}</ul>`;
+				: `<h2>${heading}</h2><ul>${tasks.map((task) => ListPrintDocument.item(task, list.today, i18n)).join("")}</ul>`;
 		return [
 			'<!doctype html><html><head><meta charset="utf-8"><title>',
 			ListPrintDocument.escape(list.title),
@@ -43,16 +43,18 @@ export class ListPrintDocument {
 			list.subtitle === null
 				? ""
 				: `<p class="subtitle">${ListPrintDocument.escape(list.subtitle)}</p>`,
-			section("To do", list.open),
-			section("Completed", list.done),
+			section(i18n.t("print.todo"), list.open),
+			section(i18n.t("print.completed"), list.done),
 			"</body></html>",
 		].join("");
 	}
 
-	private static item(task: Task, today: string): string {
+	private static item(task: Task, today: string, i18n: I18n): string {
 		const meta = [
-			task.dueDay === null ? null : `Due ${DueDay.label(task.dueDay, today)}`,
-			task.important ? "Important" : null,
+			task.dueDay === null
+				? null
+				: i18n.t("detail.due", { when: i18n.dueLabel(task.dueDay, today) }),
+			task.important ? i18n.t("print.important") : null,
 		].filter((part): part is string => part !== null);
 		const steps = task.steps
 			.map(

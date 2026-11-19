@@ -29,20 +29,6 @@ describe("DueDay", () => {
 		expect(DueDay.isOverdue("2026-11-19", "2026-11-19")).toBe(false);
 	});
 
-	it("labels days relative to today", () => {
-		const today = "2026-11-19";
-		expect(DueDay.label("2026-11-19", today)).toBe("Today");
-		expect(DueDay.label("2026-11-20", today)).toBe("Tomorrow");
-		expect(DueDay.label("2026-11-18", today)).toBe("Yesterday");
-		expect(DueDay.label("2026-11-27", today)).toBe("Fri, Nov 27");
-		expect(DueDay.label("2027-01-04", today)).toBe("Mon, Jan 4, 2027");
-	});
-
-	it("writes the long form used by My Day", () => {
-		expect(DueDay.longLabel("2026-11-19")).toBe("Thursday, November 19");
-		expect(DueDay.longLabel("2026-01-01")).toBe("Thursday, January 1");
-	});
-
 	it("finds the next Monday", () => {
 		expect(DueDay.nextWeek("2026-11-19")).toBe("2026-11-23");
 		expect(DueDay.nextWeek("2026-11-23")).toBe("2026-11-30");

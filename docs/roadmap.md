@@ -6,18 +6,18 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 ## 1. Look and feel
 
-- [ ] In dark mode the background of lists is #1E1E1E, unless a photo is set, in which case the photo is always shown
-- [ ] The sidebar color in dark mode is #252525
-- [ ] Default theme color for lists is #6074C3
-- [ ] Default theme color for All tasks is #F9E7DE
-- [ ] Default theme color for Planned is #D5F1EE
-- [ ] Completed check circles are filled with the list's background color with a white check
-- [ ] Light and dark mode follow the system preference
+- [x] In dark mode the background of lists is #1E1E1E, unless a photo is set, in which case the photo is always shown
+- [x] The sidebar color in dark mode is #252525
+- [x] Default theme color for lists is #6074C3
+- [x] Default theme color for All tasks is #F9E7DE
+- [x] Default theme color for Planned is #D5F1EE
+- [x] Completed check circles are filled with the list's color with a white check (the fade-in and move-to-completed animation is still to do, see section 3)
+- [x] Light and dark mode follow the system preference
 
 ## 2. Localization
 
-- [ ] Localization support: default en-US, respect the browser or system locale, fall back to en-US for unsupported locales
-- [ ] "Created a few moments ago" instead of "Created Today" where relevant; only the word "Created" is capitalized
+- [x] Localization support: default en-US, respect the browser or system locale, fall back to en-US for unsupported locales
+- [x] "Created a few moments ago" instead of "Created Today" where relevant; only the word "Created" is capitalized
 
 ## 3. Direct manipulation
 

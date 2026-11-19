@@ -83,10 +83,10 @@ describe("PhotoLibrary", () => {
 		await library.refresh(true);
 		expect(library.get().error).toBeNull();
 		await library.refresh();
-		expect(library.get().error).toMatch(/unavailable/);
+		expect(library.get().error).toEqual({ key: "photo.errorUnavailable" });
 		gateway.failure = new ApiError(500, "Server exploded");
 		await library.refresh();
-		expect(library.get().error).toBe("Server exploded");
+		expect(library.get().error).toEqual({ message: "Server exploded" });
 		gateway.failure = null;
 		await library.refresh();
 		expect(library.get().error).toBeNull();
@@ -148,13 +148,13 @@ describe("PhotoLibrary", () => {
 		const base = { name: "x", body: new Blob(["x"]) };
 		picker.next = { ...base, contentType: "image/gif", size: 10 };
 		expect(await library.upload()).toBeNull();
-		expect(library.get().error).toBe("Choose a JPEG, PNG or WebP image.");
+		expect(library.get().error).toEqual({ key: "photo.errorType" });
 		picker.next = { ...base, contentType: "image/png", size: 0 };
 		await library.upload();
-		expect(library.get().error).toBe("That photo could not be read.");
+		expect(library.get().error).toEqual({ key: "photo.errorUnreadable" });
 		picker.next = { ...base, contentType: "image/png", size: 6 * 1024 * 1024 };
 		await library.upload();
-		expect(library.get().error).toBe("Photos must be 5 MB or smaller.");
+		expect(library.get().error).toEqual({ key: "photo.errorSize" });
 		expect(gateway.calls).toEqual([]);
 	});
 
@@ -162,11 +162,11 @@ describe("PhotoLibrary", () => {
 		const { library, picker, gateway } = setup();
 		gateway.failure = new ApiError(400, "Photo rejected");
 		await library.upload();
-		expect(library.get().error).toBe("Photo rejected");
+		expect(library.get().error).toEqual({ message: "Photo rejected" });
 		gateway.failure = null;
 		picker.next = new Error("picker crashed");
 		await library.upload();
-		expect(library.get().error).toMatch(/unavailable/);
+		expect(library.get().error).toEqual({ key: "photo.errorUnavailable" });
 		expect(library.get().busy).toBe("idle");
 	});
 
@@ -176,13 +176,13 @@ describe("PhotoLibrary", () => {
 		gateway.failure = new ApiError(500, "Cannot delete");
 		expect(await library.remove(photo.id)).toBe(false);
 		expect(library.get().photos).toHaveLength(1);
-		expect(library.get().error).toBe("Cannot delete");
+		expect(library.get().error).toEqual({ message: "Cannot delete" });
 		gateway.failure = null;
 		expect(await library.remove(photo.id)).toBe(true);
 		expect(library.get().photos).toEqual([]);
 		expect(library.get().error).toBeNull();
 		gateway.failure = new Error("offline");
 		await library.remove("x");
-		expect(library.get().error).toMatch(/unavailable/);
+		expect(library.get().error).toEqual({ key: "photo.errorUnavailable" });
 	});
 });

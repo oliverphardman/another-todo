@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { Icon } from "./icon";
@@ -13,6 +14,7 @@ export interface NewListFieldProps {
 
 export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 	const palette = useTheme();
+	const { t } = useI18n();
 	const [name, setName] = useState("");
 	const finished = useRef(false);
 	const finish = () => {
@@ -38,8 +40,8 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 			<Icon glyph="plus" color={palette.accent} />
 			<TextInput
 				autoFocus
-				accessibilityLabel="New list"
-				placeholder="New list"
+				accessibilityLabel={t("sidebar.newList")}
+				placeholder={t("sidebar.newList")}
 				placeholderTextColor={palette.textSecondary}
 				value={name}
 				onChangeText={setName}

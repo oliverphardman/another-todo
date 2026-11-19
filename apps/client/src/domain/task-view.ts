@@ -1,4 +1,5 @@
 import { DueDay } from "./due-day";
+import type { MessageKey } from "../i18n/en-us";
 import type { Task, TaskChanges } from "./task";
 import type { TodoList } from "./todo-list";
 
@@ -9,17 +10,15 @@ export type TaskOrder = "newest" | "due";
 export abstract class TaskView {
 	abstract readonly id: string;
 	abstract readonly title: string;
+	abstract readonly titleKey: MessageKey | null;
 	abstract readonly icon: IconName;
 	readonly order: TaskOrder = "newest";
 	readonly isCustomList: boolean = false;
 	readonly showsListName: boolean = true;
 	readonly showsMyDay: boolean = true;
+	readonly showsDate: boolean = false;
 
 	abstract matches(task: Task, today: string): boolean;
-
-	subtitle(_today: string): string | null {
-		return null;
-	}
 
 	defaultsForNewTask(_today: string): TaskChanges {
 		return {};
@@ -29,15 +28,13 @@ export abstract class TaskView {
 export class MyDayView extends TaskView {
 	readonly id = "my-day";
 	readonly title = "My Day";
+	readonly titleKey = "view.myDay";
 	readonly icon = "myDay";
 	override readonly showsMyDay = false;
+	override readonly showsDate = true;
 
 	matches(task: Task, today: string): boolean {
 		return task.isInMyDay(today);
-	}
-
-	override subtitle(today: string): string {
-		return DueDay.longLabel(today);
 	}
 
 	override defaultsForNewTask(today: string): TaskChanges {
@@ -48,6 +45,7 @@ export class MyDayView extends TaskView {
 export class ImportantView extends TaskView {
 	readonly id = "important";
 	readonly title = "Important";
+	readonly titleKey = "view.important";
 	readonly icon = "important";
 
 	matches(task: Task): boolean {
@@ -62,6 +60,7 @@ export class ImportantView extends TaskView {
 export class PlannedView extends TaskView {
 	readonly id = "planned";
 	readonly title = "Planned";
+	readonly titleKey = "view.planned";
 	readonly icon = "planned";
 	override readonly order = "due";
 
@@ -77,6 +76,7 @@ export class PlannedView extends TaskView {
 export class AllTasksView extends TaskView {
 	readonly id = "all";
 	readonly title = "All tasks";
+	readonly titleKey = "view.all";
 	readonly icon = "all";
 
 	matches(): boolean {
@@ -87,6 +87,7 @@ export class AllTasksView extends TaskView {
 export class DefaultListView extends TaskView {
 	readonly id = "tasks";
 	readonly title = "Tasks";
+	readonly titleKey = "view.tasks";
 	readonly icon = "tasks";
 	override readonly showsListName = false;
 
@@ -97,6 +98,7 @@ export class DefaultListView extends TaskView {
 
 export class CustomListView extends TaskView {
 	readonly icon = "list";
+	readonly titleKey = null;
 	override readonly isCustomList = true;
 	override readonly showsListName = false;
 

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import type { ReactNode } from "react";
 import { Pressable, View, type ViewStyle } from "react-native";
 import { AppText } from "./app-text";
@@ -12,13 +13,14 @@ export function MenuOverlay({
 	onDismiss: () => void;
 	children: ReactNode;
 }) {
+	const { t } = useI18n();
 	return (
 		<View
 			style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 20 }}
-			accessibilityLabel="Menu overlay"
+			accessibilityLabel={t("menu.overlay")}
 		>
 			<Pressable
-				accessibilityLabel="Close menu"
+				accessibilityLabel={t("menu.close")}
 				onPress={onDismiss}
 				style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
 			/>

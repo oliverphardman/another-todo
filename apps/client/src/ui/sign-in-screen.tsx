@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import { AppText } from "./app-text";
@@ -13,6 +14,7 @@ export interface SignInScreenProps {
 export function SignInScreen({ providers }: SignInScreenProps) {
 	const { auth } = useContainer();
 	const palette = useTheme();
+	const { t } = useI18n();
 	const button = {
 		alignItems: "center",
 		paddingVertical: 12,
@@ -33,30 +35,30 @@ export function SignInScreen({ providers }: SignInScreenProps) {
 		>
 			<Icon glyph="check" size={64} color={palette.onAccent} />
 			<AppText role="heading" size={32} weight="600" tone="onAccent" style={{ marginTop: 16 }}>
-				Another To Do
+				{t("app.name")}
 			</AppText>
 			<AppText tone="onAccent" style={{ marginTop: 8, marginBottom: 24, textAlign: "center" }}>
-				Get things done, wherever you are.
+				{t("app.tagline")}
 			</AppText>
 			<PressableSurface
 				accessibilityRole="button"
-				accessibilityLabel="Sign in"
+				accessibilityLabel={t("signIn.button")}
 				onPress={() => void auth.signIn()}
 				style={{ ...button, backgroundColor: palette.surface }}
 			>
 				<AppText weight="600" style={{ color: palette.accent }}>
-					Sign in
+					{t("signIn.button")}
 				</AppText>
 			</PressableSurface>
 			{providers.map((provider) => (
 				<PressableSurface
 					key={provider}
 					accessibilityRole="button"
-					accessibilityLabel={`Continue with ${provider}`}
+					accessibilityLabel={t("signIn.provider", { provider })}
 					onPress={() => void auth.signIn(provider)}
 					style={{ ...button, backgroundColor: palette.surface }}
 				>
-					<AppText weight="600">{`Continue with ${provider}`}</AppText>
+					<AppText weight="600">{t("signIn.provider", { provider })}</AppText>
 				</PressableSurface>
 			))}
 		</View>

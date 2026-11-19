@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import type { IconName } from "../domain/task-view";
@@ -24,18 +25,23 @@ export interface SidebarProps {
 
 export function Sidebar({ onSelected }: SidebarProps) {
 	const { store, auth } = useContainer();
+	const i18n = useI18n();
+	const { t } = i18n;
 	const palette = useTheme();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	return (
-		<View style={{ flex: 1, backgroundColor: palette.sidebar }} accessibilityLabel="Lists">
+		<View
+			style={{ flex: 1, backgroundColor: palette.sidebar }}
+			accessibilityLabel={t("sidebar.lists")}
+		>
 			<View style={{ flexDirection: "row", alignItems: "center", padding: 16 }}>
 				<AppText size={18} weight="600" style={{ flex: 1, color: palette.accent }}>
-					Another To Do
+					{t("app.name")}
 				</AppText>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Sign out"
+					accessibilityLabel={t("signOut.button")}
 					onPress={() => void auth.signOut()}
 					hoverColor={palette.sidebarHover}
 					style={{ padding: 8, borderRadius: 4 }}
@@ -61,7 +67,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							) : null}
 							<PressableSurface
 								accessibilityRole="button"
-								accessibilityLabel={view.title}
+								accessibilityLabel={i18n.viewTitle(view)}
 								accessibilityState={{ selected }}
 								onPress={() => {
 									store.select(view.id);
@@ -78,10 +84,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							>
 								<Icon glyph={GLYPHS[view.icon]} color={palette.accent} />
 								<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
-									{view.title}
+									{i18n.viewTitle(view)}
 								</AppText>
 								{count === 0 ? null : (
-									<AppText size={12} tone="secondary" accessibilityLabel={`${count} open`}>
+									<AppText
+										size={12}
+										tone="secondary"
+										accessibilityLabel={t("sidebar.openCount", { count })}
+									>
 										{count}
 									</AppText>
 								)}
@@ -109,7 +119,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				) : (
 					<PressableSurface
 						accessibilityRole="button"
-						accessibilityLabel="Create a new list"
+						accessibilityLabel={t("sidebar.createList")}
 						onPress={() => setCreating(true)}
 						hoverColor={palette.sidebarHover}
 						style={{
@@ -120,7 +130,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						}}
 					>
 						<Icon glyph="plus" color={palette.accent} />
-						<AppText style={{ marginLeft: 14 }}>New list</AppText>
+						<AppText style={{ marginLeft: 14 }}>{t("sidebar.newList")}</AppText>
 					</PressableSurface>
 				)}
 			</View>

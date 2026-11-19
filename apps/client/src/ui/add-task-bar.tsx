@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 import { AppText } from "./app-text";
@@ -13,6 +14,7 @@ export interface AddTaskBarProps {
 
 export function AddTaskBar({ placeholder, onSubmit }: AddTaskBarProps) {
 	const palette = useTheme();
+	const { t } = useI18n();
 	const [text, setText] = useState("");
 	const submit = () => {
 		if (text.trim().length > 0) {
@@ -55,12 +57,12 @@ export function AddTaskBar({ placeholder, onSubmit }: AddTaskBarProps) {
 			{text.trim().length === 0 ? null : (
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Add"
+					accessibilityLabel={t("task.addButton")}
 					onPress={submit}
 					style={{ paddingHorizontal: 12, paddingVertical: 6 }}
 				>
 					<AppText weight="600" style={{ color: palette.accent }}>
-						Add
+						{t("task.addButton")}
 					</AppText>
 				</PressableSurface>
 			)}

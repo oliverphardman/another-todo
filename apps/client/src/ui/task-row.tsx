@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -25,6 +26,7 @@ export function TaskRow({
 	onSelect,
 }: TaskRowProps) {
 	const palette = useTheme();
+	const { t } = useI18n();
 	return (
 		<View
 			style={{
@@ -38,7 +40,7 @@ export function TaskRow({
 		>
 			<PressableSurface
 				accessibilityRole="checkbox"
-				accessibilityLabel={task.completed ? "Mark as not completed" : "Mark as completed"}
+				accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
 				accessibilityState={{ checked: task.completed }}
 				onPress={onToggleCompleted}
 				style={{ padding: 14 }}
@@ -51,7 +53,7 @@ export function TaskRow({
 			</PressableSurface>
 			<PressableSurface
 				accessibilityRole="button"
-				accessibilityLabel={`Open ${task.title}`}
+				accessibilityLabel={t("task.open", { title: task.title })}
 				onPress={onSelect}
 				style={{ flex: 1, paddingVertical: 8 }}
 			>
@@ -70,7 +72,7 @@ export function TaskRow({
 			</PressableSurface>
 			<PressableSurface
 				accessibilityRole="button"
-				accessibilityLabel={task.important ? "Remove importance" : "Mark as important"}
+				accessibilityLabel={task.important ? t("task.removeImportance") : t("task.makeImportant")}
 				onPress={onToggleImportant}
 				style={{ padding: 14 }}
 			>

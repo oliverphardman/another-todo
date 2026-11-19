@@ -169,7 +169,7 @@ describe("expanded layout", () => {
 		const app = await start();
 		addTask("Short lived");
 		fireEvent.click(screen.getByLabelText("Open Short lived"));
-		expect(screen.getByText("Created Today")).toBeTruthy();
+		expect(screen.getByText("Created a few moments ago")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Delete task"));
 		expect(app.container.store.get().tasks).toEqual([]);
 		expect(screen.queryByLabelText("Task details")).toBeNull();
@@ -669,6 +669,20 @@ describe("list options menu", () => {
 			"Groceries",
 			"Copy of Groceries",
 		]);
+	});
+
+	it("prints a custom list without a date line", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const name = screen.getByLabelText("New list");
+		fireEvent.change(name, { target: { value: "Groceries" } });
+		fireEvent.keyDown(name, { key: "Enter" });
+		addTask("Eggs");
+		open();
+		fireEvent.click(screen.getByLabelText("Print List"));
+		await waitFor(() => expect(app.printer.documents).toHaveLength(1));
+		expect(app.printer.documents[0]).toContain("<h1>Groceries</h1>");
+		expect(app.printer.documents[0]).not.toContain('class="subtitle"');
 	});
 
 	it("prints the visible tasks, and survives a printer failure", async () => {

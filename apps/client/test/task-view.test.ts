@@ -60,10 +60,11 @@ describe("task views", () => {
 		expect(view.matches(task.with({ myDay: "2026-11-19" }), "2026-11-19")).toBe(true);
 		expect(view.matches(task.with({ myDay: "2026-11-18" }), "2026-11-19")).toBe(false);
 		expect(view.matches(task, "2026-11-19")).toBe(false);
-		expect(view.subtitle("2026-11-19")).toBe("Thursday, November 19");
+		expect(view.showsDate).toBe(true);
+		expect(view.titleKey).toBe("view.myDay");
 		expect(view.defaultsForNewTask("2026-11-19")).toEqual({ myDay: "2026-11-19" });
 		expect(view.showsMyDay).toBe(false);
-		expect(new ImportantView().subtitle("2026-11-19")).toBeNull();
+		expect(new ImportantView().showsDate).toBe(false);
 		expect(new ImportantView().showsMyDay).toBe(true);
 	});
 

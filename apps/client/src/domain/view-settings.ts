@@ -1,3 +1,5 @@
+import type { MessageKey } from "../i18n/en-us";
+
 export type SortKey = "importance" | "alphabetical" | "due" | "created" | "myDay";
 
 export type ThemeSetting =
@@ -27,27 +29,27 @@ const VIEW_THEME_COLORS: Record<string, string> = {
 	planned: "#d5f1ee",
 };
 
-export const THEME_COLORS: readonly { readonly name: string; readonly hex: string }[] = [
-	{ name: "Blue", hex: DEFAULT_THEME_COLOR },
-	{ name: "Periwinkle", hex: LIST_THEME_COLOR },
-	{ name: "Red", hex: "#c0392b" },
-	{ name: "Orange", hex: "#d9791f" },
-	{ name: "Green", hex: "#3a8a4a" },
-	{ name: "Teal", hex: "#2e7c80" },
-	{ name: "Purple", hex: "#6b5bb5" },
-	{ name: "Pink", hex: "#c4488a" },
-	{ name: "Brown", hex: "#8a5a44" },
-	{ name: "Gray", hex: "#5f6b7a" },
-	{ name: "Peach", hex: "#f9e7de" },
-	{ name: "Mint", hex: "#d5f1ee" },
+export const THEME_COLORS: readonly { readonly nameKey: MessageKey; readonly hex: string }[] = [
+	{ nameKey: "color.blue", hex: DEFAULT_THEME_COLOR },
+	{ nameKey: "color.periwinkle", hex: LIST_THEME_COLOR },
+	{ nameKey: "color.red", hex: "#c0392b" },
+	{ nameKey: "color.orange", hex: "#d9791f" },
+	{ nameKey: "color.green", hex: "#3a8a4a" },
+	{ nameKey: "color.teal", hex: "#2e7c80" },
+	{ nameKey: "color.purple", hex: "#6b5bb5" },
+	{ nameKey: "color.pink", hex: "#c4488a" },
+	{ nameKey: "color.brown", hex: "#8a5a44" },
+	{ nameKey: "color.gray", hex: "#5f6b7a" },
+	{ nameKey: "color.peach", hex: "#f9e7de" },
+	{ nameKey: "color.mint", hex: "#d5f1ee" },
 ];
 
-export const SORT_OPTIONS: readonly { readonly key: SortKey; readonly label: string }[] = [
-	{ key: "importance", label: "Importance" },
-	{ key: "alphabetical", label: "Alphabetically" },
-	{ key: "due", label: "Due Date" },
-	{ key: "created", label: "Creation Date" },
-	{ key: "myDay", label: "Added to My Day" },
+export const SORT_OPTIONS: readonly { readonly key: SortKey; readonly labelKey: MessageKey }[] = [
+	{ key: "importance", labelKey: "sort.importance" },
+	{ key: "alphabetical", labelKey: "sort.alphabetical" },
+	{ key: "due", labelKey: "sort.due" },
+	{ key: "created", labelKey: "sort.created" },
+	{ key: "myDay", labelKey: "sort.myDay" },
 ];
 
 export class ViewDefaults {

@@ -2,6 +2,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo } from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { DeviceLocale } from "./src/i18n/device-locale";
+import { I18nProvider } from "./src/i18n/i18n-context";
 import { AppConfigReader } from "./src/config/app-config";
 import { createContainer } from "./src/container";
 import { ContainerProvider } from "./src/ui/container-context";
@@ -16,6 +18,7 @@ export default function App() {
 			}),
 		[],
 	);
+	const locale = useMemo(() => DeviceLocale.resolved(), []);
 	useEffect(() => {
 		void container.database.load().then(() => container.auth.restore());
 		container.sync.start();
@@ -30,9 +33,11 @@ export default function App() {
 	return (
 		<SafeAreaProvider>
 			<ThemeProvider>
-				<ContainerProvider container={container}>
-					<AppShell providers={[]} />
-				</ContainerProvider>
+				<I18nProvider locale={locale}>
+					<ContainerProvider container={container}>
+						<AppShell providers={[]} />
+					</ContainerProvider>
+				</I18nProvider>
 				<StatusBar style="auto" />
 			</ThemeProvider>
 		</SafeAreaProvider>

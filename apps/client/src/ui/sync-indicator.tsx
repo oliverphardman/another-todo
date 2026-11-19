@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { View } from "react-native";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
@@ -7,6 +8,7 @@ import { useTheme } from "./theme-context";
 export function SyncIndicator() {
 	const { sync, store } = useContainer();
 	const palette = useTheme();
+	const { t } = useI18n();
 	const status = useObservable(sync);
 	const { pendingChanges } = useObservable(store);
 	if (status.phase !== "offline" || pendingChanges === 0) {
@@ -15,7 +17,7 @@ export function SyncIndicator() {
 	return (
 		<View
 			accessibilityRole="image"
-			accessibilityLabel="Changes are waiting to sync"
+			accessibilityLabel={t("sync.waiting")}
 			style={{
 				width: 32,
 				height: 32,

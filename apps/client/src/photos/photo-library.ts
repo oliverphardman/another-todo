@@ -1,4 +1,5 @@
 import { ApiError } from "../api/errors";
+import type { LocalizedText } from "../i18n/i18n";
 import type { AuthStatus } from "../auth/authentication-service";
 import { Observable } from "../state/observable";
 import { PhotoRules, type PhotoData } from "./photo";
@@ -7,8 +8,10 @@ import type { PhotoGateway, PhotoPicker } from "./photo-gateway";
 export interface PhotoLibraryState {
 	readonly photos: readonly PhotoData[];
 	readonly busy: "idle" | "loading" | "uploading";
-	readonly error: string | null;
+	readonly error: PhotoError | null;
 }
+
+export type PhotoError = LocalizedText;
 
 const REFRESH_MS = 30 * 60_000;
 
@@ -82,7 +85,7 @@ export class PhotoLibrary extends Observable<PhotoLibraryState> {
 			}
 			const problem = PhotoRules.problemWith(picked);
 			if (problem !== null) {
-				this.set({ ...this.get(), busy: "idle", error: problem });
+				this.set({ ...this.get(), busy: "idle", error: { key: problem } });
 				return null;
 			}
 			const photo = await this.gateway.create(picked);
@@ -113,9 +116,9 @@ export class PhotoLibrary extends Observable<PhotoLibraryState> {
 		return this.get().busy === "uploading" ? "uploading" : "idle";
 	}
 
-	private static describe(error: unknown): string {
+	private static describe(error: unknown): PhotoError {
 		return error instanceof ApiError
-			? error.message
-			: "Photos are unavailable right now. Check your connection and try again.";
+			? { message: error.message }
+			: { key: "photo.errorUnavailable" };
 	}
 }

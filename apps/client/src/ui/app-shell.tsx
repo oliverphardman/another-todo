@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useState, type ReactNode } from "react";
 import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
@@ -24,6 +25,7 @@ function ThemedArea({ children }: { children: ReactNode }) {
 export function AppShell({ providers }: AppShellProps) {
 	const { auth, store } = useContainer();
 	const palette = useTheme();
+	const { t } = useI18n();
 	const status = useObservable(auth);
 	const state = useObservable(store);
 	const mode = useLayoutMode();
@@ -38,7 +40,7 @@ export function AppShell({ providers }: AppShellProps) {
 					backgroundColor: palette.background,
 				}}
 			>
-				<AppText tone="onAccent">Loading…</AppText>
+				<AppText tone="onAccent">{t("app.loading")}</AppText>
 			</View>
 		);
 	}

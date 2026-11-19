@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
@@ -20,6 +21,8 @@ export interface TaskDetailPaneProps {
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const { store } = useContainer();
 	const palette = useTheme();
+	const i18n = useI18n();
+	const { t } = i18n;
 	const [title, setTitle] = useState(task.title);
 	const [note, setNote] = useState(task.note);
 	const [picking, setPicking] = useState(false);
@@ -34,9 +37,14 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const inMyDay = task.isInMyDay(today);
 	const overdue = task.dueDay !== null && DueDay.isOverdue(task.dueDay, today) && !task.completed;
 	const dueLabel =
-		task.dueDay === null ? "Add due date" : `Due ${DueDay.label(task.dueDay, today)}`;
+		task.dueDay === null
+			? t("detail.addDue")
+			: t("detail.due", { when: i18n.dueLabel(task.dueDay, today) });
 	return (
-		<View style={{ flex: 1, backgroundColor: palette.detail }} accessibilityLabel="Task details">
+		<View
+			style={{ flex: 1, backgroundColor: palette.detail }}
+			accessibilityLabel={t("task.details")}
+		>
 			<ScrollView
 				contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 }}
 			>
@@ -44,7 +52,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					<View style={{ flexDirection: "row", alignItems: "center", minHeight: 52 }}>
 						<PressableSurface
 							accessibilityRole="checkbox"
-							accessibilityLabel={task.completed ? "Mark as not completed" : "Mark as completed"}
+							accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
 							accessibilityState={{ checked: task.completed }}
 							onPress={() => store.toggleCompleted(task.id)}
 							style={{ padding: 14 }}
@@ -56,7 +64,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 							)}
 						</PressableSurface>
 						<TextInput
-							accessibilityLabel="Task title"
+							accessibilityLabel={t("task.title")}
 							value={title}
 							onChangeText={setTitle}
 							onBlur={() => store.renameTask(task.id, title)}
@@ -76,7 +84,9 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 						/>
 						<PressableSurface
 							accessibilityRole="button"
-							accessibilityLabel={task.important ? "Remove importance" : "Mark as important"}
+							accessibilityLabel={
+								task.important ? t("task.removeImportance") : t("task.makeImportant")
+							}
 							onPress={() => store.toggleImportant(task.id)}
 							style={{ padding: 14 }}
 						>
@@ -102,13 +112,13 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 				<DetailCard>
 					<ActionRow
 						glyph="sun"
-						label={inMyDay ? "Added to My Day" : "Add to My Day"}
+						label={inMyDay ? t("detail.addedToMyDay") : t("detail.addToMyDay")}
 						active={inMyDay}
 						onPress={() => store.toggleMyDay(task.id)}
 					/>
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="bell" label="Remind me" />
+					<ActionRow glyph="bell" label={t("detail.remind")} />
 					<DetailSeparator />
 					<ActionRow
 						glyph="calendarDots"
@@ -128,19 +138,19 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 						/>
 					) : null}
 					<DetailSeparator />
-					<ActionRow glyph="repeat" label="Repeat" />
+					<ActionRow glyph="repeat" label={t("detail.repeat")} />
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="tag" label="Pick a category" />
+					<ActionRow glyph="tag" label={t("detail.category")} />
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="paperclip" label="Add file" />
+					<ActionRow glyph="paperclip" label={t("detail.file")} />
 				</DetailCard>
 				<DetailCard>
 					<TextInput
 						multiline
-						accessibilityLabel="Note"
-						placeholder="Add note"
+						accessibilityLabel={t("detail.note")}
+						placeholder={t("detail.addNote")}
 						placeholderTextColor={palette.textSecondary}
 						value={note}
 						onChangeText={setNote}
@@ -172,7 +182,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 			>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Close details"
+					accessibilityLabel={t("task.closeDetails")}
 					onPress={onClose}
 					hoverColor={palette.surfaceHover}
 					style={{ padding: 8, borderRadius: 4 }}
@@ -180,11 +190,11 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					<Icon glyph="panelClose" size={20} color={palette.textSecondary} strokeWidth={1.3} />
 				</PressableSurface>
 				<AppText size={13} tone="secondary">
-					{`Created ${DueDay.label(DueDay.fromIso(task.createdAt), today)}`}
+					{i18n.createdLabel(task.createdAt, store.now)}
 				</AppText>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Delete task"
+					accessibilityLabel={t("task.delete")}
 					onPress={() => store.deleteTask(task.id)}
 					hoverColor={palette.surfaceHover}
 					style={{ padding: 8, borderRadius: 4 }}

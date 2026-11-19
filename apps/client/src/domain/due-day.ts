@@ -1,28 +1,6 @@
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const MS_PER_DAY = 86_400_000;
 
-const LABEL_FORMAT = new Intl.DateTimeFormat("en-US", {
-	weekday: "short",
-	month: "short",
-	day: "numeric",
-	timeZone: "UTC",
-});
-
-const LABEL_FORMAT_WITH_YEAR = new Intl.DateTimeFormat("en-US", {
-	weekday: "short",
-	month: "short",
-	day: "numeric",
-	year: "numeric",
-	timeZone: "UTC",
-});
-
-const LONG_FORMAT = new Intl.DateTimeFormat("en-US", {
-	weekday: "long",
-	month: "long",
-	day: "numeric",
-	timeZone: "UTC",
-});
-
 export class DueDay {
 	static isValid(day: string): boolean {
 		if (!DAY_PATTERN.test(day)) {
@@ -55,25 +33,6 @@ export class DueDay {
 
 	static isOverdue(day: string, today: string): boolean {
 		return day < today;
-	}
-
-	static label(day: string, today: string): string {
-		const offset = DueDay.daysBetween(today, day);
-		if (offset === 0) {
-			return "Today";
-		}
-		if (offset === 1) {
-			return "Tomorrow";
-		}
-		if (offset === -1) {
-			return "Yesterday";
-		}
-		const sameYear = day.slice(0, 4) === today.slice(0, 4);
-		return (sameYear ? LABEL_FORMAT : LABEL_FORMAT_WITH_YEAR).format(DueDay.fromDay(day));
-	}
-
-	static longLabel(day: string): string {
-		return LONG_FORMAT.format(DueDay.fromDay(day));
 	}
 
 	static nextWeek(today: string): string {

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { SORT_OPTIONS, type SortKey } from "../domain/view-settings";
 import { ListPrintDocument } from "../print/list-print-document";
 import { useContainer } from "./container-context";
@@ -29,6 +30,8 @@ export interface ListMenuProps {
 
 export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 	const { store, printer } = useContainer();
+	const i18n = useI18n();
+	const { t } = i18n;
 	useObservable(store);
 	const view = store.selectedView;
 	const settings = store.settingsFor(view.id);
@@ -39,20 +42,23 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 	};
 	const print = () => {
 		const { open, done } = store.visibleTasks();
-		const html = ListPrintDocument.html({
-			title: view.title,
-			subtitle: view.subtitle(store.today),
-			open,
-			done,
-			today: store.today,
-		});
+		const html = ListPrintDocument.html(
+			{
+				title: i18n.viewTitle(view),
+				subtitle: view.showsDate ? i18n.longDay(store.today) : null,
+				open,
+				done,
+				today: store.today,
+			},
+			i18n,
+		);
 		printer.print(html).catch(() => undefined);
 	};
 	const sortItems = SORT_OPTIONS.map((option) => (
 		<MenuItem
 			key={option.key}
 			glyph={SORT_GLYPHS[option.key]}
-			label={option.label}
+			label={t(option.labelKey)}
 			selected={settings.sort === option.key}
 			onPress={finish(() =>
 				store.updateSettings(view.id, {
@@ -64,31 +70,38 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 	return (
 		<MenuOverlay onDismiss={onClose}>
 			{panel === "theme" ? (
-				<MenuPanel label="Change theme" placement={{ top: TOP, right: 12, width: 300 }}>
+				<MenuPanel label={t("menu.themePanel")} placement={{ top: TOP, right: 12, width: 300 }}>
 					<ThemePanel viewId={view.id} onClose={onClose} />
 				</MenuPanel>
 			) : null}
 			{panel === "sort" && compact ? (
-				<MenuPanel label="Sort" placement={main}>
-					<MenuItem glyph="back" label="Back" onPress={() => onPanel("menu")} />
+				<MenuPanel label={t("menu.sort")} placement={main}>
+					<MenuItem glyph="back" label={t("menu.back")} onPress={() => onPanel("menu")} />
 					{sortItems}
 				</MenuPanel>
 			) : null}
 			{panel === "menu" || (panel === "sort" && !compact) ? (
-				<MenuPanel label="List options" placement={main}>
-					<MenuItem glyph="sort" label="Sort" trailing="chevron" onPress={() => onPanel("sort")} />
-					<MenuItem glyph="palette" label="Change Theme…" onPress={() => onPanel("theme")} />
+				<MenuPanel label={t("list.options")} placement={main}>
+					<MenuItem
+						glyph="sort"
+						label={t("menu.sort")}
+						trailing="chevron"
+						onPress={() => onPanel("sort")}
+					/>
+					<MenuItem glyph="palette" label={t("menu.theme")} onPress={() => onPanel("theme")} />
 					{view.isCustomList ? (
 						<MenuItem
 							glyph="duplicate"
-							label="Duplicate List"
-							onPress={finish(() => store.duplicateList(view.id))}
+							label={t("menu.duplicate")}
+							onPress={finish(() =>
+								store.duplicateList(view.id, t("list.copyOf", { name: view.title })),
+							)}
 						/>
 					) : null}
-					<MenuItem glyph="print" label="Print List" onPress={finish(print)} />
+					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
 					<MenuItem
 						glyph="check"
-						label={settings.hideCompleted ? "Show Completed Tasks" : "Hide Completed Tasks"}
+						label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
 						onPress={finish(() =>
 							store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
 						)}
@@ -97,7 +110,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 			) : null}
 			{panel === "sort" && !compact ? (
 				<MenuPanel
-					label="Sort"
+					label={t("menu.sort")}
 					placement={{ top: TOP, right: 12 + MAIN_WIDTH + 8, width: SORT_WIDTH }}
 				>
 					{sortItems}

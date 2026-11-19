@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import type { TaskStepData } from "../domain/task-step";
@@ -27,6 +28,7 @@ export interface StepRowProps {
 
 export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 	const palette = useTheme();
+	const { t } = useI18n();
 	const [title, setTitle] = useState(step.title);
 	const commit = () => {
 		if (title.trim().length === 0) {
@@ -50,8 +52,8 @@ export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 					accessibilityRole="checkbox"
 					accessibilityLabel={
 						step.completed
-							? `Mark step ${step.title} as not completed`
-							: `Mark step ${step.title} as completed`
+							? t("step.uncomplete", { title: step.title })
+							: t("step.complete", { title: step.title })
 					}
 					accessibilityState={{ checked: step.completed }}
 					onPress={onToggle}
@@ -63,7 +65,7 @@ export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 					)}
 				</PressableSurface>
 				<TextInput
-					accessibilityLabel={`Step ${step.title}`}
+					accessibilityLabel={t("step.named", { title: step.title })}
 					value={title}
 					onChangeText={setTitle}
 					onBlur={commit}
@@ -78,7 +80,7 @@ export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 				/>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel={`Delete step ${step.title}`}
+					accessibilityLabel={t("step.delete", { title: step.title })}
 					onPress={onDelete}
 					style={{ padding: 14 }}
 				>
@@ -95,6 +97,7 @@ export interface AddStepRowProps {
 
 export function AddStepRow({ onAdd }: AddStepRowProps) {
 	const palette = useTheme();
+	const { t } = useI18n();
 	const [editing, setEditing] = useState(false);
 	const [text, setText] = useState("");
 	const latest = useRef("");
@@ -118,14 +121,14 @@ export function AddStepRow({ onAdd }: AddStepRowProps) {
 		return (
 			<PressableSurface
 				accessibilityRole="button"
-				accessibilityLabel="Add step"
+				accessibilityLabel={t("step.add")}
 				onPress={() => setEditing(true)}
 				hoverColor={palette.surfaceHover}
 				style={row}
 			>
 				<Icon glyph="plus" size={20} color={palette.accent} strokeWidth={1.3} />
 				<AppText size={14} style={{ marginLeft: 14, color: palette.accent }}>
-					Add step
+					{t("step.add")}
 				</AppText>
 			</PressableSurface>
 		);
@@ -136,8 +139,8 @@ export function AddStepRow({ onAdd }: AddStepRowProps) {
 			<TextInput
 				autoFocus
 				blurOnSubmit={false}
-				accessibilityLabel="New step"
-				placeholder="Add step"
+				accessibilityLabel={t("step.new")}
+				placeholder={t("step.add")}
 				placeholderTextColor={palette.accent}
 				value={text}
 				onChangeText={change}

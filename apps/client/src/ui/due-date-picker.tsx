@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
@@ -14,20 +15,22 @@ export interface DueDatePickerProps {
 
 export function DueDatePicker({ day, today, onChange }: DueDatePickerProps) {
 	const palette = useTheme();
+	const i18n = useI18n();
+	const { t } = i18n;
 	const [custom, setCustom] = useState("");
 	const options = [
-		{ label: "Today", day: today },
-		{ label: "Tomorrow", day: DueDay.add(today, 1) },
-		{ label: "Next week", day: DueDay.nextWeek(today) },
+		{ label: t("due.today"), day: today },
+		{ label: t("due.tomorrow"), day: DueDay.add(today, 1) },
+		{ label: t("due.nextWeek"), day: DueDay.nextWeek(today) },
 	];
 	const valid = DueDay.isValid(custom);
 	return (
-		<View accessibilityLabel="Due date options">
+		<View accessibilityLabel={t("due.options")}>
 			{options.map((option) => (
 				<PressableSurface
 					key={option.label}
 					accessibilityRole="button"
-					accessibilityLabel={`Due ${option.label}`}
+					accessibilityLabel={t("due.option", { label: option.label })}
 					onPress={() => onChange(option.day)}
 					hoverColor={palette.surfaceHover}
 					style={{
@@ -37,15 +40,13 @@ export function DueDatePicker({ day, today, onChange }: DueDatePickerProps) {
 					}}
 				>
 					<AppText>{option.label}</AppText>
-					<AppText tone="secondary">
-						{DueDay.label(option.day, "0000-00-00").replace(/, \d{4}$/, "")}
-					</AppText>
+					<AppText tone="secondary">{i18n.shortDay(option.day)}</AppText>
 				</PressableSurface>
 			))}
 			<View style={{ flexDirection: "row", alignItems: "center", padding: 12 }}>
 				<TextInput
-					accessibilityLabel="Custom due date"
-					placeholder="YYYY-MM-DD"
+					accessibilityLabel={t("due.custom")}
+					placeholder={t("due.customPlaceholder")}
 					placeholderTextColor={palette.textSecondary}
 					value={custom}
 					onChangeText={setCustom}
@@ -66,7 +67,7 @@ export function DueDatePicker({ day, today, onChange }: DueDatePickerProps) {
 				/>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Set custom due date"
+					accessibilityLabel={t("due.setCustom")}
 					accessibilityState={{ disabled: !valid }}
 					disabled={!valid}
 					onPress={() => {
@@ -76,19 +77,19 @@ export function DueDatePicker({ day, today, onChange }: DueDatePickerProps) {
 					style={{ paddingHorizontal: 12, paddingVertical: 6 }}
 				>
 					<AppText weight="600" style={{ color: valid ? palette.accent : palette.textSecondary }}>
-						Set
+						{t("due.set")}
 					</AppText>
 				</PressableSurface>
 			</View>
 			{day === null ? null : (
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel="Remove due date"
+					accessibilityLabel={t("due.remove")}
 					onPress={() => onChange(null)}
 					hoverColor={palette.surfaceHover}
 					style={{ padding: 12 }}
 				>
-					<AppText tone="danger">Remove due date</AppText>
+					<AppText tone="danger">{t("due.remove")}</AppText>
 				</PressableSurface>
 			)}
 		</View>

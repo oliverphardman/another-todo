@@ -199,7 +199,7 @@ describe("TodoStore", () => {
 
 	it("duplicates a list with its tasks, steps and notes", async () => {
 		const { store } = await setup();
-		expect(store.duplicateList("missing")).toBeNull();
+		expect(store.duplicateList("missing", "Copy")).toBeNull();
 		const listId = store.addList("Groceries")!;
 		const task = store.addTask("Milk")!;
 		store.addStep(task, "Check the date");
@@ -208,7 +208,7 @@ describe("TodoStore", () => {
 		store.toggleCompleted(task);
 		store.select("tasks");
 		store.addTask("Elsewhere");
-		const copyId = store.duplicateList(listId)!;
+		const copyId = store.duplicateList(listId, "Copy of Groceries")!;
 		expect(store.selectedView.id).toBe(copyId);
 		expect(store.selectedView.title).toBe("Copy of Groceries");
 		const copies = store.get().tasks.filter((entry) => entry.listId === copyId);
@@ -366,7 +366,7 @@ describe("TodoStore", () => {
 		const inWork = store.get().tasks.find((task) => task.listId === listId)!;
 		const loose = store.get().tasks.find((task) => task.listId === null)!;
 		expect(store.listName(inWork)).toBe("Work");
-		expect(store.listName(loose)).toBe("Tasks");
+		expect(store.listName(loose)).toBeNull();
 		store.toggleCompleted(loose.id);
 		const all = store.get().views.find((view) => view.id === "all")!;
 		expect(store.taskCount(all)).toBe(1);

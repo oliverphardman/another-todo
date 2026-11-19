@@ -1,4 +1,5 @@
 import { act, render } from "@testing-library/react";
+import { I18nProvider } from "../../src/i18n/i18n-context";
 import { AppShell } from "../../src/ui/app-shell";
 import { ContainerProvider } from "../../src/ui/container-context";
 import { ThemeProvider } from "../../src/ui/theme-context";
@@ -19,6 +20,7 @@ export interface RenderOptions {
 	readonly signedIn?: boolean;
 	readonly restore?: boolean;
 	readonly scheme?: "light" | "dark";
+	readonly locale?: string;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
 }
@@ -33,9 +35,11 @@ export async function renderApp(options: RenderOptions = {}) {
 	}
 	const view = render(
 		<ThemeProvider scheme={options.scheme ?? "light"}>
-			<ContainerProvider container={test.container}>
-				<AppShell providers={options.providers ?? []} />
-			</ContainerProvider>
+			<I18nProvider locale={options.locale}>
+				<ContainerProvider container={test.container}>
+					<AppShell providers={options.providers ?? []} />
+				</ContainerProvider>
+			</I18nProvider>
 		</ThemeProvider>,
 	);
 	await act(async () => {
