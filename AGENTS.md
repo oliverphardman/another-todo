@@ -51,4 +51,5 @@
 - Diagrams are in docs/*.puml
 - Terraform state lives in the S3 bucket another-todo-tfstate-<account>-eu-west-1-an (account regional namespace, S3 native locking). The bucket is created by infra/bootstrap (local state, run once). Deploy with AWS_PROFILE=another-todo from infra/ after building apps/api
 - Web Function rate_limit must be a multiple of 100 (0, 100 ... 1000, then thousands)
-- Route 53 zone another-todo.oliverhardman.dev is managed in infra/main.tf; delegate to its name_servers output from the parent domain
+- DNS (infra/dns.tf): Route 53 zone another-todo.oliverhardman.dev with DNSSEC (KMS key in us-east-1, DS record in the dnssec_ds_record output). api.* is CloudFront in front of the Web Function (Host header must not be forwarded), auth.* is the Cognito custom domain, and the apex is reserved for the web client (it holds a placeholder A record that Cognito requires until the client is deployed). One us-east-1 ACM certificate covers all three names
+- The app reads PUBLIC_API_URL for the MCP discovery metadata; the Web Function revision uses create_before_destroy because the endpoint pins the live revision

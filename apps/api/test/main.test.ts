@@ -8,6 +8,7 @@ describe("server entry point", () => {
 		vi.stubEnv("LISTS_TABLE_NAME", "lists");
 		vi.stubEnv("COGNITO_USER_POOL_ID", "eu-west-1_abc123");
 		vi.stubEnv("COGNITO_CLIENT_ID", "client-1");
+		vi.stubEnv("PUBLIC_API_URL", "https://api.example.com");
 		vi.stubEnv("AWS_REGION", "eu-west-1");
 		vi.stubEnv("AWS_LAMBDA_HTTP_ENDPOINT", "127.0.0.1:0");
 	});

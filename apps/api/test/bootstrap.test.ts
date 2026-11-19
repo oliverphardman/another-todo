@@ -6,6 +6,7 @@ const base = {
 	LISTS_TABLE_NAME: "l",
 	COGNITO_USER_POOL_ID: "eu-west-1_pool",
 	COGNITO_CLIENT_ID: "client",
+	PUBLIC_API_URL: "https://api.example.com",
 };
 
 describe("readConfig", () => {
@@ -15,6 +16,7 @@ describe("readConfig", () => {
 			listsTableName: "l",
 			userPoolId: "eu-west-1_pool",
 			clientId: "client",
+			publicUrl: "https://api.example.com",
 			corsOrigins: [],
 		});
 	});

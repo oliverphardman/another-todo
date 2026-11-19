@@ -1,9 +1,13 @@
 output "api_url" {
+  value = "https://${local.api_domain}"
+}
+
+output "function_url" {
   value = "https://${aws_lambdaweb_function_endpoint.api.domain_name}"
 }
 
 output "mcp_url" {
-  value = "https://${aws_lambdaweb_function_endpoint.api.domain_name}/mcp"
+  value = "https://${local.api_domain}/mcp"
 }
 
 output "user_pool_id" {
@@ -15,7 +19,7 @@ output "user_pool_client_id" {
 }
 
 output "hosted_ui_domain" {
-  value = "${aws_cognito_user_pool_domain.main.domain}.auth.${var.region}.amazoncognito.com"
+  value = aws_cognito_user_pool_domain.main.domain
 }
 
 output "tasks_table" {
@@ -28,4 +32,18 @@ output "lists_table" {
 
 output "name_servers" {
   value = aws_route53_zone.main.name_servers
+}
+
+output "dnssec_ds_record" {
+  value = {
+    key_tag                    = aws_route53_key_signing_key.main.key_tag
+    signing_algorithm_type     = aws_route53_key_signing_key.main.signing_algorithm_type
+    digest_algorithm_type      = aws_route53_key_signing_key.main.digest_algorithm_type
+    digest_algorithm           = aws_route53_key_signing_key.main.digest_algorithm_mnemonic
+    digest_value               = aws_route53_key_signing_key.main.digest_value
+    ds_record                  = aws_route53_key_signing_key.main.ds_record
+    dnskey_record              = aws_route53_key_signing_key.main.dnskey_record
+    public_key                 = aws_route53_key_signing_key.main.public_key
+    signing_algorithm_mnemonic = aws_route53_key_signing_key.main.signing_algorithm_mnemonic
+  }
 }

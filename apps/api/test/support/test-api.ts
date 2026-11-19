@@ -24,6 +24,7 @@ export const TEST_CONFIG: ApiConfig = {
 	listsTableName: "lists",
 	userPoolId: "eu-west-1_test",
 	clientId: "client",
+	publicUrl: "https://api.example.com",
 	corsOrigins: [TEST_ORIGIN],
 };
 

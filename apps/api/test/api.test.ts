@@ -80,7 +80,7 @@ describe("REST API", () => {
 		const reply = await createTestApi()(
 			event({ path: "/.well-known/oauth-protected-resource", sub: null }),
 		);
-		expect(reply.body.resource).toMatch(/^https:\/\/127\.0\.0\.1\/mcp$/);
+		expect(reply.body.resource).toBe("https://api.example.com/mcp");
 		expect(reply.body.authorization_servers).toEqual([TEST_ISSUER]);
 		expect(reply.body.bearer_methods_supported).toEqual(["header"]);
 	});

@@ -23,11 +23,6 @@ variable "cors_origins" {
   default = ["http://localhost:8081"]
 }
 
-variable "cognito_domain_prefix" {
-  type    = string
-  default = ""
-}
-
 variable "google_client_id" {
   type    = string
   default = ""

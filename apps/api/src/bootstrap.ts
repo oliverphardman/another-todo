@@ -25,6 +25,7 @@ export interface ApiConfig {
 	readonly listsTableName: string;
 	readonly userPoolId: string;
 	readonly clientId: string;
+	readonly publicUrl: string;
 	readonly corsOrigins: readonly string[];
 }
 
@@ -39,18 +40,19 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		LISTS_TABLE_NAME: listsTableName,
 		COGNITO_USER_POOL_ID: userPoolId,
 		COGNITO_CLIENT_ID: clientId,
+		PUBLIC_API_URL: publicUrl,
 		CORS_ORIGINS: origins = "",
 	} = env;
-	if (!tableName || !listsTableName || !userPoolId || !clientId) {
+	if (!tableName || !listsTableName || !userPoolId || !clientId || !publicUrl) {
 		throw new Error(
-			"TABLE_NAME, LISTS_TABLE_NAME, COGNITO_USER_POOL_ID and COGNITO_CLIENT_ID must be set",
+			"TABLE_NAME, LISTS_TABLE_NAME, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
 		);
 	}
 	const corsOrigins = origins
 		.split(",")
 		.map((origin) => origin.trim())
 		.filter((origin) => origin.length > 0);
-	return { tableName, listsTableName, userPoolId, clientId, corsOrigins };
+	return { tableName, listsTableName, userPoolId, clientId, publicUrl, corsOrigins };
 }
 
 export function createApp(
@@ -62,7 +64,7 @@ export function createApp(
 	const app = express();
 	app.disable("x-powered-by");
 	app.use(new CorsPolicy(config.corsOrigins).middleware());
-	app.use(new DiscoveryController(issuer).router());
+	app.use(new DiscoveryController(issuer, config.publicUrl).router());
 	app.use(["/tasks", "/lists", "/mcp"], RouteSupport.authenticate(authenticator));
 	app.use(
 		"/mcp",

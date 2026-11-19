@@ -25,8 +25,19 @@ provider "aws" {
   region = var.region
 }
 
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 locals {
   name              = "another-todo-${var.environment}"
+  auth_domain       = "auth.${var.domain_name}"
+  api_domain        = "api.${var.domain_name}"
+  web_origin        = "https://${var.domain_name}"
+  callback_urls     = concat(var.callback_urls, ["${local.web_origin}/auth/callback"])
+  logout_urls       = concat(var.logout_urls, [local.web_origin])
+  cors_origins      = concat(var.cors_origins, [local.web_origin])
   google_enabled    = var.google_client_id != "" && var.google_client_secret != ""
   microsoft_enabled = var.microsoft_client_id != "" && var.microsoft_client_secret != ""
   supported_providers = concat(
@@ -108,8 +119,11 @@ resource "aws_cognito_user_pool" "main" {
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = var.cognito_domain_prefix != "" ? var.cognito_domain_prefix : local.name
-  user_pool_id = aws_cognito_user_pool.main.id
+  domain          = local.auth_domain
+  user_pool_id    = aws_cognito_user_pool.main.id
+  certificate_arn = aws_acm_certificate_validation.main.certificate_arn
+
+  depends_on = [aws_route53_record.apex]
 }
 
 resource "aws_cognito_identity_provider" "google" {
@@ -157,8 +171,8 @@ resource "aws_cognito_user_pool_client" "app" {
   allowed_oauth_flows_user_pool_client = true
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
-  callback_urls                        = var.callback_urls
-  logout_urls                          = var.logout_urls
+  callback_urls                        = local.callback_urls
+  logout_urls                          = local.logout_urls
   supported_identity_providers         = local.supported_providers
   prevent_user_existence_errors        = "ENABLED"
   enable_token_revocation              = true
@@ -295,8 +309,13 @@ resource "aws_lambdaweb_function_revision" "api" {
       LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
       COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
-      CORS_ORIGINS                 = join(",", var.cors_origins)
+      CORS_ORIGINS                 = join(",", local.cors_origins)
+      PUBLIC_API_URL               = "https://${local.api_domain}"
     }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -316,8 +335,4 @@ resource "aws_lambdaweb_function_endpoint" "api" {
   }
 
   depends_on = [aws_lambdaweb_function_revision.api]
-}
-
-resource "aws_route53_zone" "main" {
-  name = var.domain_name
 }
