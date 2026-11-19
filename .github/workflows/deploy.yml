@@ -1,0 +1,76 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy:
+    name: Terraform and web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            apps/api/pnpm-lock.yaml
+            apps/client/pnpm-lock.yaml
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_wrapper: false
+
+      - name: Install and build the API
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+        working-directory: apps/api
+
+      - name: Init
+        run: terraform init -input=false
+        working-directory: infra
+
+      - name: Plan
+        run: terraform plan -input=false -out=tfplan
+        working-directory: infra
+        env:
+          TF_VAR_google_client_id: ${{ vars.GOOGLE_CLIENT_ID }}
+          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          TF_VAR_microsoft_client_id: ${{ vars.MICROSOFT_CLIENT_ID }}
+          TF_VAR_microsoft_client_secret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
+          TF_VAR_microsoft_issuer: ${{ vars.MICROSOFT_ISSUER }}
+
+      - name: Apply
+        run: terraform apply -input=false tfplan
+        working-directory: infra
+
+      - name: Install the client
+        run: pnpm install --frozen-lockfile
+        working-directory: apps/client
+
+      - name: Build and publish the web client
+        run: infra/deploy-web.sh
