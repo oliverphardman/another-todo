@@ -43,6 +43,25 @@ describe("createContainer", () => {
 		expect(await container.auth.getAccessToken()).toBe("a");
 	});
 
+	it("opens a real WebSocket by default once signed in", async () => {
+		const created: string[] = [];
+		vi.stubGlobal(
+			"WebSocket",
+			class {
+				constructor(url: string) {
+					created.push(url);
+				}
+				close() {}
+			},
+		);
+		const container = createContainer(TEST_CONFIG, { platform: "web" });
+		container.realtime.start();
+		await container.auth.signIn();
+		await vi.waitFor(() => expect(created).toEqual(["wss://realtime.test/dev?token=a"]));
+		container.realtime.stop();
+		vi.unstubAllGlobals();
+	});
+
 	it("syncs through the configured gateway once signed in", async () => {
 		const { container, requests } = createTestContainer();
 		await container.auth.signIn();

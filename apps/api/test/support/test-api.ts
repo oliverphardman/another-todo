@@ -3,6 +3,7 @@ import type { Server } from "node:http";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import type { Request } from "express";
 import { afterAll } from "vitest";
+import type { ConnectionPusher } from "../../src/application/change-notifier";
 import { createApp, createServices, type ApiConfig } from "../../src/bootstrap";
 import { UnauthorizedError } from "../../src/domain/errors";
 import type { Authenticator } from "../../src/http/authenticator";
@@ -26,6 +27,8 @@ export const TEST_CONFIG: ApiConfig = {
 	settingsTableName: "settings",
 	photosTableName: "photos",
 	photosBucket: "photos-bucket",
+	connectionsTableName: "connections",
+	websocketManagementUrl: "https://ws.example.com/prod",
 	userPoolId: "eu-west-1_test",
 	clientId: "client",
 	publicUrl: "https://api.example.com",
@@ -52,12 +55,27 @@ afterAll(async () => {
 
 export const testStorage = new FakePhotoStorage();
 
+export class RecordingPusher implements ConnectionPusher {
+	readonly pushed: { connectionId: string; message: string }[] = [];
+	gone = new Set<string>();
+	failure: Error | null = null;
+
+	async push(connectionId: string, message: string): Promise<boolean> {
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		this.pushed.push({ connectionId, message });
+		return !this.gone.has(connectionId);
+	}
+}
+
 export function createTestApi(
 	client: { asClient(): DynamoDBDocumentClient } = new FakeDocumentClient(2),
+	pusher: ConnectionPusher = new RecordingPusher(),
 ) {
 	const app = createApp(
 		TEST_CONFIG,
-		createServices(TEST_CONFIG, client.asClient(), testStorage),
+		createServices(TEST_CONFIG, client.asClient(), testStorage, pusher),
 		new TokenIsSubjectAuthenticator(),
 		TEST_ISSUER,
 	);

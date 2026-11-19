@@ -1,13 +1,14 @@
 import { build } from "esbuild";
 
-await build({
-	entryPoints: ["src/main.ts"],
+const shared = {
 	bundle: true,
 	platform: "node",
 	target: "node24",
 	format: "esm",
-	outfile: "dist/index.mjs",
 	banner: {
 		js: "import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);",
 	},
-});
+};
+
+await build({ ...shared, entryPoints: ["src/main.ts"], outfile: "dist/index.mjs" });
+await build({ ...shared, entryPoints: ["src/websocket/main.ts"], outfile: "dist/websocket.mjs" });

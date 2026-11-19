@@ -25,11 +25,13 @@ export default function App() {
 		);
 		container.sync.start();
 		container.photos.start();
+		container.realtime.start();
 		const rollover = setInterval(() => container.store.refreshToday(), 60_000);
 		return () => {
 			clearInterval(rollover);
 			container.sync.stop();
 			container.photos.stop();
+			container.realtime.stop();
 		};
 	}, [container]);
 	return (

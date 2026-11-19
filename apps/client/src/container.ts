@@ -22,6 +22,7 @@ import { AsyncStorageKeyValueStore } from "./storage/async-storage-key-value-sto
 import type { KeyValueStore } from "./storage/key-value-store";
 import { LocalDatabase } from "./storage/local-database";
 import { SecureStoreKeyValueStore } from "./storage/secure-store-key-value-store";
+import { RealtimeClient, type SocketFactory, type SocketLike } from "./sync/realtime-client";
 import { SyncCoordinator } from "./sync/sync-coordinator";
 import { SyncEngine } from "./sync/sync-engine";
 
@@ -34,6 +35,7 @@ export interface Container {
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
 	readonly motion: Motion;
+	readonly realtime: RealtimeClient;
 }
 
 export interface ContainerOverrides {
@@ -50,6 +52,7 @@ export interface ContainerOverrides {
 	readonly photoPicker?: PhotoPicker;
 	readonly printer?: ListPrinter;
 	readonly motion?: Motion;
+	readonly sockets?: SocketFactory;
 }
 
 export function createContainer(config: AppConfig, overrides: ContainerOverrides): Container {
@@ -74,12 +77,8 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 	);
 	const database = new LocalDatabase(dataStore);
 	const gateway = new HttpApiGateway(config.apiUrl, auth, overrides.fetcher);
-	const sync = new SyncCoordinator(
-		new SyncEngine(database, gateway),
-		overrides.connectivity ?? new NetInfoConnectivity(),
-		clock,
-		auth,
-	);
+	const connectivity = overrides.connectivity ?? new NetInfoConnectivity();
+	const sync = new SyncCoordinator(new SyncEngine(database, gateway), connectivity, clock, auth);
 	const photos = new PhotoLibrary(
 		overrides.photoGateway ??
 			new HttpPhotoGateway(
@@ -98,5 +97,12 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		printer: overrides.printer ?? new ExpoListPrinter(),
 		paneWidths: new PaneWidths(dataStore),
 		motion: overrides.motion ?? STANDARD_MOTION,
+		realtime: new RealtimeClient(
+			config.realtimeUrl,
+			auth,
+			connectivity,
+			sync,
+			overrides.sockets ?? ((url) => new WebSocket(url) as SocketLike),
+		),
 	};
 }

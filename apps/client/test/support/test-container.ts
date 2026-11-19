@@ -4,6 +4,7 @@ import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
 import {
 	FakeAuthorizationServer,
+	FakeSocket,
 	FixedClock,
 	ManualConnectivity,
 	FakePhotoGateway,
@@ -17,6 +18,7 @@ export const TEST_CONFIG: AppConfig = {
 	apiUrl: "https://api.test",
 	authUrl: "https://auth.test",
 	clientId: "client",
+	realtimeUrl: "wss://realtime.test/dev",
 	scheme: "anothertodo",
 };
 
@@ -29,6 +31,7 @@ export interface TestContainer {
 	readonly printer: RecordingPrinter;
 	readonly photoGateway: FakePhotoGateway;
 	readonly photoPicker: FakePhotoPicker;
+	readonly sockets: FakeSocket[];
 	readonly requests: { method: string; url: string; body: unknown }[];
 	readonly tokenStore: MemoryKeyValueStore;
 	readonly dataStore: MemoryKeyValueStore;
@@ -49,6 +52,7 @@ export function createTestContainer(
 	const tokenStore = new MemoryKeyValueStore();
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
+	const sockets: FakeSocket[] = [];
 	const container = createContainer(TEST_CONFIG, {
 		platform: "web",
 		dataStore,
@@ -61,6 +65,11 @@ export function createTestContainer(
 		photoPicker,
 		clock,
 		motion,
+		sockets: (url) => {
+			const socket = new FakeSocket(url);
+			sockets.push(socket);
+			return socket;
+		},
 		ids: new SequenceIds(),
 		fetcher: async (input, init) => {
 			const body = typeof init?.body === "string" ? (JSON.parse(init.body) as unknown) : undefined;
@@ -70,6 +79,7 @@ export function createTestContainer(
 	});
 	return {
 		container,
+		sockets,
 		clock,
 		connectivity,
 		authorizationServer,

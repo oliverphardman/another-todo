@@ -1,0 +1,22 @@
+- If the user is in dark mode, the background of lists should be #1E1E1E, but if an image is set, this should always be displayed instead.
+- The sidebar color in dark mode is ##252525.
+- Set default list theme color to #6074C3
+- Set default All tasks theme color to #F9E7DE
+- Set default Planned theme color to #D5F1EE
+- Add localization support. Default is en-US but respect user's browser/system setting, falling back to en-US if we don't support their locale.
+- Instead of "Created Today", show "Created a few moments ago" where relevant. Only the word "Created" should start with a capital letter.
+- Add WebSocket support. When the app is open, a socket is established. Making any changes, such as adding a new task, should immediately show in other clients.
+- Shift/Ctrl/Cmd clicking to select multiple tasks
+- Swipe gestures for sidebars
+- When a task is completed, the check circle should be filled with the list's background color (currently blue) and the check should become white. Immediately after marking as completed, please fade in the fill of the check circle before animating it to the completed section (travelling behind the other items)
+- Allow the user to resize the width of either sidebar by dragging their edges
+- Add light/dark mode support. For now, it should use the system preference.
+- Left sidebar right-click on list context menu displays the options: Create Group, Share List, Rename List, Print List, Delete List, then remove the standalone Rename and trash button from the top. On narrow screens, these options are found in the kebab menu. Context menus, including right-click and meatball should be native on desktop (Windows, macOS)
+- Right-click context menu on tasks shows: Add to My Day, Mark as Important, Mark as Completed, Due Today, Due Tomorrow, Pick a date, Create New List from This Task, Move Task to..., Delete Task
+- On wide screens, users can also rename a list by clicking on its name at the top of the screen.
+- Rearrange lists by dragging them around the sidebar (wide screens)
+- Remove the 'No tasks here yet' text
+- Add a search bar in the left sidebar above My Day
+- Add Terraform for an Azure app registration so we can setup Login with Microsoft, as well as access Graph API to get the user's tasks from Microsoft To Do.
+- The 'Add due date' menu should offer a native datetime input rather than a simple text filed
+- "Steps" on tasks should each have a meatball/kebab menu which offer: Mark as completed, Promote to task, Delete step

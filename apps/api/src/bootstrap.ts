@@ -3,6 +3,10 @@ import express, { type Express, type RequestHandler } from "express";
 import * as OpenApiValidator from "express-openapi-validator";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
 import spec from "../openapi.json";
+import { ChangeNotifier, type ConnectionPusher } from "./application/change-notifier";
+import { ChangeBroadcast } from "./http/change-broadcast";
+import { ApiGatewayPusher } from "./infrastructure/api-gateway-pusher";
+import { DynamoConnectionRepository } from "./infrastructure/dynamo-connection-repository";
 import { ListService } from "./application/list-service";
 import { PhotoService } from "./application/photo-service";
 import type { PhotoStorage } from "./application/photo-storage";
@@ -35,6 +39,8 @@ export interface ApiConfig {
 	readonly settingsTableName: string;
 	readonly photosTableName: string;
 	readonly photosBucket: string;
+	readonly connectionsTableName: string;
+	readonly websocketManagementUrl: string;
 	readonly userPoolId: string;
 	readonly clientId: string;
 	readonly publicUrl: string;
@@ -46,6 +52,7 @@ export interface Services {
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
+	readonly notifier: ChangeNotifier;
 }
 
 export function readConfig(env: Record<string, string | undefined>): ApiConfig {
@@ -55,6 +62,8 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		SETTINGS_TABLE_NAME: settingsTableName,
 		PHOTOS_TABLE_NAME: photosTableName,
 		PHOTOS_BUCKET: photosBucket,
+		CONNECTIONS_TABLE_NAME: connectionsTableName,
+		WEBSOCKET_MANAGEMENT_URL: websocketManagementUrl,
 		COGNITO_USER_POOL_ID: userPoolId,
 		COGNITO_CLIENT_ID: clientId,
 		PUBLIC_API_URL: publicUrl,
@@ -66,12 +75,14 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		!settingsTableName ||
 		!photosTableName ||
 		!photosBucket ||
+		!connectionsTableName ||
+		!websocketManagementUrl ||
 		!userPoolId ||
 		!clientId ||
 		!publicUrl
 	) {
 		throw new Error(
-			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, PHOTOS_BUCKET, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
+			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
 		);
 	}
 	const corsOrigins = origins
@@ -84,6 +95,8 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		settingsTableName,
 		photosTableName,
 		photosBucket,
+		connectionsTableName,
+		websocketManagementUrl,
 		userPoolId,
 		clientId,
 		publicUrl,
@@ -104,6 +117,10 @@ export function createApp(
 	app.use(
 		["/tasks", "/lists", "/view-settings", "/photos", "/mcp"],
 		RouteSupport.authenticate(authenticator),
+	);
+	app.use(
+		["/tasks", "/lists", "/view-settings", "/photos", "/mcp"],
+		new ChangeBroadcast(services.notifier).middleware(),
 	);
 	app.use(
 		"/mcp",
@@ -130,11 +147,13 @@ export function createServices(
 	config: ApiConfig,
 	client: DynamoDBDocumentClient,
 	storage: PhotoStorage,
+	pusher: ConnectionPusher,
 ): Services {
 	const tasks = new DynamoTaskRepository(client, config.tableName);
 	const lists = new DynamoTodoListRepository(client, config.listsTableName);
 	const settings = new DynamoViewSettingsRepository(client, config.settingsTableName);
 	const photos = new DynamoPhotoRepository(client, config.photosTableName);
+	const connections = new DynamoConnectionRepository(client, config.connectionsTableName);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
 	return {
@@ -142,6 +161,7 @@ export function createServices(
 		lists: new ListService(lists, tasks, settings, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),
+		notifier: new ChangeNotifier(connections, pusher),
 	};
 }
 
@@ -149,7 +169,12 @@ export function createApplication(config: ApiConfig, client: DynamoDBDocumentCli
 	const verifier = new CognitoTokenVerifier(config.userPoolId, config.clientId);
 	return createApp(
 		config,
-		createServices(config, client, new S3PhotoStorage(new S3Client({}), config.photosBucket)),
+		createServices(
+			config,
+			client,
+			new S3PhotoStorage(new S3Client({}), config.photosBucket),
+			ApiGatewayPusher.forEndpoint(config.websocketManagementUrl),
+		),
 		new BearerAuthenticator(verifier),
 		verifier.issuer,
 	);

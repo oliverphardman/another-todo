@@ -63,3 +63,11 @@ output "web_url" {
 output "photos_bucket" {
   value = aws_s3_bucket.photos.id
 }
+
+output "websocket_url" {
+  value = "${aws_apigatewayv2_api.websocket.api_endpoint}/${aws_apigatewayv2_stage.websocket.name}"
+}
+
+output "connections_table" {
+  value = aws_dynamodb_table.connections.name
+}

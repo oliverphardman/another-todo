@@ -1,0 +1,30 @@
+@startuml
+title Real-time updates
+
+actor "Device A" as A
+actor "Device B" as B
+participant "API Gateway\nWebSocket API" as WS
+participant "Connect Lambda" as Connect
+database "Connections table\n(TTL)" as Table
+participant "Express API\n(Web Function)" as Api
+
+B -> WS : wss://...?token=<access token>
+WS -> Connect : $connect
+Connect -> Connect : verify Cognito token
+Connect -> Table : save (ownerId, connectionId)
+Connect --> WS : 200
+WS --> B : connected, B syncs once
+
+A -> Api : POST/PATCH/PUT/DELETE (Bearer token)
+Api -> Api : handle the write
+Api -> Table : list connections of owner
+Api -> WS : PostToConnection {"type":"changed"}
+WS --> B : {"type":"changed"}
+B -> Api : push outbox, pull changes
+Api --> A : response
+
+note over Api, Table
+Gone connections (410) are deleted by the notifier.
+Failures never fail the request.
+end note
+@enduml

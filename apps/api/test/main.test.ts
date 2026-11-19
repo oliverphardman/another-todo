@@ -9,6 +9,8 @@ describe("server entry point", () => {
 		vi.stubEnv("SETTINGS_TABLE_NAME", "settings");
 		vi.stubEnv("PHOTOS_TABLE_NAME", "photos");
 		vi.stubEnv("PHOTOS_BUCKET", "photos-bucket");
+		vi.stubEnv("CONNECTIONS_TABLE_NAME", "connections");
+		vi.stubEnv("WEBSOCKET_MANAGEMENT_URL", "https://ws.example.com/prod");
 		vi.stubEnv("COGNITO_USER_POOL_ID", "eu-west-1_abc123");
 		vi.stubEnv("COGNITO_CLIENT_ID", "client-1");
 		vi.stubEnv("PUBLIC_API_URL", "https://api.example.com");

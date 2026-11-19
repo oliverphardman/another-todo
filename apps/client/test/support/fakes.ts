@@ -1,3 +1,4 @@
+import type { SocketLike } from "../../src/sync/realtime-client";
 import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
 import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
 import type { ListPrinter } from "../../src/print/list-print-document";
@@ -215,6 +216,25 @@ export class FakeGateway implements ApiGateway {
 	async deleteTask(id: string): Promise<void> {
 		this.guard(`deleteTask:${id}`);
 		this.tasks = this.tasks.filter((task) => task.id !== id);
+	}
+}
+
+export class FakeSocket implements SocketLike {
+	onopen: (() => void) | null = null;
+	onmessage: ((event: { readonly data: unknown }) => void) | null = null;
+	onclose: (() => void) | null = null;
+	onerror: (() => void) | null = null;
+	sent: string[] = [];
+	closed = false;
+
+	constructor(readonly url: string) {}
+
+	send(data: string): void {
+		this.sent.push(data);
+	}
+
+	close(): void {
+		this.closed = true;
 	}
 }
 

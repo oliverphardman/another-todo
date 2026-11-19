@@ -36,7 +36,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 ## 5. Real time
 
-- [ ] WebSockets: when the app is open a socket is established and any change made in one client shows immediately in the others
+- [x] WebSockets: when the app is open a socket is established and any change made in one client shows immediately in the others (docs/realtime.puml)
 
 ## Dependencies
 

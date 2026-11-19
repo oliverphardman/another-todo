@@ -273,6 +273,7 @@ resource "aws_iam_role_policy" "lambda_tasks" {
         aws_dynamodb_table.lists.arn,
         aws_dynamodb_table.settings.arn,
         aws_dynamodb_table.photos.arn,
+        aws_dynamodb_table.connections.arn,
       ]
     }]
   })
@@ -367,6 +368,8 @@ resource "aws_lambdaweb_function_revision" "api" {
       SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
       PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
       PHOTOS_BUCKET                = aws_s3_bucket.photos.id
+      CONNECTIONS_TABLE_NAME       = aws_dynamodb_table.connections.name
+      WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"
       COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
       CORS_ORIGINS                 = join(",", local.cors_origins)
