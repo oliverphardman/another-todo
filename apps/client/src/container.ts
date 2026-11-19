@@ -58,6 +58,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		new SyncEngine(database, gateway),
 		overrides.connectivity ?? new NetInfoConnectivity(),
 		clock,
+		auth,
 	);
 	return {
 		auth,

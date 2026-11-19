@@ -1,21 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError, NetworkError } from "../src/api/errors";
+import { ApiError, AuthRequiredError, NetworkError } from "../src/api/errors";
+import type { AuthStatus } from "../src/auth/authentication-service";
+import { Observable } from "../src/state/observable";
 import { MemoryKeyValueStore } from "../src/storage/key-value-store";
 import { LocalDatabase } from "../src/storage/local-database";
 import { SyncCoordinator } from "../src/sync/sync-coordinator";
 import { SyncEngine } from "../src/sync/sync-engine";
 import { FakeGateway, FixedClock, ManualConnectivity } from "./support/fakes";
 
-function setup(online = true) {
+class StubAuth extends Observable<AuthStatus> {
+	constructor(status: AuthStatus = "signedIn") {
+		super(status);
+	}
+
+	setStatus(status: AuthStatus): void {
+		this.set(status);
+	}
+}
+
+function setup(online = true, status: AuthStatus = "signedIn") {
 	const gateway = new FakeGateway();
 	const connectivity = new ManualConnectivity(online);
 	const clock = new FixedClock();
+	const auth = new StubAuth(status);
 	const coordinator = new SyncCoordinator(
 		new SyncEngine(new LocalDatabase(new MemoryKeyValueStore()), gateway),
 		connectivity,
 		clock,
+		auth,
 	);
-	return { gateway, connectivity, coordinator, clock };
+	return { gateway, connectivity, coordinator, clock, auth };
 }
 
 describe("SyncCoordinator", () => {
@@ -25,6 +39,38 @@ describe("SyncCoordinator", () => {
 
 	afterEach(() => {
 		vi.useRealTimers();
+	});
+
+	it("does not sync before a session exists, so startup cannot report an expired session", async () => {
+		const { coordinator, gateway } = setup(true, "loading");
+		coordinator.start();
+		await vi.advanceTimersByTimeAsync(0);
+		expect(gateway.calls).toEqual([]);
+		expect(coordinator.get().phase).toBe("idle");
+		coordinator.stop();
+	});
+
+	it("syncs as soon as the session is restored or the user signs in", async () => {
+		const { coordinator, gateway, auth } = setup(true, "loading");
+		coordinator.start();
+		auth.setStatus("signedIn");
+		await vi.advanceTimersByTimeAsync(0);
+		expect(gateway.calls).toContain("listTasks");
+		expect(coordinator.get().phase).toBe("idle");
+		coordinator.stop();
+	});
+
+	it("clears the sync state when the user signs out", async () => {
+		const { coordinator, gateway, auth } = setup();
+		gateway.failure = new AuthRequiredError();
+		coordinator.start();
+		await vi.advanceTimersByTimeAsync(0);
+		expect(coordinator.get().phase).toBe("unauthorized");
+		auth.setStatus("signedOut");
+		expect(coordinator.get()).toEqual({ phase: "idle", lastSyncedAt: null, rejected: 0 });
+		auth.setStatus("loading");
+		expect(coordinator.get().phase).toBe("idle");
+		coordinator.stop();
 	});
 
 	it("syncs on start and records the time", async () => {

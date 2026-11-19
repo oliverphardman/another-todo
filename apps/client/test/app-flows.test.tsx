@@ -298,15 +298,22 @@ describe("connectivity and sync", () => {
 		expect(screen.queryByLabelText("Dismiss")).toBeNull();
 	});
 
-	it("asks the user to sign in again when the session expires", async () => {
+	it("asks the user to sign in again when the session expires, then clears the banner once signed in", async () => {
+		let accepted = false;
 		const app = await start({
-			respond: () => new Response(JSON.stringify({ error: "expired" }), { status: 401 }),
+			respond: () =>
+				accepted
+					? new Response(JSON.stringify({ tasks: [], lists: [] }), { status: 200 })
+					: new Response(JSON.stringify({ error: "expired" }), { status: 401 }),
 		});
 		await waitFor(() => expect(screen.getByText(/Your session has expired/)).toBeTruthy());
+		accepted = true;
 		await act(async () => {
 			fireEvent.click(screen.getByLabelText("Sign in again"));
 		});
 		expect(app.authorizationServer.authorizeCalls.length).toBeGreaterThanOrEqual(2);
+		await waitFor(() => expect(screen.queryByText(/Your session has expired/)).toBeNull());
+		expect(app.container.sync.get().phase).toBe("idle");
 	});
 
 	it("shows a syncing indicator while changes are being sent", async () => {

@@ -1,3 +1,4 @@
+import type { AuthStatus } from "../auth/authentication-service";
 import type { Clock } from "../domain/ports";
 import type { Connectivity } from "../state/connectivity";
 import { Observable } from "../state/observable";
@@ -22,11 +23,13 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 	private debounce: ReturnType<typeof setTimeout> | null = null;
 	private poll: ReturnType<typeof setInterval> | null = null;
 	private unsubscribe: (() => void) | null = null;
+	private unsubscribeAuth: (() => void) | null = null;
 
 	constructor(
 		private readonly engine: SyncEngine,
 		private readonly connectivity: Connectivity,
 		private readonly clock: Clock,
+		private readonly auth: Observable<AuthStatus>,
 	) {
 		super({ phase: "idle", lastSyncedAt: null, rejected: 0 });
 	}
@@ -40,6 +43,13 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 				this.set({ ...this.get(), phase: "offline" });
 			}
 		});
+		this.unsubscribeAuth = this.auth.subscribe(() => {
+			if (this.auth.get() === "signedIn") {
+				void this.syncNow();
+			} else if (this.auth.get() === "signedOut") {
+				this.set({ phase: "idle", lastSyncedAt: null, rejected: 0 });
+			}
+		});
 		this.poll = setInterval(() => {
 			if (this.connectivity.isOnline()) {
 				void this.syncNow();
@@ -51,6 +61,8 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 	stop(): void {
 		this.unsubscribe?.();
 		this.unsubscribe = null;
+		this.unsubscribeAuth?.();
+		this.unsubscribeAuth = null;
 		if (this.poll !== null) {
 			clearInterval(this.poll);
 			this.poll = null;
@@ -76,6 +88,9 @@ export class SyncCoordinator extends Observable<SyncStatus> implements SyncTrigg
 	}
 
 	async syncNow(): Promise<void> {
+		if (this.auth.get() !== "signedIn") {
+			return;
+		}
 		if (!this.connectivity.isOnline()) {
 			this.set({ ...this.get(), phase: "offline" });
 			return;
