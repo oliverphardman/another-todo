@@ -1,6 +1,6 @@
 export const EN_US = {
 	"app.name": "Another To Do",
-	"app.tagline": "Get things done, wherever you are.",
+	"app.tagline": "It's just Another To Do app. What did you expect?",
 	"app.loading": "Loading…",
 	"view.myDay": "My Day",
 	"view.important": "Important",
