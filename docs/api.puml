@@ -12,14 +12,15 @@ cloud "AWS" {
   package "Lambda (serverless-express)" {
     component "express-openapi-validator\n(openapi.json)" as Validator
     component "TaskController\n/tasks" as Tasks
+    component "ListController\n/lists" as Lists
     component "McpController\n/mcp" as Mcp
     component "DiscoveryController\n/.well-known" as Discovery
-    component "TaskService" as Service
-    interface TaskRepository
-    component "DynamoTaskRepository" as Repo
+    component "TaskService / ListService" as Service
+    interface "Task / TodoList\nRepository" as TaskRepository
+    component "DynamoRepository" as Repo
   }
 
-  database "DynamoDB\nownerId + id" as Table
+  database "DynamoDB\ntasks + lists\nownerId + id" as Table
 }
 
 Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Google, Microsoft)
@@ -27,9 +28,11 @@ Client --> Gateway : Bearer access token
 Gateway ..> Cognito : verify JWT
 Gateway --> Validator : proxy event (v2)
 Validator --> Tasks
+Validator --> Lists
 Gateway --> Mcp
 Gateway --> Discovery
 Tasks --> Service
+Lists --> Service
 Mcp --> Service
 Service --> TaskRepository
 Repo ..|> TaskRepository
