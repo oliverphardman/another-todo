@@ -38,6 +38,14 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 - [x] WebSockets: when the app is open a socket is established and any change made in one client shows immediately in the others (docs/realtime.puml)
 
+## 6. Polish
+
+- [x] Much faster completion animation, the completion sound plays as soon as the circle is clicked, and clicking the list background deselects tasks
+- [x] Removed the "No tasks here yet" text
+- [x] Search bar in the left sidebar above My Day
+- [x] The due date menu uses the platform's date input (a date field on the web, the system picker on native)
+- [x] Each step has a menu: Mark as completed, Promote to task, Delete step
+
 ## Dependencies
 
 - Groups and sharing need new API entities

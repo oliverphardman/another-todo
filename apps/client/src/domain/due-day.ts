@@ -15,6 +15,11 @@ export class DueDay {
 		return `${date.getFullYear()}-${month}-${dayOfMonth}`;
 	}
 
+	static toLocalDate(day: string): Date {
+		const [year, month, dayOfMonth] = day.split("-").map(Number);
+		return new Date(year!, month! - 1, dayOfMonth!);
+	}
+
 	static toIso(day: string): string {
 		return `${day}T00:00:00.000Z`;
 	}

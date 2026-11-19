@@ -103,6 +103,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 							step={step}
 							onToggle={() => store.updateStep(task.id, step.id, { completed: !step.completed })}
 							onRename={(stepTitle) => store.updateStep(task.id, step.id, { title: stepTitle })}
+							onPromote={() => store.promoteStep(task.id, step.id)}
 							onDelete={() => store.deleteStep(task.id, step.id)}
 						/>
 					))}

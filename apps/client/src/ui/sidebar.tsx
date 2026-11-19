@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import type { IconName, TaskView } from "../domain/task-view";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
@@ -11,6 +11,7 @@ import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
 import { usePrintList } from "./use-print-list";
+import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
 
 const DRAG_THRESHOLD = 5;
@@ -145,6 +146,52 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				>
 					<Icon glyph="signOut" color={palette.textSecondary} />
 				</PressableSurface>
+			</View>
+			<View
+				style={{
+					flexDirection: "row",
+					alignItems: "center",
+					marginHorizontal: 12,
+					marginBottom: 8,
+					paddingHorizontal: 10,
+					height: 36,
+					borderRadius: 4,
+					backgroundColor: palette.surface,
+				}}
+			>
+				<Icon glyph="search" size={16} color={palette.textSecondary} />
+				<TextInput
+					accessibilityLabel={t("sidebar.search")}
+					placeholder={t("sidebar.search")}
+					placeholderTextColor={palette.textSecondary}
+					value={state.searchQuery}
+					onChangeText={(text) => store.search(text)}
+					onKeyPress={(event) => {
+						if (event.nativeEvent.key === "Escape") {
+							store.search("");
+						}
+					}}
+					onSubmitEditing={() => onSelected()}
+					style={
+						{
+							flex: 1,
+							marginLeft: 8,
+							fontFamily: FONT_FAMILY,
+							fontSize: 14,
+							color: palette.text,
+							outlineStyle: "none",
+						} as object
+					}
+				/>
+				{state.searchQuery === "" ? null : (
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={t("sidebar.clearSearch")}
+						onPress={() => store.search("")}
+					>
+						<Icon glyph="close" size={14} color={palette.textSecondary} />
+					</PressableSurface>
+				)}
 			</View>
 			<ScrollView>
 				{state.views.map((view, index) => {

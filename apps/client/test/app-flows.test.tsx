@@ -55,7 +55,6 @@ describe("expanded layout", () => {
 		for (const name of ["My Day", "Important", "Planned", "All tasks", "Tasks"]) {
 			expect(screen.getByLabelText(name)).toBeTruthy();
 		}
-		expect(screen.getByText("No tasks here yet")).toBeTruthy();
 		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
 		expect(screen.getByText("Thursday, November 19")).toBeTruthy();
 	});
@@ -96,7 +95,6 @@ describe("expanded layout", () => {
 		const input = screen.getByLabelText("Add a task");
 		fireEvent.change(input, { target: { value: "   " } });
 		fireEvent.keyDown(input, { key: "Enter" });
-		expect(screen.getByText("No tasks here yet")).toBeTruthy();
 		fireEvent.change(input, { target: { value: "From button" } });
 		fireEvent.click(screen.getByLabelText("Add"));
 		expect(screen.getByText("From button")).toBeTruthy();
@@ -137,10 +135,9 @@ describe("expanded layout", () => {
 		expect(app.container.store.get().tasks[0]!.dueDay).toBe("2026-11-23");
 		fireEvent.click(screen.getByLabelText("Due Mon, Nov 23"));
 		const custom = screen.getByLabelText("Custom due date");
-		fireEvent.change(custom, { target: { value: "2026-02-30" } });
-		expect(screen.getByLabelText("Set custom due date").getAttribute("aria-disabled")).toBe("true");
+		fireEvent.change(custom, { target: { value: "" } });
+		expect(app.container.store.get().tasks[0]!.dueDay).toBe("2026-11-23");
 		fireEvent.change(custom, { target: { value: "2026-12-24" } });
-		fireEvent.click(screen.getByLabelText("Set custom due date"));
 		expect(app.container.store.get().tasks[0]!.dueDay).toBe("2026-12-24");
 		fireEvent.click(screen.getByLabelText("Due Thu, Dec 24"));
 		fireEvent.click(screen.getByLabelText("Remove due date"));
@@ -229,7 +226,8 @@ describe("expanded layout", () => {
 		fireEvent.change(second, { target: { value: "Second, renamed" } });
 		fireEvent.blur(second);
 		expect(app.container.store.get().tasks[0]!.steps[1]!.title).toBe("Second, renamed");
-		fireEvent.click(screen.getByLabelText("Delete step First step"));
+		fireEvent.click(screen.getByLabelText("Options for step First step"));
+		fireEvent.click(screen.getByLabelText("Delete step"));
 		expect(app.container.store.get().tasks[0]!.steps).toHaveLength(1);
 		fireEvent.click(screen.getByLabelText("Close details"));
 		expect(screen.getByText(/0 of 1/)).toBeTruthy();
@@ -910,6 +908,18 @@ describe("change theme", () => {
 	});
 });
 
+describe("clicking away", () => {
+	it("deselects the selected task when the list background is clicked", async () => {
+		const app = await start();
+		addTask("Solo");
+		fireEvent.click(screen.getByLabelText("Open Solo"));
+		expect(screen.getByLabelText("Task details")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Task list background"));
+		expect(app.container.store.get().selectedTaskIds).toEqual([]);
+		expect(screen.queryByLabelText("Task details")).toBeNull();
+	});
+});
+
 describe("selecting several tasks", () => {
 	async function withTasks(titles: string[]) {
 		const app = await start();
@@ -1134,5 +1144,96 @@ describe("task context menu", () => {
 		fireEvent.click(screen.getByLabelText("Close menu"));
 		expect(screen.queryByRole("menu")).toBeNull();
 		expect(app.container.store.get().tasks[0]!.completed).toBe(false);
+	});
+});
+
+describe("search", () => {
+	it("finds tasks across lists by title, note or step and returns to the list when cleared", async () => {
+		const app = await start();
+		const store = app.container.store;
+		store.select("tasks");
+		const milk = store.addTask("Buy milk")!;
+		store.addTask("Call mom");
+		const trip = store.addTask("Plan trip")!;
+		store.addStep(trip, "Book HOTEL");
+		store.updateTask(milk, { note: "Oat drink" });
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		const field = screen.getByLabelText("Search");
+		fireEvent.change(field, { target: { value: "milk" } });
+		expect(screen.getByRole("heading", { name: "Search" })).toBeTruthy();
+		expect(screen.getByLabelText("Open Buy milk")).toBeTruthy();
+		expect(screen.queryByLabelText("Open Call mom")).toBeNull();
+		expect(screen.queryByLabelText("Add a task")).toBeNull();
+		fireEvent.change(field, { target: { value: "oat" } });
+		expect(screen.getByLabelText("Open Buy milk")).toBeTruthy();
+		fireEvent.change(field, { target: { value: "hotel" } });
+		expect(screen.getByLabelText("Open Plan trip")).toBeTruthy();
+		fireEvent.keyDown(field, { key: "a" });
+		fireEvent.click(screen.getByLabelText("Clear search"));
+		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
+		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		fireEvent.change(field, { target: { value: "  " } });
+		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
+		fireEvent.change(field, { target: { value: "mom" } });
+		fireEvent.keyDown(field, { key: "Escape" });
+		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
+		fireEvent.change(field, { target: { value: "mom" } });
+		fireEvent.click(screen.getByLabelText("My Day"));
+		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
+	});
+
+	it("returns to the results from the narrow sidebar when submitted", async () => {
+		await start({ width: 400 });
+		fireEvent.click(screen.getByLabelText("Show lists"));
+		const field = screen.getByLabelText("Search");
+		fireEvent.change(field, { target: { value: "x" } });
+		fireEvent.keyDown(field, { key: "Enter" });
+		expect(screen.getByRole("heading", { name: "Search" })).toBeTruthy();
+	});
+});
+
+describe("step menu", () => {
+	async function withSteps() {
+		const app = await start();
+		const store = app.container.store;
+		store.select("tasks");
+		const id = store.addTask("Trip")!;
+		store.addStep(id, "Pack");
+		store.addStep(id, "Book");
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		fireEvent.click(screen.getByLabelText("Open Trip"));
+		return { app, store, id };
+	}
+	const menuItem = (label: string) => screen.getByLabelText(label, { selector: "[role=menuitem]" });
+
+	it("marks a step completed and not completed", async () => {
+		const { store } = await withSteps();
+		fireEvent.click(screen.getByLabelText("Options for step Pack"));
+		fireEvent.click(menuItem("Mark as completed"));
+		expect(store.get().tasks[0]!.steps[0]!.completed).toBe(true);
+		fireEvent.click(screen.getByLabelText("Options for step Pack"));
+		fireEvent.click(menuItem("Mark as not completed"));
+		expect(store.get().tasks[0]!.steps[0]!.completed).toBe(false);
+	});
+
+	it("promotes a step to a task in the same list, keeping its completion", async () => {
+		const { store, id } = await withSteps();
+		fireEvent.contextMenu(screen.getByLabelText("Options for step Pack"));
+		fireEvent.click(menuItem("Mark as completed"));
+		fireEvent.click(screen.getByLabelText("Options for step Pack"));
+		fireEvent.click(menuItem("Promote to task"));
+		const tasks = store.get().tasks;
+		expect(tasks.find((task) => task.id === id)!.steps.map((step) => step.title)).toEqual(["Book"]);
+		const promoted = tasks.find((task) => task.title === "Pack")!;
+		expect([promoted.completed, promoted.listId]).toEqual([true, null]);
+		fireEvent.click(screen.getByLabelText("Options for step Book"));
+		fireEvent.click(menuItem("Promote to task"));
+		expect(store.get().tasks.find((task) => task.title === "Book")!.completed).toBe(false);
+	});
+
+	it("ignores promoting a step that is gone", async () => {
+		const { store, id } = await withSteps();
+		expect(store.promoteStep(id, "ghost")).toBeNull();
+		expect(store.promoteStep("ghost", "x")).toBeNull();
 	});
 });

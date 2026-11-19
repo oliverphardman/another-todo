@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
+import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AddTaskBar } from "./add-task-bar";
@@ -63,7 +63,8 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
 			travel={Math.max(0, open.length - 1 - open.indexOf(task)) * ROW_PITCH + COMPLETED_GAP}
 			selected={state.selectedTaskIds.includes(task.id)}
-			onToggleCompleted={() => store.toggleCompleted(task.id)}
+			onToggleCompleted={(silent) => store.toggleCompleted(task.id, !silent)}
+			onCompleting={() => store.announceCompleted()}
 			onToggleImportant={() => store.toggleImportant(task.id)}
 			onSelect={(event) => {
 				const { shift, toggle } = Pointer.modifiers(event);
@@ -149,17 +150,18 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			</View>
 			<ScrollView
 				contentContainerStyle={{
+					flexGrow: 1,
 					paddingHorizontal: 16,
 					paddingBottom: compact ? 16 : 32,
 				}}
 			>
-				{addBar}
+				<Pressable
+					accessibilityLabel={t("list.background")}
+					onPress={() => store.selectTask(null)}
+					style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+				/>
+				{view.allowsAdding ? addBar : null}
 				{open.map(row)}
-				{open.length === 0 && done.length === 0 ? (
-					<AppText tone="onAccent" style={{ textAlign: "center", marginTop: 32 }}>
-						{t("list.empty")}
-					</AppText>
-				) : null}
 				{done.length === 0 ? null : (
 					<View style={{ marginTop: 12 }}>
 						<PressableSurface

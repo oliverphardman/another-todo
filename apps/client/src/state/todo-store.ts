@@ -4,7 +4,7 @@ import type { Clock, IdGenerator } from "../domain/ports";
 import { Task, type TaskChanges } from "../domain/task";
 import { TaskSorter } from "../domain/task-sorter";
 import type { TaskStepData } from "../domain/task-step";
-import { TaskView, ViewCatalog } from "../domain/task-view";
+import { SearchView, TaskView, ViewCatalog } from "../domain/task-view";
 import { TodoList } from "../domain/todo-list";
 import { ViewSettings, type ViewSettingsChanges } from "../domain/view-settings";
 import type { LocalDatabase, Snapshot } from "../storage/local-database";
@@ -26,6 +26,7 @@ export interface TodoState {
 	readonly selectedTaskIds: readonly string[];
 	readonly anchorTaskId: string | null;
 	readonly renamingViewId: string | null;
+	readonly searchQuery: string;
 	readonly pendingChanges: number;
 	readonly today: string;
 }
@@ -47,7 +48,8 @@ export class TodoStore extends Observable<TodoState> {
 			TodoStore.derive(database.get(), DEFAULT_VIEW_ID, [], null, DueDay.fromDate(clock.now())),
 		);
 		database.subscribe(() => {
-			const { selectedViewId, selectedTaskIds, anchorTaskId, renamingViewId } = this.get();
+			const { selectedViewId, selectedTaskIds, anchorTaskId, renamingViewId, searchQuery } =
+				this.get();
 			this.set({
 				...TodoStore.derive(
 					database.get(),
@@ -57,6 +59,7 @@ export class TodoStore extends Observable<TodoState> {
 					DueDay.fromDate(clock.now()),
 				),
 				renamingViewId,
+				searchQuery,
 			});
 		});
 	}
@@ -84,6 +87,7 @@ export class TodoStore extends Observable<TodoState> {
 				tasks.some((task) => task.id === anchorId) ? anchorId : null,
 			),
 			renamingViewId: null,
+			searchQuery: "",
 			pendingChanges: snapshot.outbox.length,
 			today,
 		};
@@ -106,7 +110,10 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	get selectedView(): TaskView {
-		const { views, selectedViewId } = this.get();
+		const { views, selectedViewId, searchQuery } = this.get();
+		if (searchQuery !== "") {
+			return new SearchView(searchQuery);
+		}
 		return views.find((view) => view.id === selectedViewId)!;
 	}
 
@@ -219,8 +226,13 @@ export class TodoStore extends Observable<TodoState> {
 			...this.get(),
 			selectedViewId: known ? viewId : DEFAULT_VIEW_ID,
 			renamingViewId: null,
+			searchQuery: "",
 			...TodoStore.selection([], null),
 		});
+	}
+
+	search(query: string): void {
+		this.set({ ...this.get(), searchQuery: query.trim(), ...TodoStore.selection([], null) });
 	}
 
 	startRenaming(listId: string): void {
@@ -396,10 +408,14 @@ export class TodoStore extends Observable<TodoState> {
 		}
 	}
 
-	toggleCompleted(taskId: string): void {
+	announceCompleted(): void {
+		this.sounds.playCompleted();
+	}
+
+	toggleCompleted(taskId: string, sound = true): void {
 		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
 		if (task !== undefined) {
-			if (!task.completed) {
+			if (!task.completed && sound) {
 				this.sounds.playCompleted();
 			}
 			this.updateTask(taskId, { completed: !task.completed });
@@ -438,6 +454,23 @@ export class TodoStore extends Observable<TodoState> {
 				step.id === stepId ? { ...step, ...changes, ...(title !== undefined && { title }) } : step,
 			),
 		});
+	}
+
+	promoteStep(taskId: string, stepId: string): string | null {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		const step = task?.steps.find((candidate) => candidate.id === stepId);
+		if (task === undefined || step === undefined) {
+			return null;
+		}
+		const promoted = Task.create(
+			this.ids.next(),
+			step.title,
+			this.clock.now().toISOString(),
+			task.listId,
+		);
+		this.insertTask(step.completed ? promoted.with({ completed: true }) : promoted);
+		this.deleteStep(taskId, stepId);
+		return promoted.id;
 	}
 
 	deleteStep(taskId: string, stepId: string): void {

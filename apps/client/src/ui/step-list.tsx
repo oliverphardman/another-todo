@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import type { TaskStepData } from "../domain/task-step";
 import { CheckedCircle, Icon } from "./icon";
+import { useContextMenuTrigger } from "./context-menu";
 import { PressableSurface } from "./pressable-surface";
 import { DETAIL_ROW_HEIGHT, DetailSeparator } from "./detail-card";
 import { AppText } from "./app-text";
@@ -23,13 +24,33 @@ export interface StepRowProps {
 	readonly step: TaskStepData;
 	readonly onToggle: () => void;
 	readonly onRename: (title: string) => void;
+	readonly onPromote: () => void;
 	readonly onDelete: () => void;
 }
 
-export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
+export function StepRow({ step, onToggle, onRename, onPromote, onDelete }: StepRowProps) {
 	const palette = useTheme();
 	const { t } = useI18n();
 	const [title, setTitle] = useState(step.title);
+	const menu = useContextMenuTrigger(t("step.menu"), () => [
+		{
+			kind: "action",
+			key: "toggle",
+			glyph: "check",
+			label: step.completed ? t("step.markNotCompleted") : t("step.markCompleted"),
+			onPress: onToggle,
+		},
+		{ kind: "action", key: "promote", glyph: "move", label: t("step.promote"), onPress: onPromote },
+		{
+			kind: "action",
+			key: "delete",
+			separatorBefore: true,
+			danger: true,
+			glyph: "trash",
+			label: t("step.deleteStep"),
+			onPress: onDelete,
+		},
+	]);
 	const commit = () => {
 		if (title.trim().length === 0) {
 			setTitle(step.title);
@@ -80,11 +101,13 @@ export function StepRow({ step, onToggle, onRename, onDelete }: StepRowProps) {
 				/>
 				<PressableSurface
 					accessibilityRole="button"
-					accessibilityLabel={t("step.delete", { title: step.title })}
-					onPress={onDelete}
+					accessibilityLabel={t("step.options", { title: step.title })}
+					onPress={menu.onContextMenu}
+					onContextMenu={menu.onContextMenu}
+					onLongPress={menu.onLongPress}
 					style={{ padding: 14 }}
 				>
-					<Icon glyph="close" size={16} color={palette.textSecondary} />
+					<Icon glyph="more" size={16} color={palette.textSecondary} />
 				</PressableSurface>
 			</View>
 		</>

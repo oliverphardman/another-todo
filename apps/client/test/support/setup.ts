@@ -7,6 +7,12 @@ vi.mock("expo-auth-session", () => ({
 	TokenTypeHint: { RefreshToken: "refresh_token" },
 	makeRedirectUri: () => "anothertodo://auth/callback",
 }));
+vi.mock("@react-native-community/datetimepicker", () => ({
+	default: (props: { onChange: unknown; value: Date }) => {
+		(globalThis as { __datePicker?: unknown }).__datePicker = props;
+		return null;
+	},
+}));
 vi.mock("expo-audio", () => ({
 	createAudioPlayer: () => ({ seekTo: async () => undefined, play: () => undefined }),
 }));

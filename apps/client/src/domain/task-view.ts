@@ -17,6 +17,7 @@ export abstract class TaskView {
 	readonly showsListName: boolean = true;
 	readonly showsMyDay: boolean = true;
 	readonly showsDate: boolean = false;
+	readonly allowsAdding: boolean = true;
 
 	abstract matches(task: Task, today: string): boolean;
 
@@ -120,6 +121,25 @@ export class CustomListView extends TaskView {
 
 	override defaultsForNewTask(): TaskChanges {
 		return { listId: this.list.id };
+	}
+}
+
+export class SearchView extends TaskView {
+	readonly id = "search";
+	readonly title = "Search";
+	readonly titleKey = "view.search";
+	readonly icon = "all";
+	override readonly allowsAdding = false;
+
+	constructor(readonly query: string) {
+		super();
+	}
+
+	matches(task: Task): boolean {
+		const needle = this.query.toLowerCase();
+		return [task.title, task.note, ...task.steps.map((step) => step.title)].some((text) =>
+			text.toLowerCase().includes(needle),
+		);
 	}
 }
 

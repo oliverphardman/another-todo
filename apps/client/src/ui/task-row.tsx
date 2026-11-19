@@ -15,7 +15,8 @@ export interface TaskRowProps {
 	readonly overdue: boolean;
 	readonly travel: number;
 	readonly selected: boolean;
-	readonly onToggleCompleted: () => void;
+	readonly onToggleCompleted: (silent?: boolean) => void;
+	readonly onCompleting: () => void;
 	readonly onToggleImportant: () => void;
 	readonly onSelect: (event: unknown) => void;
 	readonly buildMenu: () => readonly ContextMenuEntry[];
@@ -28,6 +29,7 @@ export function TaskRow({
 	travel,
 	selected,
 	onToggleCompleted,
+	onCompleting,
 	onToggleImportant,
 	onSelect,
 	buildMenu,
@@ -52,6 +54,7 @@ export function TaskRow({
 			return;
 		}
 		setCompleting(true);
+		onCompleting();
 		Animated.sequence([
 			Animated.timing(fill, { toValue: 1, duration: motion.fillMs, useNativeDriver: false }),
 			Animated.timing(slide, {
@@ -61,7 +64,7 @@ export function TaskRow({
 			}),
 		]).start(() => {
 			if (alive.current) {
-				onToggleCompleted();
+				onToggleCompleted(true);
 				setCompleting(false);
 				fill.setValue(0);
 				slide.setValue(0);

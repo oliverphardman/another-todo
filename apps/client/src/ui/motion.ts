@@ -3,6 +3,6 @@ export interface Motion {
 	readonly travelMs: number;
 }
 
-export const STANDARD_MOTION: Motion = { fillMs: 220, travelMs: 360 };
+export const STANDARD_MOTION: Motion = { fillMs: 70, travelMs: 110 };
 
 export const NO_MOTION: Motion = { fillMs: 0, travelMs: 0 };

@@ -82,7 +82,6 @@ describe("every user-visible string comes from the message catalog", () => {
 	it("the sidebar, task list, task rows and completed section", async () => {
 		await start();
 		expect(unlocalized()).toEqual([]);
-		byText("list.empty");
 		addTask("Zebra");
 		addTask("Quokka");
 		fireEvent.click(screen.getAllByLabelText(pseudo("task.complete"))[0]!);
@@ -106,7 +105,7 @@ describe("every user-visible string comes from the message catalog", () => {
 		fireEvent.keyDown(step, { key: "Enter" });
 		fireEvent.keyDown(step, { key: "Escape" });
 		byLabel("step.named", { title: "Gnu" });
-		byLabel("step.delete", { title: "Gnu" });
+		byLabel("step.options", { title: "Gnu" });
 		byLabel("step.complete", { title: "Gnu" });
 		fireEvent.click(byLabel("step.complete", { title: "Gnu" }));
 		byLabel("step.uncomplete", { title: "Gnu" });
@@ -114,7 +113,6 @@ describe("every user-visible string comes from the message catalog", () => {
 		byLabel("due.options");
 		byLabel("due.option", { label: pseudo("due.today") });
 		byLabel("due.custom");
-		byLabel("due.setCustom");
 		expect(unlocalized()).toEqual([]);
 		fireEvent.click(byLabel("due.option", { label: pseudo("due.tomorrow") }));
 		byLabel("detail.due", { when: pseudo("due.tomorrow") });

@@ -1,3 +1,4 @@
+- Please massively speed up the animation of the task moving to the bottom. Please play the sound as soon as the task is completed, not after the animation. Clicking elsewhere in the list (not on a task) should deselect any selected task.
 - If the user is in dark mode, the background of lists should be #1E1E1E, but if an image is set, this should always be displayed instead.
 - The sidebar color in dark mode is ##252525.
 - Set default list theme color to #6074C3
@@ -19,5 +20,3 @@
 - Add a search bar in the left sidebar above My Day
 - The 'Add due date' menu should offer a native datetime input rather than a simple text filed
 - "Steps" on tasks should each have a meatball/kebab menu which offer: Mark as completed, Promote to task, Delete step
-
-Please massively speed up the animation of the task moving to the bottom. Please play the sound as soon as the task is completed, not after the animation. Clicking elsewhere in the list (not on a task) should deselect any selected task.

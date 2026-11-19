@@ -44,6 +44,7 @@ describe("completing a task with motion", () => {
 		const app = await start();
 		fireEvent.click(screen.getAllByLabelText("Mark as completed")[0]!);
 		expect(completedCount(app)).toBe(0);
+		expect(app.sounds.plays).toBe(1);
 		expect(finishers).toHaveLength(1);
 		act(() => finishers[0]!({ finished: true }));
 		expect(completedCount(app)).toBe(1);

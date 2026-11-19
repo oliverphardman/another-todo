@@ -16,6 +16,9 @@ importers:
       '@react-native-async-storage/async-storage':
         specifier: ^2.2.0
         version: 2.2.0(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))
+      '@react-native-community/datetimepicker':
+        specifier: 8.6.0
+        version: 8.6.0(expo@55.0.32)(react-native-windows@0.83.3(@babel/core@7.29.13(supports-color@10.2.2))(@types/react@19.2.18)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)(supports-color@10.2.2)(tslib@2.9.1)(typescript@5.9.3))(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
       '@react-native-community/netinfo':
         specifier: ^11.4.1
         version: 11.5.2(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
@@ -1122,6 +1125,19 @@ packages:
     resolution: {integrity: sha512-c3MsRYtjOF+6zQuOtBhHaL6sJdOE1jN5lVEeiNebeO2xwQnC0t1QCcuHz1yWQf16LOT0bpMLhar7LR6IDTf9Uw==}
     engines: {node: '>=20.19.4'}
     hasBin: true
+
+  '@react-native-community/datetimepicker@8.6.0':
+    resolution: {integrity: sha512-yxPSqNfxgpGaqHQIpatqe6ykeBdU/1pdsk/G3x01mY2bpTflLpmVTLqFSJYd3MiZzxNZcMs/j1dQakUczSjcYA==}
+    peerDependencies:
+      expo: '>=52.0.0'
+      react: '*'
+      react-native: '*'
+      react-native-windows: '*'
+    peerDependenciesMeta:
+      expo:
+        optional: true
+      react-native-windows:
+        optional: true
 
   '@react-native-community/netinfo@11.5.2':
     resolution: {integrity: sha512-/g0m65BtX9HU+bPiCH2517bOHpEIUsGrWFXDzi1a5nNKn5KujQgm04WhL7/OSXWKHyrT8VVtUoJA0XKRxueBpQ==}
@@ -6040,6 +6056,15 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
+
+  '@react-native-community/datetimepicker@8.6.0(expo@55.0.32)(react-native-windows@0.83.3(@babel/core@7.29.13(supports-color@10.2.2))(@types/react@19.2.18)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)(supports-color@10.2.2)(tslib@2.9.1)(typescript@5.9.3))(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)':
+    dependencies:
+      invariant: 2.2.4
+      react: 19.2.0
+      react-native: 0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2)
+    optionalDependencies:
+      expo: 55.0.32(@babel/core@7.29.13(supports-color@10.2.2))(@expo/dom-webview@55.0.6)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)(supports-color@10.2.2)(typescript@5.9.3)
+      react-native-windows: 0.83.3(@babel/core@7.29.13(supports-color@10.2.2))(@types/react@19.2.18)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)(supports-color@10.2.2)(tslib@2.9.1)(typescript@5.9.3)
 
   '@react-native-community/netinfo@11.5.2(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)':
     dependencies:
