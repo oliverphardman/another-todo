@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
@@ -9,6 +9,7 @@ import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
+import { useDeleteTasks } from "./use-delete-tasks";
 import { SortChip } from "./sort-chip";
 import { SyncBanner } from "./sync-banner";
 import { useContextMenuTrigger } from "./context-menu";
@@ -31,11 +32,13 @@ export interface TaskListPaneProps {
 	readonly onShowSidebar?: () => void;
 }
 
+const DRAG_THRESHOLD = 5;
 const ROW_PITCH = 54;
 const COMPLETED_GAP = 40;
 
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { store } = useContainer();
+	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -64,8 +67,52 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 		].filter((part): part is string => part !== null);
 		return parts.length === 0 ? null : parts.join(" · ");
 	};
+	const manualOrder = store.settingsFor(view.id).sort === null && view.order === "newest";
+	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
+	const dragged = useRef(false);
+	const beginDrag = (taskId: string, event: unknown) => {
+		const startY = Pointer.position(event).y;
+		let moved = false;
+		const indexAt = (y: number): number =>
+			Array.from(document.querySelectorAll<HTMLElement>("[data-task-row]"))
+				.filter((element) => element.dataset.taskRow !== taskId)
+				.filter((element) => {
+					const box = element.getBoundingClientRect();
+					return y > box.top + box.height / 2;
+				}).length;
+		const move = (moving: unknown) => {
+			const y = Pointer.position(moving).y;
+			moved = moved || Math.abs(y - startY) > DRAG_THRESHOLD;
+			if (moved) {
+				setDrag({ id: taskId, index: indexAt(y) });
+			}
+		};
+		const end = (ending: unknown) => {
+			window.removeEventListener("mousemove", move);
+			window.removeEventListener("mouseup", end);
+			setDrag(null);
+			if (moved) {
+				dragged.current = true;
+				store.reorderTask(taskId, indexAt(Pointer.position(ending).y));
+			}
+		};
+		window.addEventListener("mousemove", move);
+		window.addEventListener("mouseup", end);
+	};
+	const markerFor = (taskId: string): "before" | "after" | null => {
+		if (drag === null) {
+			return null;
+		}
+		const others = open.filter((task) => task.id !== drag.id);
+		if (others[drag.index]?.id === taskId) {
+			return "before";
+		}
+		return drag.index >= others.length && others[others.length - 1]?.id === taskId ? "after" : null;
+	};
 	const row = (task: Task) => (
 		<TaskRow
+			marker={markerFor(task.id)}
+			onDragStart={manualOrder && !task.completed ? (event) => beginDrag(task.id, event) : null}
 			key={task.id}
 			task={task}
 			subtitle={subtitleFor(task)}
@@ -76,6 +123,10 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			onCompleting={() => store.announceCompleted()}
 			onToggleImportant={() => store.toggleImportant(task.id)}
 			onSelect={(event) => {
+				if (dragged.current) {
+					dragged.current = false;
+					return;
+				}
 				const { shift, toggle } = Pointer.modifiers(event);
 				if (shift) {
 					store.selectTaskRange(task.id);
@@ -85,13 +136,18 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					store.selectTask(task.id);
 				}
 			}}
-			buildMenu={() =>
-				buildTaskMenu(
+			buildMenu={() => {
+				const inSelection = state.selectedTaskIds.includes(task.id);
+				if (!inSelection) {
+					store.selectTask(task.id);
+				}
+				return buildTaskMenu(
 					store,
 					i18n,
-					state.selectedTaskIds.includes(task.id) ? state.selectedTaskIds : [task.id],
-				)
-			}
+					inSelection ? state.selectedTaskIds : [task.id],
+					deleteTasks,
+				);
+			}}
 		/>
 	);
 	const addBar = (

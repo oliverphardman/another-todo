@@ -290,6 +290,8 @@ export interface components {
             myDayDismissed: string | null;
             steps: components["schemas"]["TaskStep"][];
             note: string;
+            /** @description Manual order within a list; lower comes first */
+            position: number | null;
         };
         TaskList: {
             tasks: components["schemas"]["Task"][];
@@ -309,6 +311,8 @@ export interface components {
             myDayDismissed?: string | null;
             steps?: components["schemas"]["TaskStep"][];
             note?: string;
+            /** @description Manual order within a list; lower comes first */
+            position?: number | null;
         };
         UpdateTask: {
             title?: string;
@@ -323,6 +327,8 @@ export interface components {
             myDayDismissed?: string | null;
             steps?: components["schemas"]["TaskStep"][];
             note?: string;
+            /** @description Manual order within a list; lower comes first */
+            position?: number | null;
         };
         Error: {
             error: string;

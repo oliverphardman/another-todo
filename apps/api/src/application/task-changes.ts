@@ -11,6 +11,7 @@ export interface TaskInput {
 	readonly listId?: unknown;
 	readonly myDay?: unknown;
 	readonly myDayDismissed?: unknown;
+	readonly position?: unknown;
 	readonly steps?: unknown;
 	readonly note?: unknown;
 	readonly dueDate?: unknown;
@@ -37,6 +38,9 @@ export class TaskChanges {
 		if (input.myDayDismissed !== undefined) {
 			result = result.setMyDayDismissed(TaskChanges.day(input.myDayDismissed, "myDayDismissed"));
 		}
+		if (input.position !== undefined) {
+			result = result.setPosition(TaskChanges.position(input.position));
+		}
 		if (input.steps !== undefined) {
 			result = result.setSteps(TaskChanges.steps(input.steps));
 		}
@@ -52,6 +56,16 @@ export class TaskChanges {
 	static title(value: unknown): string {
 		if (typeof value !== "string") {
 			throw new ValidationError("title must be a string");
+		}
+		return value;
+	}
+
+	static position(value: unknown): number | null {
+		if (value === null) {
+			return null;
+		}
+		if (typeof value !== "number" || !Number.isFinite(value)) {
+			throw new ValidationError("position must be a number or null");
 		}
 		return value;
 	}

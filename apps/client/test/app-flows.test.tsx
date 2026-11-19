@@ -168,6 +168,9 @@ describe("expanded layout", () => {
 		fireEvent.click(screen.getByLabelText("Open Short lived"));
 		expect(screen.getByText("Created a few moments ago")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Delete task"));
+		expect(screen.getByRole("alert")).toBeTruthy();
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete task"));
+		await act(async () => undefined);
 		expect(app.container.store.get().tasks).toEqual([]);
 		expect(screen.queryByLabelText("Task details")).toBeNull();
 	});
@@ -184,7 +187,6 @@ describe("expanded layout", () => {
 			"Remind me",
 			"Add due date",
 			"Repeat",
-			"Pick a category",
 			"Add file",
 			"Note",
 			"Close details",
@@ -195,7 +197,7 @@ describe("expanded layout", () => {
 			return Array.from(document.querySelectorAll("*")).indexOf(element);
 		});
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		for (const label of ["Remind me", "Repeat", "Pick a category", "Add file"]) {
+		for (const label of ["Remind me", "Repeat", "Add file"]) {
 			expect(details.getByLabelText(label).getAttribute("aria-disabled")).toBe("true");
 		}
 	});
@@ -1085,6 +1087,8 @@ describe("task context menu", () => {
 		expect(screen.queryByLabelText("Open Trip")).toBeNull();
 		rightClick("Spare");
 		fireEvent.click(item("Delete Task"));
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText(/^Delete tasks?$/));
+		await act(async () => undefined);
 		expect(screen.queryByText("Spare")).toBeNull();
 	});
 
@@ -1108,6 +1112,8 @@ describe("task context menu", () => {
 		).toEqual(["A", "C"]);
 		rightClick("C");
 		fireEvent.click(item("Delete Task"));
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText(/^Delete tasks?$/));
+		await act(async () => undefined);
 		expect(app.container.store.get().tasks.map((task) => task.title)).toEqual(["B"]);
 	});
 
@@ -1263,5 +1269,64 @@ describe("step menu", () => {
 		const { store, id } = await withSteps();
 		expect(store.promoteStep(id, "ghost")).toBeNull();
 		expect(store.promoteStep("ghost", "x")).toBeNull();
+	});
+});
+
+describe("deleting tasks", () => {
+	it("names the task, explains it cannot be undone and keeps it when cancelled or dismissed", async () => {
+		const app = await start();
+		addTask("Precious");
+		fireEvent.click(screen.getByLabelText("Open Precious"));
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		const dialog = screen.getByRole("alert");
+		expect(within(dialog).getByText("“Precious” will be permanently deleted.")).toBeTruthy();
+		expect(within(dialog).getByText("You won't be able to undo this action.")).toBeTruthy();
+		fireEvent.click(within(dialog).getByLabelText("Cancel"));
+		await act(async () => undefined);
+		expect(screen.queryByRole("alert")).toBeNull();
+		expect(app.container.store.get().tasks).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		fireEvent.click(screen.getByLabelText("Dismiss dialog"));
+		await act(async () => undefined);
+		expect(screen.queryByRole("alert")).toBeNull();
+		expect(app.container.store.get().tasks).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete task"));
+		await act(async () => undefined);
+		expect(app.container.store.get().tasks).toEqual([]);
+	});
+
+	it("counts the tasks when several are deleted at once", async () => {
+		const app = await start();
+		addTask("One");
+		addTask("Two");
+		fireEvent.click(screen.getByLabelText("Open One"));
+		fireEvent.click(screen.getByLabelText("Open Two"), { ctrlKey: true });
+		fireEvent.contextMenu(screen.getByLabelText("Open One"));
+		fireEvent.click(screen.getByLabelText("Delete Task", { selector: "[role=menuitem]" }));
+		expect(screen.getByText("2 tasks will be permanently deleted.")).toBeTruthy();
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete tasks"));
+		await act(async () => undefined);
+		expect(app.container.store.get().tasks).toEqual([]);
+	});
+
+	it("keeps the spell checker off the note until it is focused", async () => {
+		await start();
+		addTask("Noted");
+		fireEvent.click(screen.getByLabelText("Open Noted"));
+		const note = screen.getByLabelText("Note");
+		expect(note.getAttribute("spellcheck")).toBe("false");
+		fireEvent.focus(note);
+		expect(screen.getByLabelText("Note").getAttribute("spellcheck")).toBe("true");
+		fireEvent.blur(note);
+		expect(screen.getByLabelText("Note").getAttribute("spellcheck")).toBe("false");
+	});
+
+	it("selects a task when it is right-clicked", async () => {
+		const app = await start();
+		addTask("Pick me");
+		fireEvent.contextMenu(screen.getByLabelText("Open Pick me"));
+		expect(app.container.store.get().selectedTaskIds).toHaveLength(1);
+		expect(screen.getByLabelText("Task details")).toBeTruthy();
 	});
 });

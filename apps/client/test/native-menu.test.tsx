@@ -211,22 +211,16 @@ describe("native context menus", () => {
 		);
 		const labels = flat(fake().shown[0]!).map((item) => item.label);
 		for (const expected of [
+			"Rename List",
 			"Sort",
 			"Change Theme…",
 			"Duplicate List",
-			"Create Group",
-			"Share List",
-			"Rename List",
 			"Print List",
 			"Hide Completed Tasks",
 			"Delete List",
 		]) {
 			expect(labels).toContain(expected);
 		}
-		fake().choose = (items) => items.find((item) => item.label === "Share List")!.key;
-		fireEvent.click(screen.getByLabelText("List options"));
-		expect(await screen.findByLabelText("Email address")).toBeTruthy();
-		fireEvent.click(screen.getByLabelText("Close sharing"));
 		fake().choose = (items) => items.find((item) => item.label === "Hide Completed Tasks")!.key;
 		fireEvent.click(screen.getByLabelText("List options"));
 		await waitFor(() =>
@@ -303,7 +297,6 @@ describe("native context menus", () => {
 		store.subscribe(() => renaming.push(store.get().renamingViewId));
 		await pick("Rename List", () => expect(renaming.some((id) => id !== null)).toBe(true));
 		act(() => store.stopRenaming());
-		await pick("Create Group", () => expect(store.get().groups).toHaveLength(1));
 		await pick("Duplicate List", () => expect(store.get().lists).toHaveLength(2));
 		await pick("Delete List", () => expect(store.get().lists).toHaveLength(1));
 	});

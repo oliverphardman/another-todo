@@ -157,6 +157,19 @@ describe("My Day", () => {
 		expect(bad.status).toBe(400);
 	});
 
+	it("stores a manual position and validates it", async () => {
+		const api = createTestApi();
+		const created = await api(
+			event({ method: "POST", path: "/tasks", body: { title: "A", position: -5 } }),
+		);
+		expect(created.body.position).toBe(-5);
+		const patch = (body: unknown) =>
+			api(event({ method: "PATCH", path: `/tasks/${created.body.id}`, body }));
+		expect((await patch({ position: 1.5 })).body.position).toBe(1.5);
+		expect((await patch({ position: null })).body.position).toBeNull();
+		expect((await patch({ position: "first" })).status).toBe(400);
+	});
+
 	it("round trips steps and notes over REST", async () => {
 		const api = createTestApi();
 		const created = await api(

@@ -101,6 +101,7 @@ describe("HttpApiGateway", () => {
 			listId: "l1",
 			myDay: null,
 			myDayDismissed: null,
+			position: null,
 			steps: [],
 			note: "",
 			dueDate: null,

@@ -147,16 +147,25 @@ describe("sharing a list", () => {
 		);
 	});
 
-	it("shares from the list options menu on a narrow screen and offers group creation", async () => {
+	it("keeps Create Group and Share List out of the list options menu, in the requested order", async () => {
 		const app = await start({ width: 400 });
 		mutate(app, (store) => store.addList("Mine"));
 		fireEvent.click(screen.getByLabelText("List options"));
-		fireEvent.click(screen.getByLabelText("Share List"));
-		expect(await screen.findByLabelText("Email address")).toBeTruthy();
-		fireEvent.click(screen.getByLabelText("Close sharing"));
-		fireEvent.click(screen.getByLabelText("List options"));
-		fireEvent.click(screen.getByLabelText("Create Group"));
-		expect(app.container.store.get().groups).toHaveLength(1);
+		expect(screen.queryByLabelText("Share List")).toBeNull();
+		expect(screen.queryByLabelText("Create Group")).toBeNull();
+		const labels = Array.from(document.querySelectorAll("[role=menu] [role=menuitem]")).map(
+			(item) => item.getAttribute("aria-label"),
+		);
+		expect(labels).toEqual([
+			"Rename List",
+			"Sort",
+			"Change Theme…",
+			"Duplicate List",
+			"Print List",
+			"Hide Completed Tasks",
+			"Delete List",
+		]);
+		expect(document.querySelectorAll("[role=menu] [role=separator]").length).toBe(1);
 	});
 });
 

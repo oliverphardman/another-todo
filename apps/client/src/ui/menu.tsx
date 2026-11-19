@@ -107,3 +107,13 @@ export function MenuItem({
 		</PressableSurface>
 	);
 }
+
+export function MenuDivider() {
+	const palette = useTheme();
+	return (
+		<View
+			{...({ role: "separator" } as object)}
+			style={{ height: 1, backgroundColor: palette.border, marginVertical: 4, marginHorizontal: 8 }}
+		/>
+	);
+}

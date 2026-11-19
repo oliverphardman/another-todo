@@ -172,4 +172,15 @@ describe("TaskService", () => {
 		expect(ids).toEqual([first.id, second.id, third.id]);
 		expect((await service.list("u")).length).toBe(3);
 	});
+
+	it("rejects a position that is not a finite number", async () => {
+		const tasks = createService();
+		const task = await tasks.create("u", { title: "A" });
+		await expect(
+			tasks.update("u", task.id, { position: Number.POSITIVE_INFINITY }),
+		).rejects.toThrow("position must be a number or null");
+		await expect(tasks.update("u", task.id, { position: "x" })).rejects.toThrow(
+			"position must be a number or null",
+		);
+	});
 });

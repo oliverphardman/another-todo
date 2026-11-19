@@ -3,12 +3,11 @@ import { SORT_OPTIONS, type SortKey } from "../domain/view-settings";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import type { IconGlyph } from "./icon";
-import { MenuItem, MenuOverlay, MenuPanel } from "./menu";
-import { SharePanel } from "./share-panel";
+import { MenuDivider, MenuItem, MenuOverlay, MenuPanel } from "./menu";
 import { ThemePanel } from "./theme-panel";
 import { usePrintList } from "./use-print-list";
 
-export type ListPanel = "menu" | "sort" | "theme" | "share";
+export type ListPanel = "menu" | "sort" | "theme";
 
 const SORT_GLYPHS: Record<SortKey, IconGlyph> = {
 	importance: "star",
@@ -58,11 +57,6 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 	));
 	return (
 		<MenuOverlay onDismiss={onClose}>
-			{panel === "share" ? (
-				<MenuPanel label={t("share.title")} placement={{ top: TOP, right: 12, width: 320 }}>
-					<SharePanel listId={view.id} onClose={onClose} />
-				</MenuPanel>
-			) : null}
 			{panel === "theme" ? (
 				<MenuPanel label={t("menu.themePanel")} placement={{ top: TOP, right: 12, width: 300 }}>
 					<ThemePanel viewId={view.id} onClose={onClose} />
@@ -76,6 +70,13 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 			) : null}
 			{panel === "menu" || (panel === "sort" && !compact) ? (
 				<MenuPanel label={t("list.options")} placement={main}>
+					{view.canEditList ? (
+						<MenuItem
+							glyph="edit"
+							label={t("ctx.renameList")}
+							onPress={finish(() => store.startRenaming(view.id))}
+						/>
+					) : null}
 					<MenuItem
 						glyph="sort"
 						label={t("menu.sort")}
@@ -92,32 +93,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 							)}
 						/>
 					) : null}
-					{view.canEditList ? (
-						<MenuItem
-							glyph="group"
-							label={t("ctx.createGroup")}
-							onPress={finish(() => store.createGroupFor(view.id, t("group.new")))}
-						/>
-					) : null}
-					{view.canEditList ? (
-						<MenuItem glyph="people" label={t("ctx.shareList")} onPress={() => onPanel("share")} />
-					) : null}
-					{view.canEditList ? (
-						<MenuItem
-							glyph="edit"
-							label={t("ctx.renameList")}
-							onPress={finish(() => store.startRenaming(view.id))}
-						/>
-					) : null}
 					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
-					{view.isCustomList ? (
-						<MenuItem
-							glyph="trash"
-							label={view.canEditList ? t("ctx.deleteList") : t("ctx.leaveList")}
-							danger
-							onPress={finish(() => store.deleteList(view.id))}
-						/>
-					) : null}
 					<MenuItem
 						glyph="check"
 						label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
@@ -125,6 +101,17 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 							store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
 						)}
 					/>
+					{view.isCustomList ? (
+						<>
+							<MenuDivider />
+							<MenuItem
+								glyph="trash"
+								label={view.canEditList ? t("ctx.deleteList") : t("ctx.leaveList")}
+								danger
+								onPress={finish(() => store.deleteList(view.id))}
+							/>
+						</>
+					) : null}
 				</MenuPanel>
 			) : null}
 			{panel === "sort" && !compact ? (

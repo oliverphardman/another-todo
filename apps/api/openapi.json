@@ -693,7 +693,8 @@
 					"myDay",
 					"myDayDismissed",
 					"steps",
-					"note"
+					"note",
+					"position"
 				],
 				"properties": {
 					"id": {
@@ -743,6 +744,11 @@
 					"note": {
 						"type": "string",
 						"maxLength": 10000
+					},
+					"position": {
+						"type": "number",
+						"nullable": true,
+						"description": "Manual order within a list; lower comes first"
 					}
 				}
 			},
@@ -810,6 +816,11 @@
 					"note": {
 						"type": "string",
 						"maxLength": 10000
+					},
+					"position": {
+						"type": "number",
+						"nullable": true,
+						"description": "Manual order within a list; lower comes first"
 					}
 				}
 			},
@@ -859,6 +870,11 @@
 					"note": {
 						"type": "string",
 						"maxLength": 10000
+					},
+					"position": {
+						"type": "number",
+						"nullable": true,
+						"description": "Manual order within a list; lower comes first"
 					}
 				}
 			},

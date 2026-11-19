@@ -82,6 +82,15 @@ describe("Task", () => {
 		expect(Task.restore(legacy).note).toBe("");
 	});
 
+	it("keeps a manual position and reads records saved without one as unpositioned", () => {
+		const task = Task.create("u", "1", "A", now).setPosition(2.5);
+		expect(task.position).toBe(2.5);
+		expect(Task.restore(task.toRecord()).position).toBe(2.5);
+		const { position: _position, ...legacy } = task.toRecord();
+		expect(Task.restore(legacy).position).toBeNull();
+		expect(task.setPosition(null).position).toBeNull();
+	});
+
 	it("serializes to JSON without the owner", () => {
 		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
 		expect(json).toEqual({
@@ -94,6 +103,7 @@ describe("Task", () => {
 			myDayDismissed: null,
 			steps: [],
 			note: "",
+			position: null,
 			dueDate: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});

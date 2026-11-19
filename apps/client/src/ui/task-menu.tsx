@@ -8,6 +8,7 @@ export function buildTaskMenu(
 	store: TodoStore,
 	i18n: I18n,
 	taskIds: readonly string[],
+	deleteTasks: (taskIds: readonly string[]) => void,
 ): ContextMenuEntry[] {
 	const { t } = i18n;
 	const today = store.today;
@@ -118,7 +119,7 @@ export function buildTaskMenu(
 			danger: true,
 			glyph: "trash",
 			label: t("ctx.deleteTask"),
-			onPress: () => store.deleteTasks(taskIds),
+			onPress: () => deleteTasks(taskIds),
 		},
 	];
 }

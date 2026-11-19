@@ -9,6 +9,7 @@ import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./det
 import { DueDatePicker } from "./due-date-picker";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
+import { useDeleteTasks } from "./use-delete-tasks";
 import { AddStepRow, StepRow } from "./step-list";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -20,11 +21,13 @@ export interface TaskDetailPaneProps {
 
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const { store } = useContainer();
+	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const [title, setTitle] = useState(task.title);
 	const [note, setNote] = useState(task.note);
+	const [noteFocused, setNoteFocused] = useState(false);
 	const [picking, setPicking] = useState(false);
 	useEffect(() => {
 		setTitle(task.title);
@@ -142,20 +145,22 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					<ActionRow glyph="repeat" label={t("detail.repeat")} />
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="tag" label={t("detail.category")} />
-				</DetailCard>
-				<DetailCard>
 					<ActionRow glyph="paperclip" label={t("detail.file")} />
 				</DetailCard>
 				<DetailCard>
 					<TextInput
 						multiline
+						spellCheck={noteFocused}
+						onFocus={() => setNoteFocused(true)}
 						accessibilityLabel={t("detail.note")}
 						placeholder={t("detail.addNote")}
 						placeholderTextColor={palette.textSecondary}
 						value={note}
 						onChangeText={setNote}
-						onBlur={() => store.setNote(task.id, note)}
+						onBlur={() => {
+							setNoteFocused(false);
+							store.setNote(task.id, note);
+						}}
 						style={
 							{
 								minHeight: 72,
@@ -196,7 +201,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 				<PressableSurface
 					accessibilityRole="button"
 					accessibilityLabel={t("task.delete")}
-					onPress={() => store.deleteTask(task.id)}
+					onPress={() => void deleteTasks([task.id])}
 					hoverColor={palette.surfaceHover}
 					style={{ padding: 8, borderRadius: 4 }}
 				>

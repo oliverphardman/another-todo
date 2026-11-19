@@ -3,7 +3,6 @@ import type { TaskView } from "../domain/task-view";
 import type { I18n } from "../i18n/i18n";
 import type { TodoStore } from "../state/todo-store";
 import type { ContextMenuEntry } from "./context-menu";
-import { SharePanel } from "./share-panel";
 import { ThemePanel } from "./theme-panel";
 
 export interface ListOptionsContext {
@@ -22,7 +21,17 @@ export function buildListOptions({
 	const { t } = i18n;
 	const settings = store.settingsFor(view.id);
 	const editable = view.canEditList;
-	const entries: ContextMenuEntry[] = [
+	const entries: ContextMenuEntry[] = [];
+	if (editable) {
+		entries.push({
+			kind: "action",
+			key: "rename",
+			glyph: "edit",
+			label: t("ctx.renameList"),
+			onPress: () => store.startRenaming(view.id),
+		});
+	}
+	entries.push(
 		{
 			kind: "submenu",
 			key: "sort",
@@ -48,7 +57,7 @@ export function buildListOptions({
 			label: t("menu.theme"),
 			render: (close) => <ThemePanel viewId={view.id} onClose={close} />,
 		},
-	];
+	);
 	if (view.isCustomList) {
 		entries.push({
 			kind: "action",
@@ -57,31 +66,6 @@ export function buildListOptions({
 			label: t("menu.duplicate"),
 			onPress: () => store.duplicateList(view.id, t("list.copyOf", { name: view.title })),
 		});
-	}
-	if (editable) {
-		entries.push(
-			{
-				kind: "action",
-				key: "create-group",
-				glyph: "group",
-				label: t("ctx.createGroup"),
-				onPress: () => store.createGroupFor(view.id, t("group.new")),
-			},
-			{
-				kind: "panel",
-				key: "share",
-				glyph: "people",
-				label: t("ctx.shareList"),
-				render: (close) => <SharePanel listId={view.id} onClose={close} />,
-			},
-			{
-				kind: "action",
-				key: "rename",
-				glyph: "edit",
-				label: t("ctx.renameList"),
-				onPress: () => store.startRenaming(view.id),
-			},
-		);
 	}
 	entries.push(
 		{ kind: "action", key: "print", glyph: "print", label: t("menu.print"), onPress: print },

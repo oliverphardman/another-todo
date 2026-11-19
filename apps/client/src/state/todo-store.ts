@@ -168,6 +168,32 @@ export class TodoStore extends Observable<TodoState> {
 		};
 	}
 
+	reorderTask(taskId: string, index: number): void {
+		const view = this.selectedView;
+		if (this.settingsFor(view.id).sort !== null || view.order !== "newest") {
+			return;
+		}
+		const ordered = this.visibleTasks().open;
+		const current = ordered.findIndex((task) => task.id === taskId);
+		if (current === -1) {
+			return;
+		}
+		const others = ordered.filter((task) => task.id !== taskId);
+		const target = Math.max(0, Math.min(index, others.length));
+		if (target === current) {
+			return;
+		}
+		const before = others[target - 1];
+		const after = others[target];
+		const position =
+			before !== undefined && after !== undefined
+				? (before.manualKey + after.manualKey) / 2
+				: before !== undefined
+					? before.manualKey + POSITION_STEP
+					: after!.manualKey - POSITION_STEP;
+		this.updateTask(taskId, { position });
+	}
+
 	settingsFor(viewId: string): ViewSettings {
 		return (
 			this.get().settings.find((settings) => settings.id === viewId) ??

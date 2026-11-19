@@ -14,6 +14,7 @@ export interface TaskProps {
 	readonly myDayDismissed: string | null;
 	readonly steps: readonly TaskStep[];
 	readonly note: string;
+	readonly position: number | null;
 	readonly dueDate: Date | null;
 	readonly createdAt: Date;
 }
@@ -29,6 +30,7 @@ export interface TaskRecord {
 	readonly myDayDismissed?: string | null;
 	readonly steps?: readonly TaskStep[];
 	readonly note?: string;
+	readonly position?: number | null;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -48,6 +50,7 @@ export class Task {
 			myDayDismissed: null,
 			steps: [],
 			note: "",
+			position: null,
 			dueDate: null,
 			createdAt,
 		});
@@ -65,6 +68,7 @@ export class Task {
 			myDayDismissed: record.myDayDismissed ?? null,
 			steps: record.steps ?? [],
 			note: record.note ?? "",
+			position: record.position ?? null,
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
 			createdAt: new Date(record.createdAt),
 		});
@@ -154,6 +158,14 @@ export class Task {
 		return new Task({ ...this.props, myDayDismissed });
 	}
 
+	get position(): number | null {
+		return this.props.position;
+	}
+
+	setPosition(position: number | null): Task {
+		return new Task({ ...this.props, position });
+	}
+
 	setSteps(steps: readonly TaskStep[]): Task {
 		return new Task({ ...this.props, steps });
 	}
@@ -178,6 +190,7 @@ export class Task {
 			myDayDismissed: this.props.myDayDismissed,
 			steps: this.props.steps,
 			note: this.props.note,
+			position: this.props.position,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
 			createdAt: this.props.createdAt.toISOString(),
 		};

@@ -12,6 +12,7 @@ export interface TaskData {
 	readonly myDayDismissed: string | null;
 	readonly steps: readonly TaskStepData[];
 	readonly note: string;
+	readonly position?: number | null;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -25,6 +26,7 @@ export interface TaskChanges {
 	readonly myDayDismissed?: string | null;
 	readonly steps?: readonly TaskStepData[];
 	readonly note?: string;
+	readonly position?: number | null;
 	readonly dueDate?: string | null;
 }
 
@@ -89,6 +91,14 @@ export class Task {
 		return this.data.dueDate === null ? null : this.data.dueDate.slice(0, 10);
 	}
 
+	get manualKey(): number {
+		if (this.data.position !== undefined && this.data.position !== null) {
+			return this.data.position;
+		}
+		const created = Date.parse(this.data.createdAt);
+		return Number.isNaN(created) ? 0 : -created;
+	}
+
 	get dueSortKey(): string {
 		return this.data.dueDate ?? "9999-12-31";
 	}
@@ -110,6 +120,7 @@ export class Task {
 			...(changes.myDayDismissed !== undefined && { myDayDismissed: changes.myDayDismissed }),
 			...(changes.steps !== undefined && { steps: changes.steps }),
 			...(changes.note !== undefined && { note: changes.note }),
+			...(changes.position !== undefined && { position: changes.position }),
 			...(changes.dueDate !== undefined && { dueDate: changes.dueDate }),
 		});
 	}

@@ -7,6 +7,7 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
+import { ConfirmHost } from "./confirm";
 import { ContextMenuHost } from "./context-menu";
 import { ResizeHandle } from "./resize-handle";
 import { SlidingPane } from "./sliding-pane";
@@ -50,9 +51,11 @@ export function AppShell({ providers }: AppShellProps) {
 		return <SignInScreen providers={providers} />;
 	}
 	return (
-		<ContextMenuHost>
-			<MainLayout />
-		</ContextMenuHost>
+		<ConfirmHost>
+			<ContextMenuHost>
+				<MainLayout />
+			</ContextMenuHost>
+		</ConfirmHost>
 	);
 }
 

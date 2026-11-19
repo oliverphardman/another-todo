@@ -102,6 +102,7 @@ export class HttpApiGateway implements ApiGateway {
 			listId: task.listId,
 			myDay: task.myDay,
 			myDayDismissed: task.myDayDismissed,
+			position: task.position ?? null,
 			steps: task.steps,
 			note: task.note,
 			dueDate: task.dueDate,

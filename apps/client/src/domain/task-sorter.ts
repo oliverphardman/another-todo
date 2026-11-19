@@ -35,12 +35,16 @@ export class TaskSorter {
 				return (a, b) =>
 					Number(b.isInMyDay(today)) - Number(a.isInMyDay(today)) || TaskSorter.newest(a, b);
 			default:
-				return viewOrder === "due" ? TaskSorter.byDue : TaskSorter.newest;
+				return viewOrder === "due" ? TaskSorter.byDue : TaskSorter.manual;
 		}
 	}
 
 	private static byDue(a: Task, b: Task): number {
 		return a.dueSortKey.localeCompare(b.dueSortKey) || TaskSorter.newest(a, b);
+	}
+
+	private static manual(a: Task, b: Task): number {
+		return a.manualKey - b.manualKey || a.id.localeCompare(b.id);
 	}
 
 	private static newest(a: Task, b: Task): number {
