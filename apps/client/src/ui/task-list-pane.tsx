@@ -9,6 +9,7 @@ import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { SyncBanner } from "./sync-banner";
+import { SyncIndicator } from "./sync-indicator";
 import type { LayoutMode } from "./theme";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -123,6 +124,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 						</PressableSurface>
 					</View>
 				) : null}
+				<SyncIndicator />
 			</View>
 			<ScrollView
 				contentContainerStyle={{

@@ -65,3 +65,4 @@
 - Web sign-in opens the hosted UI in a popup (expo-web-browser); a headless-Chrome check must follow the new target
 - If an interrupted `terraform apply` leaves a stale state lock, check for running terraform processes and partial changes before `terraform force-unlock`
 - Completing a task plays apps/client/res/complete.mp3 through a SoundPlayer (ExpoSoundPlayer uses expo-audio, created lazily; failures are swallowed). TodoStore.toggleCompleted plays it only when a task becomes completed, from the list or the detail pane
+- Sync feedback is deliberately quiet: there is no "Syncing" text. SyncIndicator (top right of the list pane) shows a red sync-off icon only while offline with changes waiting. SyncBanner is kept for the rare cases the user must act on: an expired session and changes the server refused

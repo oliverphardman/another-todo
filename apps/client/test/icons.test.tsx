@@ -19,8 +19,7 @@ const GLYPHS: IconGlyph[] = [
 	"chevronRight",
 	"chevronDown",
 	"signOut",
-	"cloudOff",
-	"sync",
+	"syncOff",
 ];
 
 describe("Icon", () => {

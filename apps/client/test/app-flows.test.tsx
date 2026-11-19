@@ -266,23 +266,23 @@ describe("compact layout", () => {
 });
 
 describe("connectivity and sync", () => {
-	it("explains when the app is offline and queued changes will sync later", async () => {
+	it("shows a red sync-off icon only while offline with changes waiting, and queues them for later", async () => {
 		const app = await start();
+		const indicator = "Changes are waiting to sync";
 		await act(async () => {
 			app.connectivity.setOnline(false);
 		});
-		expect(screen.getByText("You're offline. Changes will sync when you reconnect.")).toBeTruthy();
+		expect(screen.queryByLabelText(indicator)).toBeNull();
 		addTask("Offline one");
-		expect(screen.getByText("You're offline. 1 change will sync when you reconnect.")).toBeTruthy();
+		expect(screen.getByLabelText(indicator)).toBeTruthy();
 		addTask("Offline two");
-		expect(
-			screen.getByText("You're offline. 2 changes will sync when you reconnect."),
-		).toBeTruthy();
+		expect(screen.getAllByLabelText(indicator)).toHaveLength(1);
+		expect(screen.queryByText(/you're offline/i)).toBeNull();
 		await act(async () => {
 			app.connectivity.setOnline(true);
 		});
 		await waitFor(() => expect(app.container.store.get().pendingChanges).toBe(0));
-		expect(screen.queryByRole("alert")).toBeNull();
+		expect(screen.queryByLabelText(indicator)).toBeNull();
 		const created = app.requests.filter((request) => request.method === "POST");
 		expect(created.map((request) => (request.body as { title: string }).title).sort()).toEqual([
 			"Offline one",
@@ -330,7 +330,7 @@ describe("connectivity and sync", () => {
 		expect(app.container.sync.get().phase).toBe("idle");
 	});
 
-	it("shows a syncing indicator while changes are being sent", async () => {
+	it("never shows a syncing message, even while a change is being sent", async () => {
 		let release: (() => void) | undefined;
 		const gate = new Promise<void>((resolve) => {
 			release = resolve;
@@ -345,9 +345,10 @@ describe("connectivity and sync", () => {
 		});
 		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
 		addTask("Slow");
-		await waitFor(() => expect(screen.getByText("Syncing…")).toBeTruthy(), { timeout: 3000 });
+		await waitFor(() => expect(app.container.sync.get().phase).toBe("syncing"), { timeout: 3000 });
+		expect(screen.queryByText(/syncing/i)).toBeNull();
+		expect(screen.queryByLabelText("Changes are waiting to sync")).toBeNull();
 		release?.();
-		await waitFor(() => expect(screen.queryByText("Syncing…")).toBeNull());
-		expect(app.container.sync.get().phase).toBe("idle");
+		await waitFor(() => expect(app.container.sync.get().phase).toBe("idle"));
 	});
 });
