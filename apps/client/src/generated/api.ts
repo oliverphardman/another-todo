@@ -376,6 +376,7 @@ export interface components {
             } | null;
             /** Format: date-time */
             updatedAt: string;
+            sortDescending: boolean;
         };
         ViewSettingsCollection: {
             settings: components["schemas"]["ViewSettings"][];
@@ -390,6 +391,7 @@ export interface components {
                 color?: string;
                 photoId?: string;
             } | null;
+            sortDescending?: boolean;
         };
         Photo: {
             id: string;

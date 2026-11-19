@@ -73,6 +73,7 @@ export class HttpApiGateway implements ApiGateway {
 		return body.settings.map((entry) => ({
 			id: entry.id,
 			sort: entry.sort ?? null,
+			sortDescending: entry.sortDescending,
 			hideCompleted: entry.hideCompleted,
 			theme: (entry.theme ?? null) as ViewSettingsData["theme"],
 		}));
@@ -81,6 +82,7 @@ export class HttpApiGateway implements ApiGateway {
 	async putSettings(settings: ViewSettingsData): Promise<void> {
 		await this.http.request("PUT", `/view-settings/${encodeURIComponent(settings.id)}`, {
 			sort: settings.sort,
+			sortDescending: settings.sortDescending ?? false,
 			hideCompleted: settings.hideCompleted,
 			theme: settings.theme,
 		});

@@ -345,12 +345,32 @@ describe("View settings API", () => {
 			}),
 		);
 		expect(put.status).toBe(200);
-		expect(put.body).toMatchObject({ id: "my-day", sort: "importance", hideCompleted: true });
+		expect(put.body).toMatchObject({
+			id: "my-day",
+			sort: "importance",
+			sortDescending: false,
+			hideCompleted: true,
+		});
+		const reversed = await api(
+			settings({ sort: "due", sortDescending: true, hideCompleted: false, theme: null }, "rev"),
+		);
+		expect(reversed.body.sortDescending).toBe(true);
+		expect(
+			(
+				await api(
+					settings(
+						{ sort: "due", sortDescending: "yes", hideCompleted: false, theme: null },
+						"bad",
+					),
+				)
+			).status,
+		).toBe(400);
 		await api(settings({ sort: null, hideCompleted: false, theme: null }, "list-1"));
 		const listed = await api(event({ path: "/view-settings" }));
 		expect(listed.body.settings.map((entry: { id: string }) => entry.id)).toEqual([
 			"list-1",
 			"my-day",
+			"rev",
 		]);
 		expect(
 			(await api(event({ path: "/view-settings", sub: "someone-else" }))).body.settings,

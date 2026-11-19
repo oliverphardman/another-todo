@@ -49,3 +49,20 @@ describe("TaskSorter", () => {
 		expect(order("myDay")).toEqual(["b", "d", "c", "a"]);
 	});
 });
+
+describe("TaskSorter direction", () => {
+	const sorted = (sort: Parameters<typeof TaskSorter.comparator>[0], descending: boolean) =>
+		[...tasks]
+			.sort(TaskSorter.comparator(sort, "newest", TODAY, descending))
+			.map((entry) => entry.id);
+
+	it("reverses an explicit sort when descending", () => {
+		for (const sort of ["importance", "alphabetical", "due", "created", "myDay"] as const) {
+			expect(sorted(sort, true)).toEqual([...sorted(sort, false)].reverse());
+		}
+	});
+
+	it("leaves the default order alone because there is no explicit sort to reverse", () => {
+		expect(sorted(null, true)).toEqual(sorted(null, false));
+	});
+});

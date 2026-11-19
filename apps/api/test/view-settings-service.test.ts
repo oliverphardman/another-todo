@@ -1,10 +1,36 @@
 import { describe, expect, it } from "vitest";
 import { ValidationError } from "../src/domain/errors";
+import { ViewSettings } from "../src/domain/view-settings";
 import { createServices } from "./support/fixtures";
 
 const valid = { sort: null, hideCompleted: false, theme: null };
 
 describe("ViewSettingsService", () => {
+	it("reads records saved before sort direction existed as ascending and keeps it when the theme is cleared", () => {
+		const legacy = ViewSettings.restore({
+			ownerId: "u",
+			id: "v",
+			sort: "due",
+			hideCompleted: false,
+			theme: null,
+			updatedAt: "2026-01-01T00:00:00.000Z",
+		});
+		expect(legacy.sortDescending).toBe(false);
+		const reversed = ViewSettings.restore({ ...legacy.toRecord(), sortDescending: true });
+		expect(reversed.withoutTheme(new Date()).sortDescending).toBe(true);
+	});
+
+	it("stores the sort direction, defaults it to ascending and validates it", async () => {
+		const { settings } = createServices();
+		expect((await settings.put("u", "a", valid)).sortDescending).toBe(false);
+		expect((await settings.put("u", "a", { ...valid, sortDescending: true })).sortDescending).toBe(
+			true,
+		);
+		await expect(settings.put("u", "a", { ...valid, sortDescending: "up" })).rejects.toThrow(
+			"sortDescending must be a boolean",
+		);
+	});
+
 	it("stores settings per view and replaces them as a whole", async () => {
 		const { settings } = createServices();
 		await settings.put("u", "my-day", { sort: "due", hideCompleted: true, theme: null });

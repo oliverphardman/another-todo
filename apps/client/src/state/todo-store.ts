@@ -156,7 +156,12 @@ export class TodoStore extends Observable<TodoState> {
 		const today = this.today;
 		const matching = this.get().tasks.filter((task) => view.matches(task, today));
 		const settings = this.settingsFor(view.id);
-		const compare = TaskSorter.comparator(settings.sort, view.order, today);
+		const compare = TaskSorter.comparator(
+			settings.sort,
+			view.order,
+			today,
+			settings.sortDescending,
+		);
 		return {
 			open: matching.filter((task) => !task.completed).sort(compare),
 			done: settings.hideCompleted ? [] : matching.filter((task) => task.completed).sort(compare),

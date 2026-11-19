@@ -35,7 +35,10 @@ export function buildListOptions({
 				label: t(option.labelKey),
 				checked: settings.sort === option.key,
 				onPress: () =>
-					store.updateSettings(view.id, { sort: settings.sort === option.key ? null : option.key }),
+					store.updateSettings(view.id, {
+						sort: settings.sort === option.key ? null : option.key,
+						sortDescending: false,
+					}),
 			})),
 		},
 		{

@@ -46,3 +46,20 @@ describe("DynamoTodoListRepository", () => {
 		expect(await repo.findById("u", "1")).toBeNull();
 	});
 });
+
+describe("consistent reads", () => {
+	it("asks DynamoDB for strongly consistent reads so a sync right after a write sees it", async () => {
+		const inputs: { ConsistentRead?: boolean }[] = [];
+		const client = {
+			send: async (command: { input: { ConsistentRead?: boolean } }) => {
+				inputs.push(command.input);
+				return { Items: [] };
+			},
+		};
+		const repo = new DynamoTaskRepository(client as never, "tasks");
+		await repo.findById("u", "1");
+		await repo.list("u");
+		expect(inputs).toHaveLength(2);
+		expect(inputs.every((input) => input.ConsistentRead === true)).toBe(true);
+	});
+});

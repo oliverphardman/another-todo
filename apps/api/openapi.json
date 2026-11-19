@@ -991,7 +991,7 @@
 			},
 			"ViewSettings": {
 				"type": "object",
-				"required": ["id", "sort", "hideCompleted", "theme", "updatedAt"],
+				"required": ["id", "sort", "sortDescending", "hideCompleted", "theme", "updatedAt"],
 				"properties": {
 					"id": {
 						"type": "string"
@@ -1027,6 +1027,9 @@
 					"updatedAt": {
 						"type": "string",
 						"format": "date-time"
+					},
+					"sortDescending": {
+						"type": "boolean"
 					}
 				}
 			},
@@ -1074,6 +1077,9 @@
 								"pattern": "^[A-Za-z0-9_-]{1,64}$"
 							}
 						}
+					},
+					"sortDescending": {
+						"type": "boolean"
 					}
 				}
 			},

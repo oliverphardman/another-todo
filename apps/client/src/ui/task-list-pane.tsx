@@ -9,6 +9,7 @@ import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
+import { SortChip } from "./sort-chip";
 import { SyncBanner } from "./sync-banner";
 import { useContextMenuTrigger } from "./context-menu";
 import { buildListOptions } from "./list-options";
@@ -160,6 +161,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					<Icon glyph={compact ? "moreVertical" : "more"} color={palette.onAccent} />
 				</PressableSurface>
 			</View>
+			<SortChip />
 			<ScrollView
 				contentContainerStyle={{
 					flexGrow: 1,

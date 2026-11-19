@@ -24,7 +24,7 @@ export abstract class DynamoRepository<E extends { ownerId: string; id: string }
 
 	async findById(ownerId: string, id: string): Promise<E | null> {
 		const result = await this.client.send(
-			new GetCommand({ TableName: this.tableName, Key: { ownerId, id } }),
+			new GetCommand({ TableName: this.tableName, Key: { ownerId, id }, ConsistentRead: true }),
 		);
 		return result.Item === undefined ? null : this.restore(result.Item as R);
 	}
@@ -39,6 +39,7 @@ export abstract class DynamoRepository<E extends { ownerId: string; id: string }
 					KeyConditionExpression: "ownerId = :ownerId",
 					ExpressionAttributeValues: { ":ownerId": ownerId },
 					ExclusiveStartKey: startKey,
+					ConsistentRead: true,
 				}),
 			);
 			entities.push(...(page.Items ?? []).map((item) => this.restore(item as R)));

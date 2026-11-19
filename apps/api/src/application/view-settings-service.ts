@@ -7,6 +7,7 @@ import type { Clock } from "./ports";
 
 export interface ViewSettingsInput {
 	readonly sort?: unknown;
+	readonly sortDescending?: unknown;
 	readonly hideCompleted?: unknown;
 	readonly theme?: unknown;
 }
@@ -31,6 +32,7 @@ export class ViewSettingsService {
 			EntityId.parse(id),
 			{
 				sort: ViewSettingsService.sort(input.sort),
+				sortDescending: ViewSettingsService.sortDescending(input.sortDescending),
 				hideCompleted: ViewSettingsService.hideCompleted(input.hideCompleted),
 				theme: await this.theme(ownerId, input.theme),
 			},
@@ -48,6 +50,16 @@ export class ViewSettingsService {
 			throw new ValidationError(`sort must be null or one of ${SORT_KEYS.join(", ")}`);
 		}
 		return value as SortKey;
+	}
+
+	private static sortDescending(value: unknown): boolean {
+		if (value === undefined) {
+			return false;
+		}
+		if (typeof value !== "boolean") {
+			throw new ValidationError("sortDescending must be a boolean");
+		}
+		return value;
 	}
 
 	private static hideCompleted(value: unknown): boolean {

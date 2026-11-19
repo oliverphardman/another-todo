@@ -5,7 +5,21 @@ import type { SortKey } from "./view-settings";
 export type TaskComparator = (a: Task, b: Task) => number;
 
 export class TaskSorter {
-	static comparator(sort: SortKey | null, viewOrder: TaskOrder, today: string): TaskComparator {
+	static comparator(
+		sort: SortKey | null,
+		viewOrder: TaskOrder,
+		today: string,
+		descending = false,
+	): TaskComparator {
+		const base = TaskSorter.ascending(sort, viewOrder, today);
+		return sort !== null && descending ? (a, b) => base(b, a) : base;
+	}
+
+	private static ascending(
+		sort: SortKey | null,
+		viewOrder: TaskOrder,
+		today: string,
+	): TaskComparator {
 		switch (sort) {
 			case "importance":
 				return (a, b) => Number(b.important) - Number(a.important) || TaskSorter.newest(a, b);

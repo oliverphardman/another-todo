@@ -54,6 +54,7 @@ describe("HttpApiGateway", () => {
 					{
 						id: "my-day",
 						sort: "due",
+						sortDescending: true,
 						hideCompleted: true,
 						theme: { type: "color", color: "#c0392b" },
 						updatedAt: "x",
@@ -66,10 +67,11 @@ describe("HttpApiGateway", () => {
 			{
 				id: "my-day",
 				sort: "due",
+				sortDescending: true,
 				hideCompleted: true,
 				theme: { type: "color", color: "#c0392b" },
 			},
-			{ id: "tasks", sort: null, hideCompleted: false, theme: null },
+			{ id: "tasks", sort: null, sortDescending: undefined, hideCompleted: false, theme: null },
 		]);
 		const put = setup();
 		await put.gateway.putSettings({
@@ -81,7 +83,7 @@ describe("HttpApiGateway", () => {
 		expect(put.calls[0]).toMatchObject({
 			method: "PUT",
 			url: "https://api.test/view-settings/my%20day",
-			body: { sort: "created", hideCompleted: false, theme: null },
+			body: { sort: "created", sortDescending: false, hideCompleted: false, theme: null },
 		});
 	});
 

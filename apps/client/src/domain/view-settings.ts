@@ -9,12 +9,14 @@ export type ThemeSetting =
 export interface ViewSettingsData {
 	readonly id: string;
 	readonly sort: SortKey | null;
+	readonly sortDescending?: boolean;
 	readonly hideCompleted: boolean;
 	readonly theme: ThemeSetting | null;
 }
 
 export interface ViewSettingsChanges {
 	readonly sort?: SortKey | null;
+	readonly sortDescending?: boolean;
 	readonly hideCompleted?: boolean;
 	readonly theme?: ThemeSetting | null;
 }
@@ -73,6 +75,10 @@ export class ViewSettings {
 		return this.data.sort;
 	}
 
+	get sortDescending(): boolean {
+		return this.data.sortDescending ?? false;
+	}
+
 	get hideCompleted(): boolean {
 		return this.data.hideCompleted;
 	}
@@ -85,6 +91,7 @@ export class ViewSettings {
 		return new ViewSettings({
 			...this.data,
 			...(changes.sort !== undefined && { sort: changes.sort }),
+			...(changes.sortDescending !== undefined && { sortDescending: changes.sortDescending }),
 			...(changes.hideCompleted !== undefined && { hideCompleted: changes.hideCompleted }),
 			...(changes.theme !== undefined && { theme: changes.theme }),
 		});

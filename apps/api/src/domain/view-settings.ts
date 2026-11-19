@@ -10,6 +10,7 @@ export interface ViewSettingsRecord {
 	readonly ownerId: string;
 	readonly id: string;
 	readonly sort: SortKey | null;
+	readonly sortDescending?: boolean;
 	readonly hideCompleted: boolean;
 	readonly theme: ThemeSetting | null;
 	readonly updatedAt: string;
@@ -20,6 +21,7 @@ export class ViewSettings {
 		readonly ownerId: string,
 		readonly id: string,
 		readonly sort: SortKey | null,
+		readonly sortDescending: boolean,
 		readonly hideCompleted: boolean,
 		readonly theme: ThemeSetting | null,
 		readonly updatedAt: Date,
@@ -30,6 +32,7 @@ export class ViewSettings {
 		id: string,
 		values: {
 			readonly sort: SortKey | null;
+			readonly sortDescending: boolean;
 			readonly hideCompleted: boolean;
 			readonly theme: ThemeSetting | null;
 		},
@@ -39,6 +42,7 @@ export class ViewSettings {
 			ownerId,
 			id,
 			values.sort,
+			values.sortDescending,
 			values.hideCompleted,
 			values.theme,
 			updatedAt,
@@ -50,6 +54,7 @@ export class ViewSettings {
 			record.ownerId,
 			record.id,
 			record.sort,
+			record.sortDescending ?? false,
 			record.hideCompleted,
 			record.theme,
 			new Date(record.updatedAt),
@@ -57,7 +62,15 @@ export class ViewSettings {
 	}
 
 	withoutTheme(updatedAt: Date): ViewSettings {
-		return new ViewSettings(this.ownerId, this.id, this.sort, this.hideCompleted, null, updatedAt);
+		return new ViewSettings(
+			this.ownerId,
+			this.id,
+			this.sort,
+			this.sortDescending,
+			this.hideCompleted,
+			null,
+			updatedAt,
+		);
 	}
 
 	toRecord(): ViewSettingsRecord {
@@ -65,6 +78,7 @@ export class ViewSettings {
 			ownerId: this.ownerId,
 			id: this.id,
 			sort: this.sort,
+			sortDescending: this.sortDescending,
 			hideCompleted: this.hideCompleted,
 			theme: this.theme,
 			updatedAt: this.updatedAt.toISOString(),

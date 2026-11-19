@@ -51,6 +51,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 			onPress={finish(() =>
 				store.updateSettings(view.id, {
 					sort: settings.sort === option.key ? null : option.key,
+					sortDescending: false,
 				}),
 			)}
 		/>
