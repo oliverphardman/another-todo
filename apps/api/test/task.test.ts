@@ -55,6 +55,16 @@ describe("Task", () => {
 		expect(task.setList(null).listId).toBeNull();
 	});
 
+	it("tracks the day a task was added to My Day and restores legacy records without it", () => {
+		const task = Task.create("u", "1", "A", now).setMyDay("2026-11-19");
+		expect(task.myDay).toBe("2026-11-19");
+		expect(Task.restore(task.toRecord()).myDay).toBe("2026-11-19");
+		const { myDay: _myDay, ...legacy } = task.toRecord();
+		expect(Task.restore(legacy).myDay).toBeNull();
+		expect(task.setMyDay(null).myDay).toBeNull();
+		expect(JSON.parse(JSON.stringify(task)).myDay).toBe("2026-11-19");
+	});
+
 	it("serializes to JSON without the owner", () => {
 		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
 		expect(json).toEqual({
@@ -63,6 +73,7 @@ describe("Task", () => {
 			completed: false,
 			importance: "normal",
 			listId: null,
+			myDay: null,
 			dueDate: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});

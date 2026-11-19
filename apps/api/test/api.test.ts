@@ -115,6 +115,37 @@ describe("REST API", () => {
 	});
 });
 
+describe("My Day", () => {
+	it("stores the day a task was added and lets it be cleared", async () => {
+		const api = createTestApi();
+		const created = await api(
+			event({ method: "POST", path: "/tasks", body: { title: "Sunny", myDay: "2026-11-19" } }),
+		);
+		expect(created.body.myDay).toBe("2026-11-19");
+		const cleared = await api(
+			event({ method: "PATCH", path: `/tasks/${created.body.id}`, body: { myDay: null } }),
+		);
+		expect(cleared.body.myDay).toBeNull();
+		const plain = await api(event({ method: "POST", path: "/tasks", body: { title: "Plain" } }));
+		expect(plain.body.myDay).toBeNull();
+		const bad = await api(
+			event({ method: "PATCH", path: `/tasks/${plain.body.id}`, body: { myDay: "today" } }),
+		);
+		expect(bad.status).toBe(400);
+	});
+
+	it("is available to MCP clients", async () => {
+		const api = createTestApi();
+		const reply = await api(
+			rpcEvent("tools/call", {
+				name: "create_task",
+				arguments: { title: "Via MCP", myDay: "2026-11-19" },
+			}),
+		);
+		expect(JSON.parse(reply.body.result.content[0].text).myDay).toBe("2026-11-19");
+	});
+});
+
 describe("Idempotent creation", () => {
 	it("returns the existing task or list when a client id is replayed", async () => {
 		const api = createTestApi();

@@ -132,6 +132,8 @@ export interface components {
 			/** Format: date-time */
 			createdAt: string;
 			listId: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay: string | null;
 		};
 		TaskList: {
 			tasks: components["schemas"]["Task"][];
@@ -145,6 +147,8 @@ export interface components {
 			/** Format: date-time */
 			dueDate?: string | null;
 			listId?: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay?: string | null;
 		};
 		UpdateTask: {
 			title?: string;
@@ -153,6 +157,8 @@ export interface components {
 			/** Format: date-time */
 			dueDate?: string | null;
 			listId?: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay?: string | null;
 		};
 		Error: {
 			error: string;

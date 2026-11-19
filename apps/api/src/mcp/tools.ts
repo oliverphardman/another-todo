@@ -10,6 +10,7 @@ const TASK_PROPERTIES = {
 	completed: { type: "boolean", description: "Whether the task is done" },
 	importance: { type: "string", enum: ["normal", "high"] },
 	listId: { type: ["string", "null"], description: "Id of the list the task belongs to" },
+	myDay: { type: ["string", "null"], description: "YYYY-MM-DD day the task was added to My Day" },
 	dueDate: { type: ["string", "null"], description: "ISO 8601 date or null" },
 };
 

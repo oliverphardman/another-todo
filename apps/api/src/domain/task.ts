@@ -9,6 +9,7 @@ export interface TaskProps {
 	readonly completed: boolean;
 	readonly importance: Importance;
 	readonly listId: string | null;
+	readonly myDay: string | null;
 	readonly dueDate: Date | null;
 	readonly createdAt: Date;
 }
@@ -20,6 +21,7 @@ export interface TaskRecord {
 	readonly completed: boolean;
 	readonly importance: Importance;
 	readonly listId?: string | null;
+	readonly myDay?: string | null;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -35,6 +37,7 @@ export class Task {
 			completed: false,
 			importance: "normal",
 			listId: null,
+			myDay: null,
 			dueDate: null,
 			createdAt,
 		});
@@ -48,6 +51,7 @@ export class Task {
 			completed: record.completed,
 			importance: record.importance,
 			listId: record.listId ?? null,
+			myDay: record.myDay ?? null,
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
 			createdAt: new Date(record.createdAt),
 		});
@@ -85,6 +89,10 @@ export class Task {
 		return this.props.listId;
 	}
 
+	get myDay(): string | null {
+		return this.props.myDay;
+	}
+
 	get dueDate(): Date | null {
 		return this.props.dueDate;
 	}
@@ -113,6 +121,10 @@ export class Task {
 		return new Task({ ...this.props, listId });
 	}
 
+	setMyDay(myDay: string | null): Task {
+		return new Task({ ...this.props, myDay });
+	}
+
 	setDueDate(dueDate: Date | null): Task {
 		return new Task({ ...this.props, dueDate });
 	}
@@ -125,6 +137,7 @@ export class Task {
 			completed: this.props.completed,
 			importance: this.props.importance,
 			listId: this.props.listId,
+			myDay: this.props.myDay,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
 			createdAt: this.props.createdAt.toISOString(),
 		};

@@ -7,6 +7,7 @@ export interface TaskInput {
 	readonly completed?: unknown;
 	readonly importance?: unknown;
 	readonly listId?: unknown;
+	readonly myDay?: unknown;
 	readonly dueDate?: unknown;
 }
 
@@ -24,6 +25,9 @@ export class TaskChanges {
 		}
 		if (input.listId !== undefined) {
 			result = result.setList(TaskChanges.listId(input.listId));
+		}
+		if (input.myDay !== undefined) {
+			result = result.setMyDay(TaskChanges.myDay(input.myDay));
 		}
 		if (input.dueDate !== undefined) {
 			result = result.setDueDate(TaskChanges.dueDate(input.dueDate));
@@ -44,6 +48,20 @@ export class TaskChanges {
 		}
 		if (typeof value !== "string" || value.length === 0) {
 			throw new ValidationError("listId must be a non-empty string or null");
+		}
+		return value;
+	}
+
+	static myDay(value: unknown): string | null {
+		if (value === null) {
+			return null;
+		}
+		if (
+			typeof value !== "string" ||
+			!/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+			!new Date(`${value}T00:00:00.000Z`).toISOString().startsWith(value)
+		) {
+			throw new ValidationError("myDay must be a YYYY-MM-DD date or null");
 		}
 		return value;
 	}

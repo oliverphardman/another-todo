@@ -102,6 +102,16 @@ describe("TaskService", () => {
 		}
 	});
 
+	it("sets and clears My Day and rejects malformed days", async () => {
+		const { tasks } = createServices();
+		const task = await tasks.create("u", { title: "A", myDay: "2026-11-19" });
+		expect(task.myDay).toBe("2026-11-19");
+		expect((await tasks.update("u", task.id, { myDay: null })).myDay).toBeNull();
+		for (const myDay of ["2026-02-30", "19/11/2026", "", 5, "2026-11-19T00:00:00Z"]) {
+			await expect(tasks.update("u", task.id, { myDay })).rejects.toThrow(ValidationError);
+		}
+	});
+
 	it("deletes tasks", async () => {
 		const service = createService();
 		const task = await service.create("u", { title: "A" });
