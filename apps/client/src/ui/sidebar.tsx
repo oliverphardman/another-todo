@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import type { IconName } from "../domain/task-view";
-import { AddTaskBar } from "./add-task-bar";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon, type IconGlyph } from "./icon";
+import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
@@ -97,13 +97,13 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				}}
 			>
 				{creating ? (
-					<AddTaskBar
-						placeholder="New list"
+					<NewListField
 						onSubmit={(name) => {
 							store.addList(name);
 							setCreating(false);
 							onSelected();
 						}}
+						onCancel={() => setCreating(false)}
 					/>
 				) : (
 					<PressableSurface
@@ -111,7 +111,12 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						accessibilityLabel="Create a new list"
 						onPress={() => setCreating(true)}
 						hoverColor={palette.sidebarHover}
-						style={{ flexDirection: "row", alignItems: "center", padding: 10 }}
+						style={{
+							flexDirection: "row",
+							alignItems: "center",
+							minHeight: SIDEBAR_ROW_HEIGHT,
+							paddingHorizontal: 10,
+						}}
 					>
 						<Icon glyph="plus" color={palette.accent} />
 						<AppText style={{ marginLeft: 14 }}>New list</AppText>

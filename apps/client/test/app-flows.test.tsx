@@ -181,12 +181,52 @@ describe("expanded layout", () => {
 		expect(app.container.store.get().tasks).toEqual([]);
 	});
 
+	it("focuses the new list field as soon as it appears so the user can type straight away", async () => {
+		await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const field = screen.getByLabelText("New list");
+		expect(document.activeElement).toBe(field);
+		expect(screen.queryByLabelText("Create a new list")).toBeNull();
+	});
+
+	it("cancels the new list field with Escape or by leaving it empty", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		fireEvent.keyDown(screen.getByLabelText("New list"), { key: "Escape" });
+		expect(screen.getByLabelText("Create a new list")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		fireEvent.keyDown(screen.getByLabelText("New list"), { key: "a" });
+		fireEvent.blur(screen.getByLabelText("New list"));
+		expect(screen.getByLabelText("Create a new list")).toBeTruthy();
+		expect(app.container.store.get().lists).toEqual([]);
+	});
+
+	it("creates the list once even when submitting also blurs the field", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const field = screen.getByLabelText("New list");
+		fireEvent.change(field, { target: { value: "Once" } });
+		fireEvent.keyDown(field, { key: "Enter" });
+		fireEvent.blur(field);
+		expect(app.container.store.get().lists).toHaveLength(1);
+	});
+
+	it("keeps what was typed when the field loses focus", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const field = screen.getByLabelText("New list");
+		fireEvent.change(field, { target: { value: "Kept" } });
+		fireEvent.blur(field);
+		expect(app.container.store.get().lists.map((list) => list.name)).toEqual(["Kept"]);
+		expect(screen.getByLabelText("Create a new list")).toBeTruthy();
+	});
+
 	it("creates, renames and deletes lists", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
 		const name = screen.getByLabelText("New list");
 		fireEvent.change(name, { target: { value: "Groceries" } });
-		fireEvent.click(screen.getByLabelText("Add"));
+		fireEvent.keyDown(name, { key: "Enter" });
 		expect(screen.getByRole("heading", { name: "Groceries" })).toBeTruthy();
 		addTask("Eggs");
 		expect(screen.queryByText(/Groceries ·/)).toBeNull();
