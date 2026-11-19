@@ -96,6 +96,62 @@ describe("REST API", () => {
 	});
 });
 
+describe("Lists API", () => {
+	it("creates, reads, renames, lists and deletes a list", async () => {
+		const api = createTestApi();
+		const created = await api(event({ method: "POST", path: "/lists", body: { name: "Work" } }));
+		expect(created.status).toBe(201);
+		const id = created.body.id;
+		expect((await api(event({ path: `/lists/${id}` }))).body.name).toBe("Work");
+		const renamed = await api(
+			event({ method: "PATCH", path: `/lists/${id}`, body: { name: "Home" } }),
+		);
+		expect(renamed.body.name).toBe("Home");
+		expect((await api(event({ path: "/lists" }))).body.lists).toHaveLength(1);
+		expect((await api(event({ method: "DELETE", path: `/lists/${id}` }))).status).toBe(204);
+		expect((await api(event({ path: `/lists/${id}` }))).status).toBe(404);
+	});
+
+	it("validates list requests", async () => {
+		const api = createTestApi();
+		expect((await api(event({ method: "POST", path: "/lists", body: {} }))).status).toBe(400);
+		expect(
+			(await api(event({ method: "POST", path: "/lists", body: { name: "  " } }))).status,
+		).toBe(400);
+		expect(
+			(await api(event({ method: "PATCH", path: "/lists/x", body: { name: "" } }))).status,
+		).toBe(400);
+		expect((await api(event({ path: "/lists", sub: null }))).status).toBe(401);
+	});
+
+	it("assigns tasks to lists, filters by list and cascades deletes", async () => {
+		const api = createTestApi();
+		const list = (await api(event({ method: "POST", path: "/lists", body: { name: "Work" } })))
+			.body;
+		const task = await api(
+			event({ method: "POST", path: "/tasks", body: { title: "A", listId: list.id } }),
+		);
+		expect(task.body.listId).toBe(list.id);
+		await api(event({ method: "POST", path: "/tasks", body: { title: "B" } }));
+		expect((await api(event({ path: `/tasks?listId=${list.id}` }))).body.tasks).toHaveLength(1);
+		expect((await api(event({ path: "/tasks" }))).body.tasks).toHaveLength(2);
+		const missing = await api(
+			event({ method: "POST", path: "/tasks", body: { title: "C", listId: "nope" } }),
+		);
+		expect(missing.status).toBe(400);
+		await api(event({ method: "DELETE", path: `/lists/${list.id}` }));
+		expect((await api(event({ path: "/tasks" }))).body.tasks).toHaveLength(1);
+	});
+
+	it("isolates lists between users", async () => {
+		const api = createTestApi();
+		const list = (
+			await api(event({ method: "POST", path: "/lists", body: { name: "Mine" }, sub: "alice" }))
+		).body;
+		expect((await api(event({ path: `/lists/${list.id}`, sub: "bob" }))).status).toBe(404);
+	});
+});
+
 describe("MCP over HTTP", () => {
 	it("shares tasks with the REST API", async () => {
 		const api = createTestApi();

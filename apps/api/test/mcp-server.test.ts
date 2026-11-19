@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { McpServer } from "../src/mcp/mcp-server";
 import { createTools } from "../src/mcp/tools";
 import { rpcText } from "./support/events";
-import { createService } from "./support/fixtures";
+import { createServices } from "./support/fixtures";
 
 function server(): McpServer {
-	return new McpServer(createTools(createService()));
+	const { tasks, lists } = createServices();
+	return new McpServer(createTools(tasks, lists));
 }
 
 async function call(s: McpServer, name: string, args?: unknown) {
@@ -31,6 +32,10 @@ describe("McpServer", () => {
 			"update_task",
 			"complete_task",
 			"delete_task",
+			"list_lists",
+			"create_list",
+			"rename_list",
+			"delete_list",
 		]);
 	});
 
@@ -60,6 +65,28 @@ describe("McpServer", () => {
 			deleted: true,
 		});
 		expect((await call(s, "get_task", { id })).isError).toBe(true);
+	});
+
+	it("manages lists and filters tasks by list", async () => {
+		const s = server();
+		const list = JSON.parse((await call(s, "create_list", { name: "Work" })).content[0].text);
+		const task = JSON.parse(
+			(await call(s, "create_task", { title: "A", listId: list.id })).content[0].text,
+		);
+		await call(s, "create_task", { title: "B" });
+		expect(task.listId).toBe(list.id);
+		const filtered = await call(s, "list_tasks", { listId: list.id });
+		expect(JSON.parse(filtered.content[0].text)).toHaveLength(1);
+		expect(JSON.parse((await call(s, "list_tasks", {})).content[0].text)).toHaveLength(2);
+		const renamed = await call(s, "rename_list", { id: list.id, name: "Home" });
+		expect(JSON.parse(renamed.content[0].text).name).toBe("Home");
+		expect(JSON.parse((await call(s, "list_lists")).content[0].text)).toHaveLength(1);
+		expect(JSON.parse((await call(s, "delete_list", { id: list.id })).content[0].text)).toEqual({
+			deleted: true,
+		});
+		expect(JSON.parse((await call(s, "list_tasks", {})).content[0].text)).toHaveLength(1);
+		expect((await call(s, "create_list", {})).isError).toBe(true);
+		expect((await call(s, "delete_list", {})).isError).toBe(true);
 	});
 
 	it("reports domain errors as tool errors", async () => {
@@ -100,11 +127,11 @@ describe("McpServer", () => {
 	});
 
 	it("rethrows unexpected errors", async () => {
-		const service = createService();
-		service.list = async () => {
+		const { tasks, lists } = createServices();
+		tasks.list = async () => {
 			throw new Error("boom");
 		};
-		const s = new McpServer(createTools(service));
+		const s = new McpServer(createTools(tasks, lists));
 		await expect(s.process("u", rpcText("tools/call", { name: "list_tasks" }))).rejects.toThrow(
 			"boom",
 		);

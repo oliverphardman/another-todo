@@ -46,6 +46,15 @@ describe("Task", () => {
 		expect(restored.toRecord()).toEqual(due.toRecord());
 	});
 
+	it("moves between lists and restores legacy records without a list", () => {
+		const task = Task.create("u", "1", "A", now).setList("l1");
+		expect(task.listId).toBe("l1");
+		expect(Task.restore(task.toRecord()).listId).toBe("l1");
+		const { listId: _listId, ...legacy } = task.toRecord();
+		expect(Task.restore(legacy).listId).toBeNull();
+		expect(task.setList(null).listId).toBeNull();
+	});
+
 	it("serializes to JSON without the owner", () => {
 		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
 		expect(json).toEqual({
@@ -53,6 +62,7 @@ describe("Task", () => {
 			title: "A",
 			completed: false,
 			importance: "normal",
+			listId: null,
 			dueDate: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});

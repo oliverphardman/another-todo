@@ -1,6 +1,8 @@
+import { ListService } from "../../src/application/list-service";
 import type { Clock, IdGenerator } from "../../src/application/ports";
-import { InMemoryTaskRepository } from "../../src/domain/in-memory-task-repository";
 import { TaskService } from "../../src/application/task-service";
+import { InMemoryTaskRepository } from "../../src/domain/in-memory-task-repository";
+import { InMemoryTodoListRepository } from "../../src/domain/in-memory-todo-list-repository";
 
 export class FixedClock implements Clock {
 	constructor(private current = new Date("2026-01-01T00:00:00Z")) {}
@@ -23,6 +25,21 @@ export class SequenceIds implements IdGenerator {
 	}
 }
 
+export interface TestServices {
+	readonly tasks: TaskService;
+	readonly lists: ListService;
+}
+
+export function createServices(clock = new FixedClock()): TestServices {
+	const tasks = new InMemoryTaskRepository();
+	const lists = new InMemoryTodoListRepository();
+	const ids = new SequenceIds();
+	return {
+		tasks: new TaskService(tasks, lists, ids, clock),
+		lists: new ListService(lists, tasks, ids, clock),
+	};
+}
+
 export function createService(clock = new FixedClock()): TaskService {
-	return new TaskService(new InMemoryTaskRepository(), new SequenceIds(), clock);
+	return createServices(clock).tasks;
 }

@@ -4,15 +4,16 @@ import { ApiGatewayAuthenticator } from "../src/http/authenticator";
 
 describe("bootstrap", () => {
 	it("reads configuration", () => {
-		expect(readConfig({ TABLE_NAME: "t", OAUTH_ISSUER: "i" })).toEqual({
+		expect(readConfig({ TABLE_NAME: "t", LISTS_TABLE_NAME: "l", OAUTH_ISSUER: "i" })).toEqual({
 			tableName: "t",
+			listsTableName: "l",
 			issuer: "i",
 		});
 	});
 
 	it("rejects missing configuration", () => {
-		expect(() => readConfig({ TABLE_NAME: "t" })).toThrow("must be set");
-		expect(() => readConfig({ OAUTH_ISSUER: "i" })).toThrow("must be set");
+		expect(() => readConfig({ TABLE_NAME: "t", LISTS_TABLE_NAME: "l" })).toThrow("must be set");
+		expect(() => readConfig({ LISTS_TABLE_NAME: "l", OAUTH_ISSUER: "i" })).toThrow("must be set");
 	});
 
 	it("rejects authentication outside a Lambda invocation", () => {

@@ -1,12 +1,14 @@
 import { NotFoundError, ValidationError } from "../domain/errors";
 import { Task } from "../domain/task";
 import type { TaskRepository } from "../domain/task-repository";
+import type { TodoListRepository } from "../domain/todo-list-repository";
 import type { Clock, IdGenerator } from "./ports";
 import { TaskChanges, type TaskInput } from "./task-changes";
 
 export class TaskService {
 	constructor(
 		private readonly repository: TaskRepository,
+		private readonly lists: TodoListRepository,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 	) {}
@@ -15,6 +17,7 @@ export class TaskService {
 		if (input.title === undefined) {
 			throw new ValidationError("title is required");
 		}
+		await this.ensureListExists(ownerId, input);
 		const created = Task.create(
 			ownerId,
 			this.ids.next(),
@@ -34,15 +37,17 @@ export class TaskService {
 		return task;
 	}
 
-	async list(ownerId: string): Promise<Task[]> {
+	async list(ownerId: string, listId?: string): Promise<Task[]> {
 		const tasks = await this.repository.list(ownerId);
-		return tasks.sort(
-			(a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id),
-		);
+		return tasks
+			.filter((task) => listId === undefined || task.listId === listId)
+			.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id));
 	}
 
 	async update(ownerId: string, id: string, input: TaskInput): Promise<Task> {
-		const task = TaskChanges.apply(await this.get(ownerId, id), input);
+		const existing = await this.get(ownerId, id);
+		await this.ensureListExists(ownerId, input);
+		const task = TaskChanges.apply(existing, input);
 		await this.repository.save(task);
 		return task;
 	}
@@ -50,5 +55,12 @@ export class TaskService {
 	async delete(ownerId: string, id: string): Promise<void> {
 		await this.get(ownerId, id);
 		await this.repository.delete(ownerId, id);
+	}
+
+	private async ensureListExists(ownerId: string, input: TaskInput): Promise<void> {
+		const listId = input.listId === undefined ? null : TaskChanges.listId(input.listId);
+		if (listId !== null && (await this.lists.findById(ownerId, listId)) === null) {
+			throw new ValidationError(`List ${listId} does not exist`);
+		}
 	}
 }

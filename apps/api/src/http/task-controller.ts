@@ -13,8 +13,9 @@ export class TaskController {
 		const router = Router();
 		router.get(
 			"/",
-			RouteSupport.wrap(async (_request, response) => {
-				const tasks = await this.service.list(RouteSupport.ownerOf(response));
+			RouteSupport.wrap(async (request, response) => {
+				const listId = typeof request.query.listId === "string" ? request.query.listId : undefined;
+				const tasks = await this.service.list(RouteSupport.ownerOf(response), listId);
 				response.json({ tasks: tasks.map((task) => task.toJSON()) });
 			}),
 		);

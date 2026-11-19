@@ -6,6 +6,7 @@ describe("Lambda entry point", () => {
 	beforeEach(() => {
 		vi.resetModules();
 		vi.stubEnv("TABLE_NAME", "tasks");
+		vi.stubEnv("LISTS_TABLE_NAME", "lists");
 		vi.stubEnv("OAUTH_ISSUER", "https://issuer.example.com");
 		vi.stubEnv("AWS_REGION", "eu-west-2");
 	});

@@ -13,23 +13,25 @@ export class FakeDocumentClient {
 
 	constructor(private readonly pageSize = 1000) {}
 
-	private static key(ownerId: unknown, id: unknown): string {
-		return `${String(ownerId)}#${String(id)}`;
+	private static key(table: unknown, ownerId: unknown, id: unknown): string {
+		return `${String(table)}|${String(ownerId)}#${String(id)}`;
 	}
 
 	async send(command: unknown): Promise<Record<string, unknown>> {
 		if (command instanceof PutCommand) {
 			const item = command.input.Item as Item;
-			this.items.set(FakeDocumentClient.key(item.ownerId, item.id), item);
+			this.items.set(FakeDocumentClient.key(command.input.TableName, item.ownerId, item.id), item);
 			return {};
 		}
 		if (command instanceof GetCommand) {
 			const key = command.input.Key as Item;
-			return { Item: this.items.get(FakeDocumentClient.key(key.ownerId, key.id)) };
+			return {
+				Item: this.items.get(FakeDocumentClient.key(command.input.TableName, key.ownerId, key.id)),
+			};
 		}
 		if (command instanceof DeleteCommand) {
 			const key = command.input.Key as Item;
-			this.items.delete(FakeDocumentClient.key(key.ownerId, key.id));
+			this.items.delete(FakeDocumentClient.key(command.input.TableName, key.ownerId, key.id));
 			return {};
 		}
 		if (command instanceof QueryCommand) {
@@ -40,7 +42,11 @@ export class FakeDocumentClient {
 
 	private query(command: QueryCommand): Record<string, unknown> {
 		const ownerId = command.input.ExpressionAttributeValues?.[":ownerId"];
-		const all = [...this.items.values()].filter((item) => item.ownerId === ownerId);
+		const all = [...this.items.entries()]
+			.filter(
+				([key, item]) => key.startsWith(`${command.input.TableName}|`) && item.ownerId === ownerId,
+			)
+			.map(([, item]) => item);
 		const start = Number(command.input.ExclusiveStartKey?.offset ?? 0);
 		const page = all.slice(start, start + this.pageSize);
 		const next = start + this.pageSize;

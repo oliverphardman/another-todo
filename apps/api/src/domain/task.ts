@@ -8,6 +8,7 @@ export interface TaskProps {
 	readonly title: string;
 	readonly completed: boolean;
 	readonly importance: Importance;
+	readonly listId: string | null;
 	readonly dueDate: Date | null;
 	readonly createdAt: Date;
 }
@@ -18,6 +19,7 @@ export interface TaskRecord {
 	readonly title: string;
 	readonly completed: boolean;
 	readonly importance: Importance;
+	readonly listId?: string | null;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -32,6 +34,7 @@ export class Task {
 			title: Task.validateTitle(title),
 			completed: false,
 			importance: "normal",
+			listId: null,
 			dueDate: null,
 			createdAt,
 		});
@@ -44,6 +47,7 @@ export class Task {
 			title: record.title,
 			completed: record.completed,
 			importance: record.importance,
+			listId: record.listId ?? null,
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
 			createdAt: new Date(record.createdAt),
 		});
@@ -77,6 +81,10 @@ export class Task {
 		return this.props.importance;
 	}
 
+	get listId(): string | null {
+		return this.props.listId;
+	}
+
 	get dueDate(): Date | null {
 		return this.props.dueDate;
 	}
@@ -101,6 +109,10 @@ export class Task {
 		return new Task({ ...this.props, importance });
 	}
 
+	setList(listId: string | null): Task {
+		return new Task({ ...this.props, listId });
+	}
+
 	setDueDate(dueDate: Date | null): Task {
 		return new Task({ ...this.props, dueDate });
 	}
@@ -112,6 +124,7 @@ export class Task {
 			title: this.props.title,
 			completed: this.props.completed,
 			importance: this.props.importance,
+			listId: this.props.listId,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
 			createdAt: this.props.createdAt.toISOString(),
 		};

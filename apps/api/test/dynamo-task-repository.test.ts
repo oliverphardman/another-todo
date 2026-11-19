@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Task } from "../src/domain/task";
+import { TodoList } from "../src/domain/todo-list";
+import { DynamoTodoListRepository } from "../src/infrastructure/dynamo-todo-list-repository";
 import { DynamoTaskRepository } from "../src/infrastructure/dynamo-task-repository";
 import { EmptyQueryClient, FakeDocumentClient } from "./support/fake-document-client";
 
@@ -29,5 +31,18 @@ describe("DynamoTaskRepository", () => {
 	it("treats a missing Items list as empty", async () => {
 		const repo = new DynamoTaskRepository(new EmptyQueryClient().asClient(), "tasks");
 		expect(await repo.list("u")).toEqual([]);
+	});
+});
+
+describe("DynamoTodoListRepository", () => {
+	it("saves, finds, lists and deletes lists", async () => {
+		const repo = new DynamoTodoListRepository(new FakeDocumentClient(1).asClient(), "lists");
+		const list = TodoList.create("u", "1", "Work", now);
+		await repo.save(list);
+		await repo.save(TodoList.create("u", "2", "Home", now));
+		expect((await repo.findById("u", "1"))?.toRecord()).toEqual(list.toRecord());
+		expect(await repo.list("u")).toHaveLength(2);
+		await repo.delete("u", "1");
+		expect(await repo.findById("u", "1")).toBeNull();
 	});
 });

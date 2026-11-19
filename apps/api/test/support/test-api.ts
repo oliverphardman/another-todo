@@ -13,7 +13,7 @@ export function createTestApi(
 	client: { asClient(): DynamoDBDocumentClient } = new FakeDocumentClient(2),
 ) {
 	const handler = createHandler(
-		{ tableName: "tasks", issuer: "https://issuer.example.com" },
+		{ tableName: "tasks", listsTableName: "lists", issuer: "https://issuer.example.com" },
 		client.asClient(),
 	);
 	return async (input: Record<string, unknown>): Promise<ApiReply> => {

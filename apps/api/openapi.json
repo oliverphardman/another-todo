@@ -5,7 +5,11 @@
 		"version": "0.0.0",
 		"description": "REST and MCP API for Another To Do. All endpoints except discovery require a Cognito access token."
 	},
-	"security": [{ "bearerAuth": [] }],
+	"security": [
+		{
+			"bearerAuth": []
+		}
+	],
 	"paths": {
 		"/tasks": {
 			"get": {
@@ -15,11 +19,28 @@
 					"200": {
 						"description": "Tasks ordered by creation time",
 						"content": {
-							"application/json": { "schema": { "$ref": "#/components/schemas/TaskList" } }
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TaskList"
+								}
+							}
 						}
 					},
-					"default": { "$ref": "#/components/responses/Error" }
-				}
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				},
+				"parameters": [
+					{
+						"name": "listId",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"minLength": 1
+						}
+					}
+				]
 			},
 			"post": {
 				"operationId": "createTask",
@@ -27,29 +48,53 @@
 				"requestBody": {
 					"required": true,
 					"content": {
-						"application/json": { "schema": { "$ref": "#/components/schemas/CreateTask" } }
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateTask"
+							}
+						}
 					}
 				},
 				"responses": {
 					"201": {
 						"description": "The created task",
-						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Task"
+								}
+							}
+						}
 					},
-					"default": { "$ref": "#/components/responses/Error" }
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
 				}
 			}
 		},
 		"/tasks/{id}": {
-			"parameters": [{ "$ref": "#/components/parameters/TaskId" }],
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/TaskId"
+				}
+			],
 			"get": {
 				"operationId": "getTask",
 				"summary": "Get a task",
 				"responses": {
 					"200": {
 						"description": "The task",
-						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Task"
+								}
+							}
+						}
 					},
-					"default": { "$ref": "#/components/responses/Error" }
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
 				}
 			},
 			"patch": {
@@ -58,23 +103,39 @@
 				"requestBody": {
 					"required": true,
 					"content": {
-						"application/json": { "schema": { "$ref": "#/components/schemas/UpdateTask" } }
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateTask"
+							}
+						}
 					}
 				},
 				"responses": {
 					"200": {
 						"description": "The updated task",
-						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } }
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Task"
+								}
+							}
+						}
 					},
-					"default": { "$ref": "#/components/responses/Error" }
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
 				}
 			},
 			"delete": {
 				"operationId": "deleteTask",
 				"summary": "Delete a task",
 				"responses": {
-					"204": { "description": "Deleted" },
-					"default": { "$ref": "#/components/responses/Error" }
+					"204": {
+						"description": "Deleted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
 				}
 			}
 		},
@@ -84,15 +145,31 @@
 				"summary": "Model Context Protocol endpoint (JSON-RPC 2.0)",
 				"requestBody": {
 					"required": true,
-					"content": { "application/json": { "schema": { "type": "object" } } }
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object"
+							}
+						}
+					}
 				},
 				"responses": {
 					"200": {
 						"description": "JSON-RPC response",
-						"content": { "application/json": { "schema": { "type": "object" } } }
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object"
+								}
+							}
+						}
 					},
-					"202": { "description": "Notification accepted" },
-					"default": { "$ref": "#/components/responses/Error" }
+					"202": {
+						"description": "Notification accepted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
 				}
 			}
 		},
@@ -106,9 +183,128 @@
 						"description": "Metadata",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/ProtectedResourceMetadata" }
+								"schema": {
+									"$ref": "#/components/schemas/ProtectedResourceMetadata"
+								}
 							}
 						}
+					}
+				}
+			}
+		},
+		"/lists": {
+			"get": {
+				"operationId": "listLists",
+				"summary": "List the caller's lists",
+				"responses": {
+					"200": {
+						"description": "Lists ordered by creation time",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TodoListCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"post": {
+				"operationId": "createList",
+				"summary": "Create a list",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateList"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The created list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TodoList"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/lists/{id}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				}
+			],
+			"get": {
+				"operationId": "getList",
+				"summary": "Get a list",
+				"responses": {
+					"200": {
+						"description": "The list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TodoList"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"patch": {
+				"operationId": "renameList",
+				"summary": "Rename a list",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateList"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The updated list",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TodoList"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"delete": {
+				"operationId": "deleteList",
+				"summary": "Delete a list and its tasks",
+				"responses": {
+					"204": {
+						"description": "Deleted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
 					}
 				}
 			}
@@ -116,41 +312,90 @@
 	},
 	"components": {
 		"securitySchemes": {
-			"bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" }
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
 		},
 		"parameters": {
 			"TaskId": {
 				"name": "id",
 				"in": "path",
 				"required": true,
-				"schema": { "type": "string", "minLength": 1 }
+				"schema": {
+					"type": "string",
+					"minLength": 1
+				}
+			},
+			"ResourceId": {
+				"name": "id",
+				"in": "path",
+				"required": true,
+				"schema": {
+					"type": "string",
+					"minLength": 1
+				}
 			}
 		},
 		"responses": {
 			"Error": {
 				"description": "Error",
-				"content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/Error"
+						}
+					}
+				}
 			}
 		},
 		"schemas": {
-			"Importance": { "type": "string", "enum": ["normal", "high"] },
+			"Importance": {
+				"type": "string",
+				"enum": ["normal", "high"]
+			},
 			"Task": {
 				"type": "object",
-				"required": ["id", "title", "completed", "importance", "dueDate", "createdAt"],
+				"required": ["id", "title", "completed", "importance", "dueDate", "createdAt", "listId"],
 				"properties": {
-					"id": { "type": "string" },
-					"title": { "type": "string" },
-					"completed": { "type": "boolean" },
-					"importance": { "$ref": "#/components/schemas/Importance" },
-					"dueDate": { "type": "string", "format": "date-time", "nullable": true },
-					"createdAt": { "type": "string", "format": "date-time" }
+					"id": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"completed": {
+						"type": "boolean"
+					},
+					"importance": {
+						"$ref": "#/components/schemas/Importance"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"listId": {
+						"type": "string",
+						"nullable": true
+					}
 				}
 			},
 			"TaskList": {
 				"type": "object",
 				"required": ["tasks"],
 				"properties": {
-					"tasks": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } }
+					"tasks": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Task"
+						}
+					}
 				}
 			},
 			"CreateTask": {
@@ -158,34 +403,132 @@
 				"required": ["title"],
 				"additionalProperties": false,
 				"properties": {
-					"title": { "type": "string", "minLength": 1 },
-					"completed": { "type": "boolean" },
-					"importance": { "$ref": "#/components/schemas/Importance" },
-					"dueDate": { "type": "string", "format": "date-time", "nullable": true }
+					"title": {
+						"type": "string",
+						"minLength": 1
+					},
+					"completed": {
+						"type": "boolean"
+					},
+					"importance": {
+						"$ref": "#/components/schemas/Importance"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"listId": {
+						"type": "string",
+						"minLength": 1,
+						"nullable": true
+					}
 				}
 			},
 			"UpdateTask": {
 				"type": "object",
 				"additionalProperties": false,
 				"properties": {
-					"title": { "type": "string", "minLength": 1 },
-					"completed": { "type": "boolean" },
-					"importance": { "$ref": "#/components/schemas/Importance" },
-					"dueDate": { "type": "string", "format": "date-time", "nullable": true }
+					"title": {
+						"type": "string",
+						"minLength": 1
+					},
+					"completed": {
+						"type": "boolean"
+					},
+					"importance": {
+						"$ref": "#/components/schemas/Importance"
+					},
+					"dueDate": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"listId": {
+						"type": "string",
+						"minLength": 1,
+						"nullable": true
+					}
 				}
 			},
 			"Error": {
 				"type": "object",
 				"required": ["error"],
-				"properties": { "error": { "type": "string" } }
+				"properties": {
+					"error": {
+						"type": "string"
+					}
+				}
 			},
 			"ProtectedResourceMetadata": {
 				"type": "object",
 				"required": ["resource", "authorization_servers"],
 				"properties": {
-					"resource": { "type": "string" },
-					"authorization_servers": { "type": "array", "items": { "type": "string" } },
-					"bearer_methods_supported": { "type": "array", "items": { "type": "string" } }
+					"resource": {
+						"type": "string"
+					},
+					"authorization_servers": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"bearer_methods_supported": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				}
+			},
+			"TodoList": {
+				"type": "object",
+				"required": ["id", "name", "createdAt"],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"TodoListCollection": {
+				"type": "object",
+				"required": ["lists"],
+				"properties": {
+					"lists": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/TodoList"
+						}
+					}
+				}
+			},
+			"CreateList": {
+				"type": "object",
+				"required": ["name"],
+				"additionalProperties": false,
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			},
+			"UpdateList": {
+				"type": "object",
+				"required": ["name"],
+				"additionalProperties": false,
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					}
 				}
 			}
 		}

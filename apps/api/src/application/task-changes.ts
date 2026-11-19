@@ -5,6 +5,7 @@ export interface TaskInput {
 	readonly title?: unknown;
 	readonly completed?: unknown;
 	readonly importance?: unknown;
+	readonly listId?: unknown;
 	readonly dueDate?: unknown;
 }
 
@@ -20,6 +21,9 @@ export class TaskChanges {
 		if (input.importance !== undefined) {
 			result = result.setImportance(TaskChanges.importance(input.importance));
 		}
+		if (input.listId !== undefined) {
+			result = result.setList(TaskChanges.listId(input.listId));
+		}
 		if (input.dueDate !== undefined) {
 			result = result.setDueDate(TaskChanges.dueDate(input.dueDate));
 		}
@@ -29,6 +33,16 @@ export class TaskChanges {
 	static title(value: unknown): string {
 		if (typeof value !== "string") {
 			throw new ValidationError("title must be a string");
+		}
+		return value;
+	}
+
+	static listId(value: unknown): string | null {
+		if (value === null) {
+			return null;
+		}
+		if (typeof value !== "string" || value.length === 0) {
+			throw new ValidationError("listId must be a non-empty string or null");
 		}
 		return value;
 	}

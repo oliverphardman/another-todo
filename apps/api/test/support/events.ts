@@ -11,6 +11,7 @@ export interface EventOptions {
 export function event(options: EventOptions): Record<string, unknown> {
 	const sub = options.sub === undefined ? "user-1" : options.sub;
 	const method = options.method ?? "GET";
+	const [path = "", query = ""] = options.path.split("?");
 	const rawBody =
 		options.rawBody ?? (options.body === undefined ? undefined : JSON.stringify(options.body));
 	const headers: Record<string, string> = { host: "api.example.com" };
@@ -20,8 +21,8 @@ export function event(options: EventOptions): Record<string, unknown> {
 	return {
 		version: "2.0",
 		routeKey: "$default",
-		rawPath: options.path,
-		rawQueryString: "",
+		rawPath: path,
+		rawQueryString: query,
 		headers,
 		requestContext: {
 			accountId: "1",
@@ -30,7 +31,7 @@ export function event(options: EventOptions): Record<string, unknown> {
 			domainPrefix: "api",
 			http: {
 				method,
-				path: options.path,
+				path,
 				protocol: "HTTP/1.1",
 				sourceIp: "127.0.0.1",
 				userAgent: "vitest",

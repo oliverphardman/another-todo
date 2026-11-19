@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NotFoundError, ValidationError } from "../src/domain/errors";
-import { FixedClock, createService } from "./support/fixtures";
+import { FixedClock, createService, createServices } from "./support/fixtures";
 
 describe("TaskService", () => {
 	it("creates tasks with optional fields", async () => {
@@ -59,6 +59,30 @@ describe("TaskService", () => {
 		await expect(service.get("other", task.id)).rejects.toThrow(NotFoundError);
 		await expect(service.update("other", task.id, {})).rejects.toThrow(NotFoundError);
 		await expect(service.delete("other", task.id)).rejects.toThrow(NotFoundError);
+	});
+
+	it("assigns tasks to existing lists and filters by list", async () => {
+		const { tasks, lists } = createServices();
+		const list = await lists.create("u", { name: "Work" });
+		const inList = await tasks.create("u", { title: "A", listId: list.id });
+		const loose = await tasks.create("u", { title: "B", listId: null });
+		expect(inList.listId).toBe(list.id);
+		expect(loose.listId).toBeNull();
+		expect((await tasks.list("u", list.id)).map((task) => task.id)).toEqual([inList.id]);
+		expect(await tasks.list("u")).toHaveLength(2);
+		const moved = await tasks.update("u", loose.id, { listId: list.id });
+		expect(moved.listId).toBe(list.id);
+		expect((await tasks.update("u", loose.id, { listId: null })).listId).toBeNull();
+	});
+
+	it("rejects unknown or malformed lists", async () => {
+		const { tasks } = createServices();
+		await expect(tasks.create("u", { title: "A", listId: "nope" })).rejects.toThrow(
+			"List nope does not exist",
+		);
+		await expect(tasks.create("u", { title: "A", listId: "" })).rejects.toThrow(ValidationError);
+		const task = await tasks.create("u", { title: "A" });
+		await expect(tasks.update("u", task.id, { listId: 7 })).rejects.toThrow(ValidationError);
 	});
 
 	it("deletes tasks", async () => {

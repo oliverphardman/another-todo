@@ -77,6 +77,45 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/lists": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's lists */
+		get: operations["listLists"];
+		put?: never;
+		/** Create a list */
+		post: operations["createList"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/lists/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		/** Get a list */
+		get: operations["getList"];
+		put?: never;
+		post?: never;
+		/** Delete a list and its tasks */
+		delete: operations["deleteList"];
+		options?: never;
+		head?: never;
+		/** Rename a list */
+		patch: operations["renameList"];
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -92,6 +131,7 @@ export interface components {
 			dueDate: string | null;
 			/** Format: date-time */
 			createdAt: string;
+			listId: string | null;
 		};
 		TaskList: {
 			tasks: components["schemas"]["Task"][];
@@ -102,6 +142,7 @@ export interface components {
 			importance?: components["schemas"]["Importance"];
 			/** Format: date-time */
 			dueDate?: string | null;
+			listId?: string | null;
 		};
 		UpdateTask: {
 			title?: string;
@@ -109,6 +150,7 @@ export interface components {
 			importance?: components["schemas"]["Importance"];
 			/** Format: date-time */
 			dueDate?: string | null;
+			listId?: string | null;
 		};
 		Error: {
 			error: string;
@@ -117,6 +159,21 @@ export interface components {
 			resource: string;
 			authorization_servers: string[];
 			bearer_methods_supported?: string[];
+		};
+		TodoList: {
+			id: string;
+			name: string;
+			/** Format: date-time */
+			createdAt: string;
+		};
+		TodoListCollection: {
+			lists: components["schemas"]["TodoList"][];
+		};
+		CreateList: {
+			name: string;
+		};
+		UpdateList: {
+			name: string;
 		};
 	};
 	responses: {
@@ -132,6 +189,7 @@ export interface components {
 	};
 	parameters: {
 		TaskId: string;
+		ResourceId: string;
 	};
 	requestBodies: never;
 	headers: never;
@@ -141,7 +199,9 @@ export type $defs = Record<string, never>;
 export interface operations {
 	listTasks: {
 		parameters: {
-			query?: never;
+			query?: {
+				listId?: string;
+			};
 			header?: never;
 			path?: never;
 			cookie?: never;
@@ -306,6 +366,123 @@ export interface operations {
 					"application/json": components["schemas"]["ProtectedResourceMetadata"];
 				};
 			};
+		};
+	};
+	listLists: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Lists ordered by creation time */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoListCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreateList"];
+			};
+		};
+		responses: {
+			/** @description The created list */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	getList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The list */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deleteList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	renameList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["UpdateList"];
+			};
+		};
+		responses: {
+			/** @description The updated list */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
 		};
 	};
 }
