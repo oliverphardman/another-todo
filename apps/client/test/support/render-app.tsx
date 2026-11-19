@@ -1,5 +1,6 @@
 import { act, render } from "@testing-library/react";
 import { I18nProvider } from "../../src/i18n/i18n-context";
+import type { Motion } from "../../src/ui/motion";
 import { AppShell } from "../../src/ui/app-shell";
 import { ContainerProvider } from "../../src/ui/container-context";
 import { ThemeProvider } from "../../src/ui/theme-context";
@@ -21,6 +22,7 @@ export interface RenderOptions {
 	readonly restore?: boolean;
 	readonly scheme?: "light" | "dark";
 	readonly locale?: string;
+	readonly motion?: Motion;
 	readonly saved?: Readonly<Record<string, string>>;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
@@ -28,7 +30,7 @@ export interface RenderOptions {
 
 export async function renderApp(options: RenderOptions = {}) {
 	setViewport(options.width ?? 1280);
-	const test = createTestContainer(options.respond);
+	const test = createTestContainer(options.respond, options.motion);
 	for (const [key, value] of Object.entries(options.saved ?? {})) {
 		await test.dataStore.set(key, value);
 	}

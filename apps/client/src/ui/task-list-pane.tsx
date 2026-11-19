@@ -26,6 +26,9 @@ export interface TaskListPaneProps {
 	readonly onShowSidebar?: () => void;
 }
 
+const ROW_PITCH = 54;
+const COMPLETED_GAP = 40;
+
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { store } = useContainer();
 	const palette = useTheme();
@@ -58,6 +61,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			task={task}
 			subtitle={subtitleFor(task)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
+			travel={Math.max(0, open.length - 1 - open.indexOf(task)) * ROW_PITCH + COMPLETED_GAP}
 			selected={state.selectedTaskIds.includes(task.id)}
 			onToggleCompleted={() => store.toggleCompleted(task.id)}
 			onToggleImportant={() => store.toggleImportant(task.id)}

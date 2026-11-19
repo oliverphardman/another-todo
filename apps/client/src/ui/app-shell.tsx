@@ -8,6 +8,7 @@ import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
 import { ContextMenuHost } from "./context-menu";
 import { ResizeHandle } from "./resize-handle";
+import { SwipeArea } from "./swipe";
 import { ThemeOverride, useTheme } from "./theme-context";
 import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
@@ -67,18 +68,26 @@ function MainLayout() {
 	if (mode === "compact") {
 		if (task !== null) {
 			return (
-				<ThemedArea>
-					<TaskDetailPane task={task} onClose={closeDetail} />
-				</ThemedArea>
+				<SwipeArea onSwipe={(direction) => direction === "right" && closeDetail()}>
+					<ThemedArea>
+						<TaskDetailPane task={task} onClose={closeDetail} />
+					</ThemedArea>
+				</SwipeArea>
 			);
 		}
 		if (sidebarOpen) {
-			return <Sidebar onSelected={() => setSidebarOpen(false)} />;
+			return (
+				<SwipeArea onSwipe={(direction) => direction === "left" && setSidebarOpen(false)}>
+					<Sidebar onSelected={() => setSidebarOpen(false)} />
+				</SwipeArea>
+			);
 		}
 		return (
-			<ThemedArea>
-				<TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />
-			</ThemedArea>
+			<SwipeArea onSwipe={(direction) => direction === "right" && setSidebarOpen(true)}>
+				<ThemedArea>
+					<TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />
+				</ThemedArea>
+			</SwipeArea>
 		);
 	}
 	return (

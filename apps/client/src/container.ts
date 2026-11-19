@@ -16,6 +16,7 @@ import type { AppConfig } from "./config/app-config";
 import { RandomIdGenerator, SystemClock, type Clock, type IdGenerator } from "./domain/ports";
 import { NetInfoConnectivity, type Connectivity } from "./state/connectivity";
 import { PaneWidths } from "./state/pane-widths";
+import { STANDARD_MOTION, type Motion } from "./ui/motion";
 import { TodoStore } from "./state/todo-store";
 import { AsyncStorageKeyValueStore } from "./storage/async-storage-key-value-store";
 import type { KeyValueStore } from "./storage/key-value-store";
@@ -32,6 +33,7 @@ export interface Container {
 	readonly photos: PhotoLibrary;
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
+	readonly motion: Motion;
 }
 
 export interface ContainerOverrides {
@@ -47,6 +49,7 @@ export interface ContainerOverrides {
 	readonly photoGateway?: PhotoGateway;
 	readonly photoPicker?: PhotoPicker;
 	readonly printer?: ListPrinter;
+	readonly motion?: Motion;
 }
 
 export function createContainer(config: AppConfig, overrides: ContainerOverrides): Container {
@@ -94,5 +97,6 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		photos,
 		printer: overrides.printer ?? new ExpoListPrinter(),
 		paneWidths: new PaneWidths(dataStore),
+		motion: overrides.motion ?? STANDARD_MOTION,
 	};
 }

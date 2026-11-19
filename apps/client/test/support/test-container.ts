@@ -1,4 +1,5 @@
 import { createContainer, type Container } from "../../src/container";
+import { NO_MOTION, type Motion } from "../../src/ui/motion";
 import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
 import {
@@ -36,6 +37,7 @@ export interface TestContainer {
 export function createTestContainer(
 	respond: (method: string, url: string, body: unknown) => Response | Promise<Response> = () =>
 		new Response(JSON.stringify({ tasks: [], lists: [], settings: [] }), { status: 200 }),
+	motion: Motion = NO_MOTION,
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -58,6 +60,7 @@ export function createTestContainer(
 		photoGateway,
 		photoPicker,
 		clock,
+		motion,
 		ids: new SequenceIds(),
 		fetcher: async (input, init) => {
 			const body = typeof init?.body === "string" ? (JSON.parse(init.body) as unknown) : undefined;
