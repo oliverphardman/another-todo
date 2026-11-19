@@ -76,6 +76,20 @@ describe("expanded layout", () => {
 		expect(screen.getAllByLabelText("Remove importance")).toHaveLength(1);
 	});
 
+	it("plays the completion sound when a task is completed from the list or the details", async () => {
+		const app = await start();
+		addTask("Sound check");
+		fireEvent.click(screen.getByLabelText("Mark as completed"));
+		expect(app.sounds.plays).toBe(1);
+		fireEvent.click(screen.getByLabelText("Mark as not completed"));
+		expect(app.sounds.plays).toBe(1);
+		fireEvent.click(screen.getByLabelText("Open Sound check"));
+		fireEvent.click(
+			within(screen.getByLabelText("Task details")).getByLabelText("Mark as completed"),
+		);
+		expect(app.sounds.plays).toBe(2);
+	});
+
 	it("uses the Add button and ignores blank titles", async () => {
 		await start();
 		const input = screen.getByLabelText("Add a task");

@@ -64,3 +64,4 @@
 - The Cognito domain must keep managed_login_version = 1 (the classic hosted UI). Version 2 shows "Login pages unavailable" until managed login branding exists
 - Web sign-in opens the hosted UI in a popup (expo-web-browser); a headless-Chrome check must follow the new target
 - If an interrupted `terraform apply` leaves a stale state lock, check for running terraform processes and partial changes before `terraform force-unlock`
+- Completing a task plays apps/client/res/complete.mp3 through a SoundPlayer (ExpoSoundPlayer uses expo-audio, created lazily; failures are swallowed). TodoStore.toggleCompleted plays it only when a task becomes completed, from the list or the detail pane

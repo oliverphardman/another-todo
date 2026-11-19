@@ -1,3 +1,5 @@
+import { ExpoSoundPlayer } from "./audio/expo-sound-player";
+import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
 import { AuthenticationService } from "./auth/authentication-service";
 import type { AuthorizationServer } from "./auth/authorization-server";
@@ -30,6 +32,7 @@ export interface ContainerOverrides {
 	readonly fetcher?: (input: string, init?: RequestInit) => Promise<Response>;
 	readonly clock?: Clock;
 	readonly ids?: IdGenerator;
+	readonly sounds?: SoundPlayer;
 }
 
 export function createContainer(config: AppConfig, overrides: ContainerOverrides): Container {
@@ -63,7 +66,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 	return {
 		auth,
 		database,
-		store: new TodoStore(database, ids, clock, sync),
+		store: new TodoStore(database, ids, clock, sync, overrides.sounds ?? new ExpoSoundPlayer()),
 		sync,
 	};
 }

@@ -1,3 +1,4 @@
+import type { SoundPlayer } from "../audio/sound-player";
 import { DueDay } from "../domain/due-day";
 import type { Clock, IdGenerator } from "../domain/ports";
 import { Task, type TaskChanges } from "../domain/task";
@@ -31,6 +32,7 @@ export class TodoStore extends Observable<TodoState> {
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 		private readonly trigger: SyncTrigger,
+		private readonly sounds: SoundPlayer,
 	) {
 		super(TodoStore.derive(database.get(), DEFAULT_VIEW_ID, null));
 		database.subscribe(() => {
@@ -155,6 +157,9 @@ export class TodoStore extends Observable<TodoState> {
 	toggleCompleted(taskId: string): void {
 		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
 		if (task !== undefined) {
+			if (!task.completed) {
+				this.sounds.playCompleted();
+			}
 			this.updateTask(taskId, { completed: !task.completed });
 		}
 	}

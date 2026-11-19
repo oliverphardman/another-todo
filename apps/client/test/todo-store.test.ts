@@ -2,14 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import { MemoryKeyValueStore } from "../src/storage/key-value-store";
 import { LocalDatabase } from "../src/storage/local-database";
 import { TodoStore } from "../src/state/todo-store";
-import { FixedClock, SequenceIds, taskData } from "./support/fakes";
+import { FixedClock, RecordingSoundPlayer, SequenceIds, taskData } from "./support/fakes";
 
 async function setup() {
 	const database = new LocalDatabase(new MemoryKeyValueStore());
 	const trigger = { request: vi.fn() };
 	const clock = new FixedClock();
-	const store = new TodoStore(database, new SequenceIds(), clock, trigger);
-	return { database, trigger, store, clock };
+	const sounds = new RecordingSoundPlayer();
+	const store = new TodoStore(database, new SequenceIds(), clock, trigger, sounds);
+	return { database, trigger, store, clock, sounds };
 }
 
 describe("TodoStore", () => {
@@ -58,6 +59,21 @@ describe("TodoStore", () => {
 		expect(store.get().tasks[0]!.important).toBe(false);
 		store.toggleCompleted("missing");
 		store.toggleImportant("missing");
+	});
+
+	it("plays the completion sound only when a task becomes completed", async () => {
+		const { store, sounds } = await setup();
+		const id = store.addTask("A")!;
+		store.toggleCompleted(id);
+		expect(sounds.plays).toBe(1);
+		store.toggleCompleted(id);
+		expect(sounds.plays).toBe(1);
+		store.toggleImportant(id);
+		store.renameTask(id, "B");
+		store.toggleCompleted("missing");
+		expect(sounds.plays).toBe(1);
+		store.toggleCompleted(id);
+		expect(sounds.plays).toBe(2);
 	});
 
 	it("renames, sets due days and moves tasks", async () => {

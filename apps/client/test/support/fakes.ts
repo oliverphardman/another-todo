@@ -1,3 +1,4 @@
+import type { SoundPlayer } from "../../src/audio/sound-player";
 import type { ApiGateway } from "../../src/api/api-gateway";
 import type { AuthorizationServer, IdentityProvider } from "../../src/auth/authorization-server";
 import type { TokenSet } from "../../src/auth/token-set";
@@ -24,6 +25,14 @@ export class SequenceIds implements IdGenerator {
 	next(): string {
 		this.count += 1;
 		return `id-${this.count}`;
+	}
+}
+
+export class RecordingSoundPlayer implements SoundPlayer {
+	plays = 0;
+
+	playCompleted(): void {
+		this.plays += 1;
 	}
 }
 

@@ -7,6 +7,9 @@ vi.mock("expo-auth-session", () => ({
 	TokenTypeHint: { RefreshToken: "refresh_token" },
 	makeRedirectUri: () => "anothertodo://auth/callback",
 }));
+vi.mock("expo-audio", () => ({
+	createAudioPlayer: () => ({ seekTo: async () => undefined, play: () => undefined }),
+}));
 vi.mock("expo-secure-store", () => ({
 	getItemAsync: async () => null,
 	setItemAsync: async () => undefined,

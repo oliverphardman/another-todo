@@ -1,7 +1,13 @@
 import { createContainer, type Container } from "../../src/container";
 import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
-import { FakeAuthorizationServer, FixedClock, ManualConnectivity, SequenceIds } from "./fakes";
+import {
+	FakeAuthorizationServer,
+	FixedClock,
+	ManualConnectivity,
+	RecordingSoundPlayer,
+	SequenceIds,
+} from "./fakes";
 
 export const TEST_CONFIG: AppConfig = {
 	apiUrl: "https://api.test",
@@ -15,6 +21,7 @@ export interface TestContainer {
 	readonly clock: FixedClock;
 	readonly connectivity: ManualConnectivity;
 	readonly authorizationServer: FakeAuthorizationServer;
+	readonly sounds: RecordingSoundPlayer;
 	readonly requests: { method: string; url: string; body: unknown }[];
 	readonly tokenStore: MemoryKeyValueStore;
 	readonly dataStore: MemoryKeyValueStore;
@@ -27,6 +34,7 @@ export function createTestContainer(
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
 	const authorizationServer = new FakeAuthorizationServer();
+	const sounds = new RecordingSoundPlayer();
 	const tokenStore = new MemoryKeyValueStore();
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
@@ -36,6 +44,7 @@ export function createTestContainer(
 		tokenStore,
 		connectivity,
 		authorizationServer,
+		sounds,
 		clock,
 		ids: new SequenceIds(),
 		fetcher: async (input, init) => {
@@ -44,5 +53,14 @@ export function createTestContainer(
 			return await respond(init?.method ?? "GET", input, body);
 		},
 	});
-	return { container, clock, connectivity, authorizationServer, requests, tokenStore, dataStore };
+	return {
+		container,
+		clock,
+		connectivity,
+		authorizationServer,
+		sounds,
+		requests,
+		tokenStore,
+		dataStore,
+	};
 }
