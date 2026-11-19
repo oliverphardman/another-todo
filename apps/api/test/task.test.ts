@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
+import { ValidationError } from "../src/domain/errors";
 import { Task } from "../src/domain/task";
 
 const now = new Date("2026-01-01T00:00:00Z");
 
 describe("Task", () => {
 	it("creates with defaults and trims the title", () => {
-		const task = Task.create("1", "  Buy milk  ", now);
+		const task = Task.create("u", "1", "  Buy milk  ", now);
+		expect(task.ownerId).toBe("u");
 		expect(task.id).toBe("1");
 		expect(task.title).toBe("Buy milk");
 		expect(task.completed).toBe(false);
@@ -15,11 +17,11 @@ describe("Task", () => {
 	});
 
 	it("rejects an empty title", () => {
-		expect(() => Task.create("1", "   ", now)).toThrow("Task title must not be empty");
+		expect(() => Task.create("u", "1", "   ", now)).toThrow(ValidationError);
 	});
 
 	it("is immutable across transitions", () => {
-		const original = Task.create("1", "A", now);
+		const original = Task.create("u", "1", "A", now);
 		const due = new Date("2026-02-01T00:00:00Z");
 		const changed = original.rename("B").complete().setImportance("high").setDueDate(due);
 		expect(original.title).toBe("A");
@@ -32,6 +34,27 @@ describe("Task", () => {
 	});
 
 	it("rejects renaming to an empty title", () => {
-		expect(() => Task.create("1", "A", now).rename(" ")).toThrow();
+		expect(() => Task.create("u", "1", "A", now).rename(" ")).toThrow(ValidationError);
+	});
+
+	it("round-trips through records with and without a due date", () => {
+		const plain = Task.create("u", "1", "A", now);
+		expect(Task.restore(plain.toRecord()).toRecord()).toEqual(plain.toRecord());
+		const due = plain.setDueDate(new Date("2026-02-01T00:00:00Z"));
+		const restored = Task.restore(due.toRecord());
+		expect(restored.dueDate?.toISOString()).toBe("2026-02-01T00:00:00.000Z");
+		expect(restored.toRecord()).toEqual(due.toRecord());
+	});
+
+	it("serialises to JSON without the owner", () => {
+		const json = JSON.parse(JSON.stringify(Task.create("u", "1", "A", now)));
+		expect(json).toEqual({
+			id: "1",
+			title: "A",
+			completed: false,
+			importance: "normal",
+			dueDate: null,
+			createdAt: "2026-01-01T00:00:00.000Z",
+		});
 	});
 });

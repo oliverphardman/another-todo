@@ -5,14 +5,16 @@ import { Task } from "../src/domain/task";
 const now = new Date("2026-01-01T00:00:00Z");
 
 describe("InMemoryTaskRepository", () => {
-	it("saves, finds, lists and deletes", async () => {
+	it("saves, finds, lists and deletes per owner", async () => {
 		const repo = new InMemoryTaskRepository();
-		const task = Task.create("1", "A", now);
-		await repo.save(task);
-		expect(await repo.findById("1")).toBe(task);
-		expect(await repo.list()).toEqual([task]);
-		await repo.delete("1");
-		expect(await repo.findById("1")).toBeNull();
-		expect(await repo.list()).toEqual([]);
+		const mine = Task.create("u1", "1", "A", now);
+		const theirs = Task.create("u2", "1", "B", now);
+		await repo.save(mine);
+		await repo.save(theirs);
+		expect(await repo.findById("u1", "1")).toBe(mine);
+		expect(await repo.list("u1")).toEqual([mine]);
+		await repo.delete("u1", "1");
+		expect(await repo.findById("u1", "1")).toBeNull();
+		expect(await repo.findById("u2", "1")).toBe(theirs);
 	});
 });
