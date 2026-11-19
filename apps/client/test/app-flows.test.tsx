@@ -550,6 +550,29 @@ describe("list options menu", () => {
 		expect(narrow).toContain("M10.5 5");
 	});
 
+	it("dismisses the menu and the theme panel when the user switches lists", async () => {
+		await start();
+		open();
+		fireEvent.click(screen.getByLabelText("Sort"));
+		expect(screen.getByRole("menu", { name: "Sort" })).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Important", { selector: "[role=button]" }));
+		expect(screen.queryByRole("menu")).toBeNull();
+		expect(screen.getByRole("heading", { name: "Important" })).toBeTruthy();
+		open();
+		fireEvent.click(screen.getByLabelText("Change Theme…"));
+		expect(screen.getByLabelText("Upload photo")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Planned", { selector: "[role=button]" }));
+		expect(screen.queryByLabelText("Upload photo")).toBeNull();
+		expect(screen.queryByRole("menu")).toBeNull();
+	});
+
+	it("keeps the menu open while the user stays on the same list", async () => {
+		await start();
+		open();
+		addTask("Typed behind the menu");
+		expect(screen.getByRole("menu", { name: "List options" })).toBeTruthy();
+	});
+
 	it("offers the list options and closes when the user clicks away", async () => {
 		await start();
 		open();

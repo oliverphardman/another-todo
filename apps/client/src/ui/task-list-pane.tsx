@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
@@ -32,6 +32,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const [panel, setPanel] = useState<ListPanel | null>(null);
 	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
+	useEffect(() => {
+		setPanel(null);
+	}, [view.id]);
 	const { open, done } = store.visibleTasks();
 	const today = store.today;
 	const subtitleFor = (task: Task): string | null => {
