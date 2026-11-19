@@ -233,6 +233,120 @@ describe("TodoStore", () => {
 		expect(database.get().outbox).toEqual([]);
 	});
 
+	it("selects one task, toggles tasks in and out of a selection and clears it", async () => {
+		const { store } = await setup();
+		store.select("all");
+		const ids = ["A", "B", "C"].map((title) => store.addTask(title)!);
+		store.selectTask(ids[0]!);
+		expect(store.get().selectedTaskIds).toEqual([ids[0]]);
+		expect(store.get().selectedTaskId).toBe(ids[0]);
+		store.toggleTaskSelection(ids[2]!);
+		expect(store.get().selectedTaskIds).toEqual([ids[0], ids[2]]);
+		expect(store.get().selectedTaskId).toBeNull();
+		expect(store.selectedTasks.map((task) => task.title).sort()).toEqual(["A", "C"]);
+		expect(store.selectedTask).toBeNull();
+		store.toggleTaskSelection(ids[0]!);
+		expect(store.get().selectedTaskId).toBe(ids[2]);
+		store.selectTask(null);
+		expect(store.get().selectedTaskIds).toEqual([]);
+		store.selectTask(ids[1]!);
+		store.select("my-day");
+		expect(store.get().selectedTaskIds).toEqual([]);
+	});
+
+	it("selects a range in the order the tasks are shown", async () => {
+		const { store, clock } = await setup();
+		store.select("all");
+		const ids = ["A", "B", "C", "D"].map((title) => {
+			clock.advance(1000);
+			return store.addTask(title)!;
+		});
+		const shown = store.visibleTasks().open.map((task) => task.id);
+		expect(shown).toEqual([ids[3], ids[2], ids[1], ids[0]]);
+		store.selectTask(ids[2]!);
+		store.selectTaskRange(ids[0]!);
+		expect(store.get().selectedTaskIds).toEqual([ids[2], ids[1], ids[0]]);
+		store.selectTaskRange(ids[3]!);
+		expect(store.get().selectedTaskIds).toEqual([ids[3], ids[2]]);
+		expect(store.get().anchorTaskId).toBe(ids[2]);
+	});
+
+	it("starts a range from the clicked task when nothing is selected, and ignores unknown tasks", async () => {
+		const { store } = await setup();
+		store.select("all");
+		const id = store.addTask("Only")!;
+		store.selectTaskRange(id);
+		expect(store.get().selectedTaskIds).toEqual([id]);
+		store.selectTaskRange("ghost");
+		expect(store.get().selectedTaskIds).toEqual(["ghost"]);
+	});
+
+	it("forgets selected tasks that no longer exist", async () => {
+		const { store } = await setup();
+		store.select("all");
+		const a = store.addTask("A")!;
+		const b = store.addTask("B")!;
+		store.selectTask(a);
+		store.toggleTaskSelection(b);
+		store.deleteTask(a);
+		expect(store.get().selectedTaskIds).toEqual([b]);
+		expect(store.get().selectedTaskId).toBe(b);
+		store.deleteTask(b);
+		expect(store.get().anchorTaskId).toBeNull();
+	});
+
+	it("changes many tasks at once", async () => {
+		const { store, sounds } = await setup();
+		store.select("tasks");
+		const ids = ["A", "B", "C"].map((title) => store.addTask(title)!);
+		const two = [ids[0]!, ids[1]!];
+		store.completeTasks(two, true);
+		expect(sounds.plays).toBe(1);
+		expect(store.get().tasks.filter((task) => task.completed)).toHaveLength(2);
+		store.completeTasks(two, true);
+		expect(sounds.plays).toBe(1);
+		store.completeTasks(two, false);
+		expect(store.get().tasks.some((task) => task.completed)).toBe(false);
+		store.setImportant(two, true);
+		expect(store.get().tasks.filter((task) => task.important)).toHaveLength(2);
+		store.setImportant(two, false);
+		store.setInMyDay(two, true);
+		expect(store.get().tasks.filter((task) => task.isInMyDay(store.today))).toHaveLength(2);
+		store.setInMyDay(two, true);
+		store.setInMyDay(two, false);
+		expect(store.get().tasks.some((task) => task.isInMyDay(store.today))).toBe(false);
+		store.setDueDayFor(two, "2026-11-25");
+		expect(store.get().tasks.filter((task) => task.dueDay === "2026-11-25")).toHaveLength(2);
+		store.setDueDayFor(two, null);
+		const listId = store.addList("Target")!;
+		store.moveTasks(two, listId);
+		store.moveTasks(two, listId);
+		expect(store.get().tasks.filter((task) => task.listId === listId)).toHaveLength(2);
+		store.moveTasks(two, null);
+		expect(store.get().tasks.filter((task) => task.listId === null)).toHaveLength(3);
+		store.deleteTasks(two);
+		expect(store.get().tasks.map((task) => task.title)).toEqual(["C"]);
+		store.deleteTasks(["ghost"]);
+	});
+
+	it("turns a task into a list whose tasks are its steps", async () => {
+		const { store } = await setup();
+		store.select("tasks");
+		const id = store.addTask("Plan trip")!;
+		store.addStep(id, "Book flights");
+		store.addStep(id, "Pack");
+		const first = store.get().tasks[0]!.steps[0]!;
+		store.updateStep(id, first.id, { completed: true });
+		const listId = store.createListFromTask(id)!;
+		expect(store.selectedView.id).toBe(listId);
+		expect(store.selectedView.title).toBe("Plan trip");
+		expect(store.get().tasks.map((task) => [task.title, task.completed, task.listId])).toEqual([
+			["Book flights", true, listId],
+			["Pack", false, listId],
+		]);
+		expect(store.createListFromTask("ghost")).toBeNull();
+	});
+
 	it("only notifies when the day actually changes", async () => {
 		const { store, clock } = await setup();
 		const listener = vi.fn();

@@ -857,3 +857,230 @@ describe("change theme", () => {
 		expect(screen.getByLabelText("Task details")).toBeTruthy();
 	});
 });
+
+describe("selecting several tasks", () => {
+	async function withTasks(titles: string[]) {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		for (const title of titles) {
+			app.clock.advance(1000);
+			addTask(title);
+		}
+		return app;
+	}
+
+	const row = (title: string) => screen.getByLabelText(`Open ${title}`);
+	const selectedTitles = (app: Awaited<ReturnType<typeof withTasks>>) =>
+		app.container.store.selectedTasks.map((task) => task.title).sort();
+
+	it("opens one task with a plain click and clears the detail pane for several", async () => {
+		const app = await withTasks(["A", "B", "C", "D"]);
+		fireEvent.click(row("B"));
+		expect(screen.getByLabelText("Task details")).toBeTruthy();
+		fireEvent.click(row("D"), { ctrlKey: true });
+		expect(selectedTitles(app)).toEqual(["B", "D"]);
+		expect(screen.queryByLabelText("Task details")).toBeNull();
+		fireEvent.click(row("A"), { metaKey: true });
+		expect(selectedTitles(app)).toEqual(["A", "B", "D"]);
+		fireEvent.click(row("B"), { ctrlKey: true });
+		expect(selectedTitles(app)).toEqual(["A", "D"]);
+		fireEvent.click(row("C"));
+		expect(selectedTitles(app)).toEqual(["C"]);
+		expect(screen.getByLabelText("Task details")).toBeTruthy();
+	});
+
+	it("selects a range with shift click, from the first click to the second", async () => {
+		const app = await withTasks(["A", "B", "C", "D"]);
+		fireEvent.click(row("D"));
+		fireEvent.click(row("B"), { shiftKey: true });
+		expect(selectedTitles(app)).toEqual(["B", "C", "D"]);
+		fireEvent.click(row("A"), { shiftKey: true });
+		expect(selectedTitles(app)).toEqual(["A", "B", "C", "D"]);
+	});
+});
+
+describe("task context menu", () => {
+	async function withTasks(titles: string[]) {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		for (const title of titles) {
+			app.clock.advance(1000);
+			addTask(title);
+		}
+		return app;
+	}
+
+	const row = (title: string) => screen.getByLabelText(`Open ${title}`);
+	const rightClick = (title: string) =>
+		fireEvent.contextMenu(row(title), { clientX: 200, clientY: 150 });
+	const item = (label: string) => screen.getByLabelText(label, { selector: "[role=menuitem]" });
+
+	it("offers every action for a task", async () => {
+		await withTasks(["Solo"]);
+		rightClick("Solo");
+		expect(screen.getByRole("menu", { name: "Task options" })).toBeTruthy();
+		for (const label of [
+			"Add to My Day",
+			"Mark as Important",
+			"Mark as Completed",
+			"Due Today",
+			"Due Tomorrow",
+			"Pick a date",
+			"Create New List from This Task",
+			"Move Task to…",
+			"Delete Task",
+		]) {
+			expect(item(label)).toBeTruthy();
+		}
+	});
+
+	it("changes the task and reflects its state in the labels", async () => {
+		const app = await withTasks(["Solo"]);
+		const store = app.container.store;
+		const task = () => store.get().tasks[0]!;
+		rightClick("Solo");
+		fireEvent.click(item("Add to My Day"));
+		expect(task().isInMyDay(store.today)).toBe(true);
+		expect(screen.queryByRole("menu")).toBeNull();
+		rightClick("Solo");
+		fireEvent.click(item("Mark as Important"));
+		expect(task().important).toBe(true);
+		rightClick("Solo");
+		expect(item("Remove from My Day")).toBeTruthy();
+		expect(item("Remove Importance")).toBeTruthy();
+		fireEvent.click(item("Mark as Completed"));
+		expect(task().completed).toBe(true);
+		expect(app.sounds.plays).toBe(1);
+		rightClick("Solo");
+		fireEvent.click(item("Mark as Not Completed"));
+		expect(task().completed).toBe(false);
+		rightClick("Solo");
+		fireEvent.click(item("Remove from My Day"));
+		expect(task().isInMyDay(store.today)).toBe(false);
+		rightClick("Solo");
+		fireEvent.click(item("Remove Importance"));
+		expect(task().important).toBe(false);
+	});
+
+	it("sets due dates from the shortcuts or the date picker", async () => {
+		const app = await withTasks(["Solo"]);
+		const due = () => app.container.store.get().tasks[0]!.dueDay;
+		rightClick("Solo");
+		fireEvent.click(item("Due Today"));
+		expect(due()).toBe("2026-11-19");
+		rightClick("Solo");
+		fireEvent.click(item("Due Tomorrow"));
+		expect(due()).toBe("2026-11-20");
+		rightClick("Solo");
+		fireEvent.click(item("Pick a date"));
+		fireEvent.click(screen.getByLabelText("Due Next week"));
+		expect(due()).toBe("2026-11-23");
+		expect(screen.queryByRole("menu")).toBeNull();
+		rightClick("Solo");
+		fireEvent.click(item("Pick a date"));
+		fireEvent.click(screen.getByLabelText("Remove due date"));
+		expect(due()).toBeNull();
+	});
+
+	it("moves the task to another list through a submenu and can go back", async () => {
+		const app = await withTasks(["Solo"]);
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const name = screen.getByLabelText("New list");
+		fireEvent.change(name, { target: { value: "Work" } });
+		fireEvent.keyDown(name, { key: "Enter" });
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		rightClick("Solo");
+		fireEvent.click(item("Move Task to…"));
+		expect(item("Work")).toBeTruthy();
+		expect(item("Tasks")).toBeTruthy();
+		fireEvent.click(item("Back"));
+		expect(item("Delete Task")).toBeTruthy();
+		fireEvent.click(item("Move Task to…"));
+		fireEvent.click(item("Work"));
+		expect(app.container.store.get().tasks[0]!.listId).not.toBeNull();
+		fireEvent.click(screen.getByLabelText("Work"));
+		rightClick("Solo");
+		fireEvent.click(item("Move Task to…"));
+		fireEvent.click(item("Tasks"));
+		expect(app.container.store.get().tasks[0]!.listId).toBeNull();
+	});
+
+	it("turns a task into a list and deletes tasks", async () => {
+		const app = await withTasks(["Trip", "Spare"]);
+		app.container.store.addStep(
+			app.container.store.get().tasks.find((task) => task.title === "Trip")!.id,
+			"Pack",
+		);
+		rightClick("Trip");
+		fireEvent.click(item("Create New List from This Task"));
+		expect(screen.getByRole("heading", { name: "Trip" })).toBeTruthy();
+		expect(screen.getByText("Pack")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		expect(screen.queryByLabelText("Open Trip")).toBeNull();
+		rightClick("Spare");
+		fireEvent.click(item("Delete Task"));
+		expect(screen.queryByText("Spare")).toBeNull();
+	});
+
+	it("applies to every selected task when right-clicking inside the selection", async () => {
+		const app = await withTasks(["A", "B", "C"]);
+		fireEvent.click(row("A"));
+		fireEvent.click(row("C"), { ctrlKey: true });
+		rightClick("A");
+		expect(
+			screen
+				.getByLabelText("Create New List from This Task", { selector: "[role=menuitem]" })
+				.getAttribute("aria-disabled"),
+		).toBe("true");
+		fireEvent.click(item("Mark as Completed"));
+		expect(
+			app.container.store
+				.get()
+				.tasks.filter((task) => task.completed)
+				.map((task) => task.title)
+				.sort(),
+		).toEqual(["A", "C"]);
+		rightClick("C");
+		fireEvent.click(item("Delete Task"));
+		expect(app.container.store.get().tasks.map((task) => task.title)).toEqual(["B"]);
+	});
+
+	it("sets one due date for tasks that had different ones", async () => {
+		const app = await withTasks(["A", "B"]);
+		const [a, b] = app.container.store.get().tasks;
+		app.container.store.setDueDay(a!.id, "2026-11-21");
+		app.container.store.setDueDay(b!.id, "2026-11-22");
+		fireEvent.click(row("A"));
+		fireEvent.click(row("B"), { ctrlKey: true });
+		rightClick("A");
+		fireEvent.click(item("Pick a date"));
+		expect(screen.queryByLabelText("Remove due date")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Due Tomorrow"));
+		expect(app.container.store.get().tasks.map((task) => task.dueDay)).toEqual([
+			"2026-11-20",
+			"2026-11-20",
+		]);
+	});
+
+	it("only changes the clicked task when it is outside the selection", async () => {
+		const app = await withTasks(["A", "B", "C"]);
+		fireEvent.click(row("A"));
+		fireEvent.click(row("B"), { ctrlKey: true });
+		rightClick("C");
+		fireEvent.click(item("Mark as Important"));
+		expect(
+			app.container.store
+				.get()
+				.tasks.filter((task) => task.important)
+				.map((task) => task.title),
+		).toEqual(["C"]);
+	});
+
+	it("closes without changing anything when the user clicks away", async () => {
+		const app = await withTasks(["Solo"]);
+		rightClick("Solo");
+		fireEvent.click(screen.getByLabelText("Close menu"));
+		expect(screen.queryByRole("menu")).toBeNull();
+		expect(app.container.store.get().tasks[0]!.completed).toBe(false);
+	});
+});

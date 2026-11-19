@@ -4,6 +4,7 @@ export type IconGlyph =
 	| "check"
 	| "circle"
 	| "sun"
+	| "move"
 	| "more"
 	| "moreVertical"
 	| "sort"
@@ -75,6 +76,7 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
 	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },
 	calendarPlus: { d: "M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4M12 12.5v4M10 14.5h4" },
+	move: { d: "M5 12h14M14 7l5 5-5 5" },
 	star: {
 		d: "M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z",
 	},

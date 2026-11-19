@@ -12,6 +12,8 @@ import { PressableSurface } from "./pressable-surface";
 import { SyncBanner } from "./sync-banner";
 import { ListMenu, type ListPanel } from "./list-menu";
 import { PaneBackground } from "./pane-background";
+import { Pointer } from "./pointer";
+import { buildTaskMenu } from "./task-menu";
 import { SyncIndicator } from "./sync-indicator";
 import { useListTheme } from "./use-list-theme";
 import type { LayoutMode } from "./theme";
@@ -57,10 +59,26 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			task={task}
 			subtitle={subtitleFor(task)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
-			selected={state.selectedTaskId === task.id}
+			selected={state.selectedTaskIds.includes(task.id)}
 			onToggleCompleted={() => store.toggleCompleted(task.id)}
 			onToggleImportant={() => store.toggleImportant(task.id)}
-			onSelect={() => store.selectTask(task.id)}
+			onSelect={(event) => {
+				const { shift, toggle } = Pointer.modifiers(event);
+				if (shift) {
+					store.selectTaskRange(task.id);
+				} else if (toggle) {
+					store.toggleTaskSelection(task.id);
+				} else {
+					store.selectTask(task.id);
+				}
+			}}
+			buildMenu={() =>
+				buildTaskMenu(
+					store,
+					i18n,
+					state.selectedTaskIds.includes(task.id) ? state.selectedTaskIds : [task.id],
+				)
+			}
 		/>
 	);
 	const addBar = (

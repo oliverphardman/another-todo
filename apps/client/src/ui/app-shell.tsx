@@ -6,6 +6,7 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
+import { ContextMenuHost } from "./context-menu";
 import { ThemeOverride, useTheme } from "./theme-context";
 import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
@@ -23,13 +24,10 @@ function ThemedArea({ children }: { children: ReactNode }) {
 }
 
 export function AppShell({ providers }: AppShellProps) {
-	const { auth, store } = useContainer();
+	const { auth } = useContainer();
 	const palette = useTheme();
 	const { t } = useI18n();
 	const status = useObservable(auth);
-	const state = useObservable(store);
-	const mode = useLayoutMode();
-	const [sidebarOpen, setSidebarOpen] = useState(false);
 	if (status === "loading") {
 		return (
 			<View
@@ -47,6 +45,19 @@ export function AppShell({ providers }: AppShellProps) {
 	if (status === "signedOut") {
 		return <SignInScreen providers={providers} />;
 	}
+	return (
+		<ContextMenuHost>
+			<MainLayout />
+		</ContextMenuHost>
+	);
+}
+
+function MainLayout() {
+	const { store } = useContainer();
+	const palette = useTheme();
+	useObservable(store);
+	const mode = useLayoutMode();
+	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const task = store.selectedTask;
 	const closeDetail = () => store.selectTask(null);
 	if (mode === "compact") {
@@ -67,10 +78,7 @@ export function AppShell({ providers }: AppShellProps) {
 		);
 	}
 	return (
-		<View
-			style={{ flex: 1, flexDirection: "row" }}
-			accessibilityLabel={`Selected ${state.selectedViewId}`}
-		>
+		<View style={{ flex: 1, flexDirection: "row" }}>
 			<View style={{ width: Layout.sidebarWidth(mode) }}>
 				<Sidebar onSelected={() => undefined} />
 			</View>

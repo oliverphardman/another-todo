@@ -65,15 +65,27 @@ export interface MenuItemProps {
 	readonly onPress: () => void;
 	readonly trailing?: "chevron";
 	readonly selected?: boolean;
+	readonly danger?: boolean;
+	readonly disabled?: boolean;
 }
 
-export function MenuItem({ glyph, label, onPress, trailing, selected }: MenuItemProps) {
+export function MenuItem({
+	glyph,
+	label,
+	onPress,
+	trailing,
+	selected,
+	danger = false,
+	disabled = false,
+}: MenuItemProps) {
 	const palette = useTheme();
+	const color = danger ? palette.danger : disabled ? palette.textSecondary : palette.text;
 	return (
 		<PressableSurface
 			accessibilityRole={selected === undefined ? "menuitem" : "menuitemradio"}
 			accessibilityLabel={label}
 			aria-checked={selected}
+			disabled={disabled}
 			onPress={onPress}
 			hoverColor={palette.surfaceHover}
 			style={{
@@ -84,8 +96,8 @@ export function MenuItem({ glyph, label, onPress, trailing, selected }: MenuItem
 				borderRadius: 6,
 			}}
 		>
-			<Icon glyph={glyph} size={18} color={palette.text} strokeWidth={1.4} />
-			<AppText size={14} style={{ marginLeft: 12, flex: 1 }}>
+			<Icon glyph={glyph} size={18} color={color} strokeWidth={1.4} />
+			<AppText size={14} style={{ marginLeft: 12, flex: 1, color }}>
 				{label}
 			</AppText>
 			{trailing === "chevron" ? (

@@ -224,6 +224,24 @@ describe("every user-visible string comes from the message catalog", () => {
 		expect(unlocalized()).toEqual([]);
 	});
 
+	it("the task context menu", async () => {
+		await start();
+		addTask("Zebra");
+		fireEvent.contextMenu(byLabel("task.open", { title: "Zebra" }), { clientX: 50, clientY: 50 });
+		byLabel("ctx.removeFromMyDay");
+		byLabel("ctx.markImportant");
+		byLabel("ctx.markCompleted");
+		byLabel("ctx.dueToday");
+		byLabel("ctx.dueTomorrow");
+		byLabel("ctx.pickDate");
+		byLabel("ctx.createList");
+		byLabel("ctx.deleteTask");
+		expect(unlocalized()).toEqual([]);
+		fireEvent.click(byLabel("ctx.moveTo"));
+		byLabel("menu.back");
+		expect(unlocalized()).toEqual([]);
+	});
+
 	it("the narrow layout", async () => {
 		await start({ width: 400 });
 		byLabel("list.showLists");

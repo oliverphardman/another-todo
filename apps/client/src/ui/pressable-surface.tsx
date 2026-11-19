@@ -9,6 +9,7 @@ export interface PressableSurfaceProps extends Omit<PressableProps, "style"> {
 	readonly style?: ViewStyle;
 	readonly hoverColor?: string;
 	readonly activeColor?: string;
+	readonly onContextMenu?: (event: unknown) => void;
 }
 
 export type InteractionState = PressableStateCallbackType & { hovered?: boolean };
@@ -27,11 +28,13 @@ export function PressableSurface({
 	style,
 	hoverColor,
 	activeColor,
+	onContextMenu,
 	...rest
 }: PressableSurfaceProps) {
 	return (
 		<Pressable
 			{...rest}
+			{...(onContextMenu === undefined ? {} : ({ onContextMenu } as object))}
 			style={(state: PressableStateCallbackType) =>
 				surfaceStyle(state as InteractionState, style, hoverColor, activeColor)
 			}

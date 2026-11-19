@@ -2,6 +2,7 @@ import { useI18n } from "../i18n/i18n-context";
 import { View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
+import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
@@ -13,7 +14,8 @@ export interface TaskRowProps {
 	readonly selected: boolean;
 	readonly onToggleCompleted: () => void;
 	readonly onToggleImportant: () => void;
-	readonly onSelect: () => void;
+	readonly onSelect: (event: unknown) => void;
+	readonly buildMenu: () => readonly ContextMenuEntry[];
 }
 
 export function TaskRow({
@@ -24,9 +26,11 @@ export function TaskRow({
 	onToggleCompleted,
 	onToggleImportant,
 	onSelect,
+	buildMenu,
 }: TaskRowProps) {
 	const palette = useTheme();
 	const { t } = useI18n();
+	const menu = useContextMenuTrigger(t("ctx.taskMenu"), buildMenu);
 	return (
 		<View
 			style={{
@@ -43,6 +47,8 @@ export function TaskRow({
 				accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
 				accessibilityState={{ checked: task.completed }}
 				onPress={onToggleCompleted}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
 				style={{ padding: 14 }}
 			>
 				{task.completed ? (
@@ -55,6 +61,8 @@ export function TaskRow({
 				accessibilityRole="button"
 				accessibilityLabel={t("task.open", { title: task.title })}
 				onPress={onSelect}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
 				style={{ flex: 1, paddingVertical: 8 }}
 			>
 				<AppText
@@ -74,6 +82,8 @@ export function TaskRow({
 				accessibilityRole="button"
 				accessibilityLabel={task.important ? t("task.removeImportance") : t("task.makeImportant")}
 				onPress={onToggleImportant}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
 				style={{ padding: 14 }}
 			>
 				<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />

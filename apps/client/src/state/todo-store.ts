@@ -22,6 +22,8 @@ export interface TodoState {
 	readonly settings: readonly ViewSettings[];
 	readonly selectedViewId: string;
 	readonly selectedTaskId: string | null;
+	readonly selectedTaskIds: readonly string[];
+	readonly anchorTaskId: string | null;
 	readonly pendingChanges: number;
 	readonly today: string;
 }
@@ -39,14 +41,17 @@ export class TodoStore extends Observable<TodoState> {
 		private readonly trigger: SyncTrigger,
 		private readonly sounds: SoundPlayer,
 	) {
-		super(TodoStore.derive(database.get(), DEFAULT_VIEW_ID, null, DueDay.fromDate(clock.now())));
+		super(
+			TodoStore.derive(database.get(), DEFAULT_VIEW_ID, [], null, DueDay.fromDate(clock.now())),
+		);
 		database.subscribe(() => {
-			const { selectedViewId, selectedTaskId } = this.get();
+			const { selectedViewId, selectedTaskIds, anchorTaskId } = this.get();
 			this.set(
 				TodoStore.derive(
 					database.get(),
 					selectedViewId,
-					selectedTaskId,
+					selectedTaskIds,
+					anchorTaskId,
 					DueDay.fromDate(clock.now()),
 				),
 			);
@@ -56,7 +61,8 @@ export class TodoStore extends Observable<TodoState> {
 	private static derive(
 		snapshot: Snapshot,
 		selectedViewId: string,
-		selectedTaskId: string | null,
+		selectedIds: readonly string[],
+		anchorId: string | null,
 		today: string,
 	): TodoState {
 		const lists = snapshot.lists.map((data) => new TodoList(data));
@@ -70,10 +76,29 @@ export class TodoStore extends Observable<TodoState> {
 			selectedViewId: views.some((view) => view.id === selectedViewId)
 				? selectedViewId
 				: DEFAULT_VIEW_ID,
-			selectedTaskId: tasks.some((task) => task.id === selectedTaskId) ? selectedTaskId : null,
+			...TodoStore.selection(
+				selectedIds.filter((id) => tasks.some((task) => task.id === id)),
+				tasks.some((task) => task.id === anchorId) ? anchorId : null,
+			),
 			pendingChanges: snapshot.outbox.length,
 			today,
 		};
+	}
+
+	private static selection(
+		ids: readonly string[],
+		anchor: string | null,
+	): Pick<TodoState, "selectedTaskId" | "selectedTaskIds" | "anchorTaskId"> {
+		return {
+			selectedTaskIds: ids,
+			anchorTaskId: anchor,
+			selectedTaskId: ids.length === 1 ? ids[0]! : null,
+		};
+	}
+
+	get selectedTasks(): readonly Task[] {
+		const { tasks, selectedTaskIds } = this.get();
+		return tasks.filter((task) => selectedTaskIds.includes(task.id));
 	}
 
 	get selectedView(): TaskView {
@@ -189,12 +214,121 @@ export class TodoStore extends Observable<TodoState> {
 		this.set({
 			...this.get(),
 			selectedViewId: known ? viewId : DEFAULT_VIEW_ID,
-			selectedTaskId: null,
+			...TodoStore.selection([], null),
 		});
 	}
 
 	selectTask(taskId: string | null): void {
-		this.set({ ...this.get(), selectedTaskId: taskId });
+		this.set({
+			...this.get(),
+			...TodoStore.selection(taskId === null ? [] : [taskId], taskId),
+		});
+	}
+
+	toggleTaskSelection(taskId: string): void {
+		const current = this.get().selectedTaskIds;
+		const ids = current.includes(taskId)
+			? current.filter((id) => id !== taskId)
+			: [...current, taskId];
+		this.set({ ...this.get(), ...TodoStore.selection(ids, taskId) });
+	}
+
+	selectTaskRange(taskId: string): void {
+		const { open, done } = this.visibleTasks();
+		const order = [...open, ...done].map((task) => task.id);
+		const anchor = this.get().anchorTaskId ?? taskId;
+		const from = order.indexOf(anchor);
+		const to = order.indexOf(taskId);
+		if (from === -1 || to === -1) {
+			this.selectTask(taskId);
+			return;
+		}
+		const [start, end] = from <= to ? [from, to] : [to, from];
+		this.set({
+			...this.get(),
+			...TodoStore.selection(order.slice(start, end + 1), anchor),
+		});
+	}
+
+	completeTasks(taskIds: readonly string[], completed: boolean): void {
+		const targets = this.targets(taskIds).filter((task) => task.completed !== completed);
+		if (completed && targets.length > 0) {
+			this.sounds.playCompleted();
+		}
+		for (const task of targets) {
+			this.updateTask(task.id, { completed });
+		}
+	}
+
+	setImportant(taskIds: readonly string[], important: boolean): void {
+		for (const task of this.targets(taskIds).filter((entry) => entry.important !== important)) {
+			this.updateTask(task.id, { importance: important ? "high" : "normal" });
+		}
+	}
+
+	setInMyDay(taskIds: readonly string[], inMyDay: boolean): void {
+		const today = this.today;
+		for (const task of this.targets(taskIds).filter(
+			(entry) => entry.isInMyDay(today) !== inMyDay,
+		)) {
+			this.updateTask(
+				task.id,
+				inMyDay ? { myDay: today, myDayDismissed: null } : { myDay: null, myDayDismissed: today },
+			);
+		}
+	}
+
+	setDueDayFor(taskIds: readonly string[], day: string | null): void {
+		for (const task of this.targets(taskIds)) {
+			this.setDueDay(task.id, day);
+		}
+	}
+
+	moveTasks(taskIds: readonly string[], listId: string | null): void {
+		for (const task of this.targets(taskIds).filter((entry) => entry.listId !== listId)) {
+			this.moveTask(task.id, listId);
+		}
+	}
+
+	deleteTasks(taskIds: readonly string[]): void {
+		for (const task of this.targets(taskIds)) {
+			this.deleteTask(task.id);
+		}
+	}
+
+	createListFromTask(taskId: string): string | null {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task === undefined) {
+			return null;
+		}
+		const listId = this.addList(task.title);
+		for (const step of task.steps) {
+			const created = Task.create(
+				this.ids.next(),
+				step.title,
+				this.clock.now().toISOString(),
+				listId,
+			);
+			this.insertTask(step.completed ? created.with({ completed: true }) : created);
+		}
+		this.deleteTask(taskId);
+		return listId;
+	}
+
+	private targets(taskIds: readonly string[]): readonly Task[] {
+		return this.get().tasks.filter((task) => taskIds.includes(task.id));
+	}
+
+	private insertTask(task: Task): void {
+		this.commit((snapshot) => ({
+			...snapshot,
+			tasks: [...snapshot.tasks, task.data],
+			outbox: this.enqueue(snapshot, {
+				kind: "createTask",
+				opId: this.ids.next(),
+				task: task.data,
+			}),
+		}));
 	}
 
 	addTask(title: string): string | null {
