@@ -1,5 +1,10 @@
 import type { ErrorRequestHandler } from "express";
-import { NotFoundError, UnauthorizedError, ValidationError } from "../domain/errors";
+import {
+	ForbiddenError,
+	NotFoundError,
+	UnauthorizedError,
+	ValidationError,
+} from "../domain/errors";
 
 interface ErrorDescription {
 	readonly status: number;
@@ -20,6 +25,9 @@ export class ErrorHandler {
 		}
 		if (error instanceof UnauthorizedError) {
 			return { status: 401, message: error.message };
+		}
+		if (error instanceof ForbiddenError) {
+			return { status: 403, message: error.message };
 		}
 		if (error instanceof NotFoundError) {
 			return { status: 404, message: error.message };

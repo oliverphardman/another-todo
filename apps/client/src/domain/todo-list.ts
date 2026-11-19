@@ -4,6 +4,8 @@ export interface TodoListData {
 	readonly createdAt: string;
 	readonly position?: number;
 	readonly groupId?: string | null;
+	readonly owned?: boolean;
+	readonly shared?: boolean;
 }
 
 export class TodoList {
@@ -24,6 +26,14 @@ export class TodoList {
 	private static epoch(createdAt: string): number {
 		const parsed = Date.parse(createdAt);
 		return Number.isNaN(parsed) ? 0 : parsed;
+	}
+
+	get owned(): boolean {
+		return this.data.owned ?? true;
+	}
+
+	get shared(): boolean {
+		return this.data.shared ?? false;
 	}
 
 	get groupId(): string | null {

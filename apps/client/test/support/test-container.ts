@@ -4,6 +4,7 @@ import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
 import {
 	FakeAuthorizationServer,
+	FakeShareGateway,
 	FakeSocket,
 	FixedClock,
 	ManualConnectivity,
@@ -31,6 +32,7 @@ export interface TestContainer {
 	readonly printer: RecordingPrinter;
 	readonly photoGateway: FakePhotoGateway;
 	readonly photoPicker: FakePhotoPicker;
+	readonly shareGateway: FakeShareGateway;
 	readonly sockets: FakeSocket[];
 	readonly requests: { method: string; url: string; body: unknown }[];
 	readonly tokenStore: MemoryKeyValueStore;
@@ -55,6 +57,7 @@ export function createTestContainer(
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
 	const sockets: FakeSocket[] = [];
+	const shareGateway = new FakeShareGateway();
 	const container = createContainer(TEST_CONFIG, {
 		platform: "web",
 		dataStore,
@@ -67,6 +70,7 @@ export function createTestContainer(
 		photoPicker,
 		clock,
 		motion,
+		shareGateway,
 		sockets: (url) => {
 			const socket = new FakeSocket(url);
 			sockets.push(socket);
@@ -81,6 +85,7 @@ export function createTestContainer(
 	});
 	return {
 		container,
+		shareGateway,
 		sockets,
 		clock,
 		connectivity,

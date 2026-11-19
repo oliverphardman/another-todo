@@ -37,7 +37,7 @@ describe("ChangeNotifier", () => {
 		await connections.save(Connection.open("other", "elsewhere", NOW, 60));
 		const pusher = new RecordingPusher();
 		pusher.gone.add("dead");
-		await new ChangeNotifier(connections, pusher).notify("u");
+		await new ChangeNotifier(connections, pusher, { peers: async () => [] }).notify("u");
 		expect(pusher.pushed.map((entry) => entry.connectionId).sort()).toEqual(["dead", "live"]);
 		expect(pusher.pushed[0]!.message).toBe(CHANGED_MESSAGE);
 		expect((await connections.list("u")).map((connection) => connection.id)).toEqual(["live"]);
@@ -49,7 +49,7 @@ describe("ChangeNotifier", () => {
 		await connections.save(Connection.open("u", "c1", NOW, 60));
 		const pusher = new RecordingPusher();
 		pusher.failure = new Error("throttled");
-		await new ChangeNotifier(connections, pusher).notify("u");
+		await new ChangeNotifier(connections, pusher, { peers: async () => [] }).notify("u");
 		expect(await connections.list("u")).toHaveLength(1);
 	});
 });

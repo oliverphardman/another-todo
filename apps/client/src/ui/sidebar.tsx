@@ -11,6 +11,7 @@ import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
+import { SharePanel } from "./share-panel";
 import { usePrintList } from "./use-print-list";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -157,48 +158,12 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				})),
 		];
 	};
-	const listEntries = (viewId: string): ContextMenuEntry[] => [
-		{
-			kind: "action",
-			key: "create-group",
-			glyph: "group",
-			label: t("ctx.createGroup"),
-			onPress: () => store.createGroupFor(viewId, t("group.new")),
-		},
-		{
-			kind: "submenu",
-			key: "move-to-group",
-			glyph: "move",
-			label: t("ctx.moveToGroup"),
-			entries: groupMoves(viewId),
-		},
-		{
-			kind: "action",
-			key: "rename",
-			glyph: "edit",
-			label: t("ctx.renameList"),
-			onPress: () => {
-				store.startRenaming(viewId);
-				onSelected();
-			},
-		},
-		{
-			kind: "action",
-			key: "move-up",
-			glyph: "chevronUp",
-			label: t("ctx.moveListUp"),
-			disabled: custom.findIndex((list) => list.id === viewId) === 0,
-			onPress: () => store.shiftList(viewId, -1),
-		},
-		{
-			kind: "action",
-			key: "move-down",
-			glyph: "chevronDown",
-			label: t("ctx.moveListDown"),
-			disabled: custom.findIndex((list) => list.id === viewId) === custom.length - 1,
-			onPress: () => store.shiftList(viewId, 1),
-		},
-		{
+	const listEntries = (viewId: string): ContextMenuEntry[] => {
+		const list = state.lists.find((entry) => entry.id === viewId)!;
+		const siblings = custom.filter((entry) => entry.groupId === list.groupId);
+		const position = siblings.findIndex((entry) => entry.id === viewId);
+		const owned = list.owned;
+		const printEntry: ContextMenuEntry = {
 			kind: "action",
 			key: "print",
 			glyph: "print",
@@ -207,17 +172,71 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				store.select(viewId);
 				print();
 			},
-		},
-		{
+		};
+		const removeEntry: ContextMenuEntry = {
 			kind: "action",
 			key: "delete",
 			separatorBefore: true,
 			danger: true,
 			glyph: "trash",
-			label: t("ctx.deleteList"),
+			label: owned ? t("ctx.deleteList") : t("ctx.leaveList"),
 			onPress: () => store.deleteList(viewId),
-		},
-	];
+		};
+		if (!owned) {
+			return [printEntry, removeEntry];
+		}
+		return [
+			{
+				kind: "action",
+				key: "create-group",
+				glyph: "group",
+				label: t("ctx.createGroup"),
+				onPress: () => store.createGroupFor(viewId, t("group.new")),
+			},
+			{
+				kind: "submenu",
+				key: "move-to-group",
+				glyph: "move",
+				label: t("ctx.moveToGroup"),
+				entries: groupMoves(viewId),
+			},
+			{
+				kind: "panel",
+				key: "share",
+				glyph: "people",
+				label: t("ctx.shareList"),
+				render: (close) => <SharePanel listId={viewId} onClose={close} />,
+			},
+			{
+				kind: "action",
+				key: "rename",
+				glyph: "edit",
+				label: t("ctx.renameList"),
+				onPress: () => {
+					store.startRenaming(viewId);
+					onSelected();
+				},
+			},
+			{
+				kind: "action",
+				key: "move-up",
+				glyph: "chevronUp",
+				label: t("ctx.moveListUp"),
+				disabled: position === 0,
+				onPress: () => store.shiftList(viewId, -1),
+			},
+			{
+				kind: "action",
+				key: "move-down",
+				glyph: "chevronDown",
+				label: t("ctx.moveListDown"),
+				disabled: position === siblings.length - 1,
+				onPress: () => store.shiftList(viewId, 1),
+			},
+			printEntry,
+			removeEntry,
+		];
+	};
 	return (
 		<View
 			style={{ flex: 1, backgroundColor: palette.sidebar }}
@@ -425,7 +444,12 @@ function SidebarRow({
 				backgroundColor: selected ? palette.sidebarSelected : undefined,
 			}}
 		>
-			<Icon glyph={GLYPHS[view.icon]} color={palette.accent} />
+			<Icon
+				glyph={
+					view.isCustomList && (view as CustomListView).list.shared ? "people" : GLYPHS[view.icon]
+				}
+				color={palette.accent}
+			/>
 			<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
 				{i18n.viewTitle(view)}
 			</AppText>

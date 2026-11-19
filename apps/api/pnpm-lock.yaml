@@ -11,6 +11,9 @@ importers:
       '@aws-sdk/client-apigatewaymanagementapi':
         specifier: ^3.1171.0
         version: 3.1171.0
+      '@aws-sdk/client-cognito-identity-provider':
+        specifier: ^3.1171.0
+        version: 3.1171.0
       '@aws-sdk/client-dynamodb':
         specifier: ^3.1171.0
         version: 3.1171.0
@@ -91,6 +94,10 @@ packages:
 
   '@aws-sdk/client-apigatewaymanagementapi@3.1171.0':
     resolution: {integrity: sha512-djb+JvTW8VAXkYAmEmehgoh78CXcv/fBLxHsffTOo6sweoo7F6lyV1M8g35ov41lcO0exGggFy48ntcfEgGWzA==}
+    engines: {node: '>=20.0.0'}
+
+  '@aws-sdk/client-cognito-identity-provider@3.1171.0':
+    resolution: {integrity: sha512-lw/fqG4V9N2cr3AFT8OZgAkW++iiNVur9TX3rto9VTwsjdnZsJH4+nm3JHZ2ufJGFFm+++WDAZdPyMVXU7LKQg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-dynamodb@3.1171.0':
@@ -1881,6 +1888,17 @@ snapshots:
       tslib: 2.9.1
 
   '@aws-sdk/client-apigatewaymanagementapi@3.1171.0':
+    dependencies:
+      '@aws-sdk/core': 3.981.0
+      '@aws-sdk/credential-provider-node': 3.972.97
+      '@aws-sdk/types': 3.975.1
+      '@smithy/core': 3.41.0
+      '@smithy/fetch-http-handler': 5.8.1
+      '@smithy/node-http-handler': 4.14.2
+      '@smithy/types': 4.20.0
+      tslib: 2.9.1
+
+  '@aws-sdk/client-cognito-identity-provider@3.1171.0':
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/credential-provider-node': 3.972.97

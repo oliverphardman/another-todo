@@ -7,6 +7,12 @@ import { ChangeNotifier, type ConnectionPusher } from "./application/change-noti
 import { ChangeBroadcast } from "./http/change-broadcast";
 import { ApiGatewayPusher } from "./infrastructure/api-gateway-pusher";
 import { DynamoConnectionRepository } from "./infrastructure/dynamo-connection-repository";
+import { SharedAccess } from "./application/shared-access";
+import { ShareService } from "./application/share-service";
+import type { UserDirectory } from "./application/user-directory";
+import { ShareController } from "./http/share-controller";
+import { CognitoUserDirectory } from "./infrastructure/cognito-user-directory";
+import { DynamoShareRepository } from "./infrastructure/dynamo-share-repository";
 import { GroupService } from "./application/group-service";
 import { GroupController } from "./http/group-controller";
 import { DynamoGroupRepository } from "./infrastructure/dynamo-group-repository";
@@ -42,6 +48,7 @@ export interface ApiConfig {
 	readonly settingsTableName: string;
 	readonly photosTableName: string;
 	readonly groupsTableName: string;
+	readonly sharesTableName: string;
 	readonly photosBucket: string;
 	readonly connectionsTableName: string;
 	readonly websocketManagementUrl: string;
@@ -57,6 +64,7 @@ export interface Services {
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
 	readonly groups: GroupService;
+	readonly shares: ShareService;
 	readonly notifier: ChangeNotifier;
 }
 
@@ -67,6 +75,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		SETTINGS_TABLE_NAME: settingsTableName,
 		PHOTOS_TABLE_NAME: photosTableName,
 		GROUPS_TABLE_NAME: groupsTableName,
+		SHARES_TABLE_NAME: sharesTableName,
 		PHOTOS_BUCKET: photosBucket,
 		CONNECTIONS_TABLE_NAME: connectionsTableName,
 		WEBSOCKET_MANAGEMENT_URL: websocketManagementUrl,
@@ -81,6 +90,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		!settingsTableName ||
 		!photosTableName ||
 		!groupsTableName ||
+		!sharesTableName ||
 		!photosBucket ||
 		!connectionsTableName ||
 		!websocketManagementUrl ||
@@ -89,7 +99,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		!publicUrl
 	) {
 		throw new Error(
-			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, GROUPS_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
+			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, GROUPS_TABLE_NAME, SHARES_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
 		);
 	}
 	const corsOrigins = origins
@@ -102,6 +112,7 @@ export function readConfig(env: Record<string, string | undefined>): ApiConfig {
 		settingsTableName,
 		photosTableName,
 		groupsTableName,
+		sharesTableName,
 		photosBucket,
 		connectionsTableName,
 		websocketManagementUrl,
@@ -144,7 +155,8 @@ export function createApp(
 		}) as unknown as RequestHandler[]),
 	);
 	app.use("/tasks", new TaskController(services.tasks).router());
-	app.use("/lists", new ListController(services.lists).router());
+	app.use("/lists", new ShareController(services.shares).router());
+	app.use("/lists", new ListController(services.lists, services.shares).router());
 	app.use("/groups", new GroupController(services.groups).router());
 	app.use("/view-settings", new SettingsController(services.settings).router());
 	app.use("/photos", new PhotoController(services.photos).router());
@@ -157,22 +169,26 @@ export function createServices(
 	client: DynamoDBDocumentClient,
 	storage: PhotoStorage,
 	pusher: ConnectionPusher,
+	directory: UserDirectory,
 ): Services {
 	const tasks = new DynamoTaskRepository(client, config.tableName);
 	const lists = new DynamoTodoListRepository(client, config.listsTableName);
 	const settings = new DynamoViewSettingsRepository(client, config.settingsTableName);
 	const photos = new DynamoPhotoRepository(client, config.photosTableName);
 	const groups = new DynamoGroupRepository(client, config.groupsTableName);
+	const shareRepository = new DynamoShareRepository(client, config.sharesTableName);
+	const access = new SharedAccess(shareRepository);
 	const connections = new DynamoConnectionRepository(client, config.connectionsTableName);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
 	return {
-		tasks: new TaskService(tasks, lists, ids, clock),
-		lists: new ListService(lists, tasks, settings, groups, ids, clock),
+		tasks: new TaskService(tasks, lists, access, ids, clock),
+		lists: new ListService(lists, tasks, settings, groups, access, ids, clock),
+		shares: new ShareService(shareRepository, lists, access, directory, clock),
 		groups: new GroupService(groups, lists, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),
-		notifier: new ChangeNotifier(connections, pusher),
+		notifier: new ChangeNotifier(connections, pusher, access),
 	};
 }
 
@@ -185,6 +201,7 @@ export function createApplication(config: ApiConfig, client: DynamoDBDocumentCli
 			client,
 			new S3PhotoStorage(new S3Client({}), config.photosBucket),
 			ApiGatewayPusher.forEndpoint(config.websocketManagementUrl),
+			CognitoUserDirectory.forPool(config.userPoolId),
 		),
 		new BearerAuthenticator(verifier),
 		verifier.issuer,

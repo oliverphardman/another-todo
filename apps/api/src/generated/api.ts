@@ -4,935 +4,1063 @@
  */
 
 export interface paths {
-    "/tasks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's tasks */
-        get: operations["listTasks"];
-        put?: never;
-        /** Create a task */
-        post: operations["createTask"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tasks/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["TaskId"];
-            };
-            cookie?: never;
-        };
-        /** Get a task */
-        get: operations["getTask"];
-        put?: never;
-        post?: never;
-        /** Delete a task */
-        delete: operations["deleteTask"];
-        options?: never;
-        head?: never;
-        /** Update a task */
-        patch: operations["updateTask"];
-        trace?: never;
-    };
-    "/mcp": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Model Context Protocol endpoint (JSON-RPC 2.0) */
-        post: operations["mcp"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/.well-known/oauth-protected-resource": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** OAuth protected resource metadata for MCP clients */
-        get: operations["protectedResourceMetadata"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/lists": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's lists */
-        get: operations["listLists"];
-        put?: never;
-        /** Create a list */
-        post: operations["createList"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/lists/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        /** Get a list */
-        get: operations["getList"];
-        put?: never;
-        post?: never;
-        /** Delete a list and its tasks */
-        delete: operations["deleteList"];
-        options?: never;
-        head?: never;
-        /** Rename or reorder a list */
-        patch: operations["renameList"];
-        trace?: never;
-    };
-    "/view-settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's per-view settings (sort, hide completed, theme) */
-        get: operations["listViewSettings"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/view-settings/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        /** Replace the settings of a view (a list id or a built in view such as my-day) */
-        put: operations["putViewSettings"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/photos": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's uploaded photos with short lived download links */
-        get: operations["listPhotos"];
-        put?: never;
-        /** Register a photo and get a signed form to upload it to storage */
-        post: operations["createPhoto"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/photos/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Permanently delete a photo and clear any theme that uses it */
-        delete: operations["deletePhoto"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/groups": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List the caller's groups */
-        get: operations["listGroups"];
-        put?: never;
-        /** Create a group */
-        post: operations["createGroup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/groups/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        /** Get a group */
-        get: operations["getGroup"];
-        put?: never;
-        post?: never;
-        /** Delete a group, leaving its lists ungrouped */
-        delete: operations["deleteGroup"];
-        options?: never;
-        head?: never;
-        /** Rename or reorder a group */
-        patch: operations["updateGroup"];
-        trace?: never;
-    };
+	"/tasks": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's tasks */
+		get: operations["listTasks"];
+		put?: never;
+		/** Create a task */
+		post: operations["createTask"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/tasks/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["TaskId"];
+			};
+			cookie?: never;
+		};
+		/** Get a task */
+		get: operations["getTask"];
+		put?: never;
+		post?: never;
+		/** Delete a task */
+		delete: operations["deleteTask"];
+		options?: never;
+		head?: never;
+		/** Update a task */
+		patch: operations["updateTask"];
+		trace?: never;
+	};
+	"/mcp": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Model Context Protocol endpoint (JSON-RPC 2.0) */
+		post: operations["mcp"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/.well-known/oauth-protected-resource": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** OAuth protected resource metadata for MCP clients */
+		get: operations["protectedResourceMetadata"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/lists": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's lists */
+		get: operations["listLists"];
+		put?: never;
+		/** Create a list */
+		post: operations["createList"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/lists/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		/** Get a list */
+		get: operations["getList"];
+		put?: never;
+		post?: never;
+		/** Delete a list and its tasks */
+		delete: operations["deleteList"];
+		options?: never;
+		head?: never;
+		/** Rename or reorder a list */
+		patch: operations["renameList"];
+		trace?: never;
+	};
+	"/view-settings": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's per-view settings (sort, hide completed, theme) */
+		get: operations["listViewSettings"];
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/view-settings/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		/** Replace the settings of a view (a list id or a built in view such as my-day) */
+		put: operations["putViewSettings"];
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/photos": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's uploaded photos with short lived download links */
+		get: operations["listPhotos"];
+		put?: never;
+		/** Register a photo and get a signed form to upload it to storage */
+		post: operations["createPhoto"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/photos/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Permanently delete a photo and clear any theme that uses it */
+		delete: operations["deletePhoto"];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/groups": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List the caller's groups */
+		get: operations["listGroups"];
+		put?: never;
+		/** Create a group */
+		post: operations["createGroup"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/groups/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		/** Get a group */
+		get: operations["getGroup"];
+		put?: never;
+		post?: never;
+		/** Delete a group, leaving its lists ungrouped */
+		delete: operations["deleteGroup"];
+		options?: never;
+		head?: never;
+		/** Rename or reorder a group */
+		patch: operations["updateGroup"];
+		trace?: never;
+	};
+	"/lists/{id}/shares": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		/** List the people a list is shared with */
+		get: operations["listShares"];
+		put?: never;
+		/** Share a list with the person who has this email address */
+		post: operations["createShare"];
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/lists/{id}/shares/{memberId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+				memberId: string;
+			};
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		post?: never;
+		/** Remove a member, or leave a list shared with you */
+		delete: operations["deleteShare"];
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** @enum {string} */
-        Importance: "normal" | "high";
-        Task: {
-            id: string;
-            title: string;
-            completed: boolean;
-            importance: components["schemas"]["Importance"];
-            /** Format: date-time */
-            dueDate: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            listId: string | null;
-            /** @description Day (YYYY-MM-DD) the task was added to My Day */
-            myDay: string | null;
-            /** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
-            myDayDismissed: string | null;
-            steps: components["schemas"]["TaskStep"][];
-            note: string;
-        };
-        TaskList: {
-            tasks: components["schemas"]["Task"][];
-        };
-        CreateTask: {
-            /** @description Optional client generated id that makes creation idempotent */
-            id?: string;
-            title: string;
-            completed?: boolean;
-            importance?: components["schemas"]["Importance"];
-            /** Format: date-time */
-            dueDate?: string | null;
-            listId?: string | null;
-            /** @description Day (YYYY-MM-DD) the task was added to My Day */
-            myDay?: string | null;
-            /** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
-            myDayDismissed?: string | null;
-            steps?: components["schemas"]["TaskStep"][];
-            note?: string;
-        };
-        UpdateTask: {
-            title?: string;
-            completed?: boolean;
-            importance?: components["schemas"]["Importance"];
-            /** Format: date-time */
-            dueDate?: string | null;
-            listId?: string | null;
-            /** @description Day (YYYY-MM-DD) the task was added to My Day */
-            myDay?: string | null;
-            /** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
-            myDayDismissed?: string | null;
-            steps?: components["schemas"]["TaskStep"][];
-            note?: string;
-        };
-        Error: {
-            error: string;
-        };
-        ProtectedResourceMetadata: {
-            resource: string;
-            authorization_servers: string[];
-            bearer_methods_supported?: string[];
-        };
-        TodoList: {
-            /** @description Sort key: lists are shown in ascending position */
-            position: number;
-            id: string;
-            name: string;
-            /** Format: date-time */
-            createdAt: string;
-            groupId: string | null;
-        };
-        TodoListCollection: {
-            lists: components["schemas"]["TodoList"][];
-        };
-        CreateList: {
-            /** @description Optional client generated id that makes creation idempotent */
-            id?: string;
-            name: string;
-        };
-        UpdateList: {
-            name?: string;
-            position?: number;
-            groupId?: string | null;
-        };
-        TaskStep: {
-            id: string;
-            title: string;
-            completed: boolean;
-        };
-        ViewSettings: {
-            id: string;
-            /** @enum {string|null} */
-            sort: "importance" | "alphabetical" | "due" | "created" | "myDay" | null;
-            hideCompleted: boolean;
-            theme: {
-                /** @enum {string} */
-                type: "color" | "photo";
-                color?: string;
-                photoId?: string;
-            } | null;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        ViewSettingsCollection: {
-            settings: components["schemas"]["ViewSettings"][];
-        };
-        PutViewSettings: {
-            /** @enum {string|null} */
-            sort: "importance" | "alphabetical" | "due" | "created" | "myDay" | null;
-            hideCompleted: boolean;
-            theme: {
-                /** @enum {string} */
-                type: "color" | "photo";
-                color?: string;
-                photoId?: string;
-            } | null;
-        };
-        Photo: {
-            id: string;
-            name: string;
-            contentType: string;
-            size: number;
-            /** Format: date-time */
-            createdAt: string;
-            url: string;
-        };
-        PhotoCollection: {
-            photos: components["schemas"]["Photo"][];
-        };
-        CreatePhoto: {
-            name: string;
-            /** @enum {string} */
-            contentType: "image/jpeg" | "image/png" | "image/webp";
-            size: number;
-        };
-        PhotoUpload: {
-            url: string;
-            fields: {
-                [key: string]: string;
-            };
-        };
-        CreatedPhoto: {
-            photo: components["schemas"]["Photo"];
-            upload: components["schemas"]["PhotoUpload"];
-        };
-        Group: {
-            id: string;
-            name: string;
-            /** Format: date-time */
-            createdAt: string;
-            position: number;
-        };
-        GroupCollection: {
-            groups: components["schemas"]["Group"][];
-        };
-        CreateGroup: {
-            id?: string;
-            name: string;
-        };
-        UpdateGroup: {
-            name?: string;
-            position?: number;
-        };
-    };
-    responses: {
-        /** @description Error */
-        Error: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-    };
-    parameters: {
-        TaskId: string;
-        ResourceId: string;
-    };
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		/** @enum {string} */
+		Importance: "normal" | "high";
+		Task: {
+			id: string;
+			title: string;
+			completed: boolean;
+			importance: components["schemas"]["Importance"];
+			/** Format: date-time */
+			dueDate: string | null;
+			/** Format: date-time */
+			createdAt: string;
+			listId: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay: string | null;
+			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
+			myDayDismissed: string | null;
+			steps: components["schemas"]["TaskStep"][];
+			note: string;
+		};
+		TaskList: {
+			tasks: components["schemas"]["Task"][];
+		};
+		CreateTask: {
+			/** @description Optional client generated id that makes creation idempotent */
+			id?: string;
+			title: string;
+			completed?: boolean;
+			importance?: components["schemas"]["Importance"];
+			/** Format: date-time */
+			dueDate?: string | null;
+			listId?: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay?: string | null;
+			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
+			myDayDismissed?: string | null;
+			steps?: components["schemas"]["TaskStep"][];
+			note?: string;
+		};
+		UpdateTask: {
+			title?: string;
+			completed?: boolean;
+			importance?: components["schemas"]["Importance"];
+			/** Format: date-time */
+			dueDate?: string | null;
+			listId?: string | null;
+			/** @description Day (YYYY-MM-DD) the task was added to My Day */
+			myDay?: string | null;
+			/** @description Day (YYYY-MM-DD) the user removed the task from My Day, so a due date does not add it back that day */
+			myDayDismissed?: string | null;
+			steps?: components["schemas"]["TaskStep"][];
+			note?: string;
+		};
+		Error: {
+			error: string;
+		};
+		ProtectedResourceMetadata: {
+			resource: string;
+			authorization_servers: string[];
+			bearer_methods_supported?: string[];
+		};
+		TodoList: {
+			/** @description Sort key: lists are shown in ascending position */
+			position: number;
+			id: string;
+			name: string;
+			/** Format: date-time */
+			createdAt: string;
+			groupId: string | null;
+			/** @description False when the list is shared with the caller by someone else */
+			owned: boolean;
+			/** @description True when the list is shared with anyone */
+			shared: boolean;
+		};
+		TodoListCollection: {
+			lists: components["schemas"]["TodoList"][];
+		};
+		CreateList: {
+			/** @description Optional client generated id that makes creation idempotent */
+			id?: string;
+			name: string;
+		};
+		UpdateList: {
+			name?: string;
+			position?: number;
+			groupId?: string | null;
+		};
+		TaskStep: {
+			id: string;
+			title: string;
+			completed: boolean;
+		};
+		ViewSettings: {
+			id: string;
+			/** @enum {string|null} */
+			sort: "importance" | "alphabetical" | "due" | "created" | "myDay" | null;
+			hideCompleted: boolean;
+			theme: {
+				/** @enum {string} */
+				type: "color" | "photo";
+				color?: string;
+				photoId?: string;
+			} | null;
+			/** Format: date-time */
+			updatedAt: string;
+		};
+		ViewSettingsCollection: {
+			settings: components["schemas"]["ViewSettings"][];
+		};
+		PutViewSettings: {
+			/** @enum {string|null} */
+			sort: "importance" | "alphabetical" | "due" | "created" | "myDay" | null;
+			hideCompleted: boolean;
+			theme: {
+				/** @enum {string} */
+				type: "color" | "photo";
+				color?: string;
+				photoId?: string;
+			} | null;
+		};
+		Photo: {
+			id: string;
+			name: string;
+			contentType: string;
+			size: number;
+			/** Format: date-time */
+			createdAt: string;
+			url: string;
+		};
+		PhotoCollection: {
+			photos: components["schemas"]["Photo"][];
+		};
+		CreatePhoto: {
+			name: string;
+			/** @enum {string} */
+			contentType: "image/jpeg" | "image/png" | "image/webp";
+			size: number;
+		};
+		PhotoUpload: {
+			url: string;
+			fields: {
+				[key: string]: string;
+			};
+		};
+		CreatedPhoto: {
+			photo: components["schemas"]["Photo"];
+			upload: components["schemas"]["PhotoUpload"];
+		};
+		Group: {
+			id: string;
+			name: string;
+			/** Format: date-time */
+			createdAt: string;
+			position: number;
+		};
+		GroupCollection: {
+			groups: components["schemas"]["Group"][];
+		};
+		CreateGroup: {
+			id?: string;
+			name: string;
+		};
+		UpdateGroup: {
+			name?: string;
+			position?: number;
+		};
+		Share: {
+			id: string;
+			email: string;
+			/** Format: date-time */
+			createdAt: string;
+		};
+		ShareCollection: {
+			shares: components["schemas"]["Share"][];
+		};
+		CreateShare: {
+			email: string;
+		};
+	};
+	responses: {
+		/** @description Error */
+		Error: {
+			headers: {
+				[name: string]: unknown;
+			};
+			content: {
+				"application/json": components["schemas"]["Error"];
+			};
+		};
+	};
+	parameters: {
+		TaskId: string;
+		ResourceId: string;
+	};
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listTasks: {
-        parameters: {
-            query?: {
-                listId?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Tasks ordered by creation time */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TaskList"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    createTask: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateTask"];
-            };
-        };
-        responses: {
-            /** @description The created task */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Task"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    getTask: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["TaskId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The task */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Task"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    deleteTask: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["TaskId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    updateTask: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["TaskId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateTask"];
-            };
-        };
-        responses: {
-            /** @description The updated task */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Task"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    mcp: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": Record<string, never>;
-            };
-        };
-        responses: {
-            /** @description JSON-RPC response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-            /** @description Notification accepted */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    protectedResourceMetadata: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Metadata */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProtectedResourceMetadata"];
-                };
-            };
-        };
-    };
-    listLists: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Lists ordered by creation time */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodoListCollection"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    createList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateList"];
-            };
-        };
-        responses: {
-            /** @description The created list */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodoList"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    getList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The list */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodoList"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    deleteList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    renameList: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateList"];
-            };
-        };
-        responses: {
-            /** @description The updated list */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TodoList"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    listViewSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Settings */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ViewSettingsCollection"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    putViewSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PutViewSettings"];
-            };
-        };
-        responses: {
-            /** @description The stored settings */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ViewSettings"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    listPhotos: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Photos */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PhotoCollection"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    createPhoto: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePhoto"];
-            };
-        };
-        responses: {
-            /** @description The photo and the upload form */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatedPhoto"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    deletePhoto: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    listGroups: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Groups ordered by position */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupCollection"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    createGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateGroup"];
-            };
-        };
-        responses: {
-            /** @description The created group */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Group"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    getGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description The group */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Group"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    deleteGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            default: components["responses"]["Error"];
-        };
-    };
-    updateGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: components["parameters"]["ResourceId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateGroup"];
-            };
-        };
-        responses: {
-            /** @description The updated group */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Group"];
-                };
-            };
-            default: components["responses"]["Error"];
-        };
-    };
+	listTasks: {
+		parameters: {
+			query?: {
+				listId?: string;
+			};
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Tasks ordered by creation time */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TaskList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreateTask"];
+			};
+		};
+		responses: {
+			/** @description The created task */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Task"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	getTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["TaskId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The task */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Task"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deleteTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["TaskId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	updateTask: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["TaskId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["UpdateTask"];
+			};
+		};
+		responses: {
+			/** @description The updated task */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Task"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	mcp: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": Record<string, never>;
+			};
+		};
+		responses: {
+			/** @description JSON-RPC response */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": Record<string, never>;
+				};
+			};
+			/** @description Notification accepted */
+			202: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	protectedResourceMetadata: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Metadata */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ProtectedResourceMetadata"];
+				};
+			};
+		};
+	};
+	listLists: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Lists ordered by creation time */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoListCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreateList"];
+			};
+		};
+		responses: {
+			/** @description The created list */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	getList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The list */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deleteList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	renameList: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["UpdateList"];
+			};
+		};
+		responses: {
+			/** @description The updated list */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["TodoList"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	listViewSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Settings */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ViewSettingsCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	putViewSettings: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["PutViewSettings"];
+			};
+		};
+		responses: {
+			/** @description The stored settings */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ViewSettings"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	listPhotos: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Photos */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["PhotoCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createPhoto: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreatePhoto"];
+			};
+		};
+		responses: {
+			/** @description The photo and the upload form */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["CreatedPhoto"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deletePhoto: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	listGroups: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Groups ordered by position */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["GroupCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createGroup: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreateGroup"];
+			};
+		};
+		responses: {
+			/** @description The created group */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Group"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	getGroup: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description The group */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Group"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deleteGroup: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Deleted */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	updateGroup: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["UpdateGroup"];
+			};
+		};
+		responses: {
+			/** @description The updated group */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Group"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	listShares: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Members */
+			200: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["ShareCollection"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	createShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+			};
+			cookie?: never;
+		};
+		requestBody: {
+			content: {
+				"application/json": components["schemas"]["CreateShare"];
+			};
+		};
+		responses: {
+			/** @description The new member */
+			201: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content: {
+					"application/json": components["schemas"]["Share"];
+				};
+			};
+			default: components["responses"]["Error"];
+		};
+	};
+	deleteShare: {
+		parameters: {
+			query?: never;
+			header?: never;
+			path: {
+				id: components["parameters"]["ResourceId"];
+				memberId: string;
+			};
+			cookie?: never;
+		};
+		requestBody?: never;
+		responses: {
+			/** @description Removed */
+			204: {
+				headers: {
+					[name: string]: unknown;
+				};
+				content?: never;
+			};
+			default: components["responses"]["Error"];
+		};
+	};
 }

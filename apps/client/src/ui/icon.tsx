@@ -12,6 +12,7 @@ export type IconGlyph =
 	| "duplicate"
 	| "print"
 	| "edit"
+	| "people"
 	| "group"
 	| "search"
 	| "arrowsUpDown"
@@ -79,6 +80,9 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	duplicate: { d: "M8 8h11v11H8zM5 15V5h10" },
 	search: { d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM16 16l5 5" },
 	group: { d: "M3 7h7l2 2h9v10H3z" },
+	people: {
+		d: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19c0-3 3-5 6-5s6 2 6 5M16 6a3 3 0 0 1 0 5M17 14c2 .5 4 2 4 5",
+	},
 	edit: { d: "M4 20h4L19 9l-4-4L4 16zM13 7l4 4" },
 	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
 	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },

@@ -1,3 +1,4 @@
+import type { ShareGateway, ShareMember } from "../../src/shares/share-gateway";
 import type { GroupData } from "../../src/domain/group";
 import type { SocketLike } from "../../src/sync/realtime-client";
 import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
@@ -248,6 +249,39 @@ export class FakeGateway implements ApiGateway {
 	async deleteTask(id: string): Promise<void> {
 		this.guard(`deleteTask:${id}`);
 		this.tasks = this.tasks.filter((task) => task.id !== id);
+	}
+}
+
+export class FakeShareGateway implements ShareGateway {
+	members = new Map<string, ShareMember[]>();
+	failure: Error | null = null;
+	calls: string[] = [];
+
+	private guard(call: string): void {
+		this.calls.push(call);
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+	}
+
+	async list(listId: string): Promise<ShareMember[]> {
+		this.guard(`list:${listId}`);
+		return [...(this.members.get(listId) ?? [])];
+	}
+
+	async add(listId: string, email: string): Promise<ShareMember> {
+		this.guard(`add:${listId}:${email}`);
+		const member = { id: `m-${email}`, email, createdAt: "2026-11-19T00:00:00.000Z" };
+		this.members.set(listId, [...(this.members.get(listId) ?? []), member]);
+		return member;
+	}
+
+	async remove(listId: string, memberId: string): Promise<void> {
+		this.guard(`remove:${listId}:${memberId}`);
+		this.members.set(
+			listId,
+			(this.members.get(listId) ?? []).filter((member) => member.id !== memberId),
+		);
 	}
 }
 

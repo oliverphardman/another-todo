@@ -18,6 +18,45 @@ export function buildTaskMenu(
 	const sharedDue = tasks.every((task) => task.dueDay === tasks[0]!.dueDay)
 		? tasks[0]!.dueDay
 		: null;
+	const ownedLists = store.get().lists.filter((list) => list.owned);
+	const inSharedList = tasks.some(
+		(task) => task.listId !== null && !ownedLists.some((list) => list.id === task.listId),
+	);
+	const moveEntries: ContextMenuEntry[] = inSharedList
+		? []
+		: [
+				{
+					kind: "action",
+					key: "new-list",
+					separatorBefore: true,
+					glyph: "list",
+					label: t("ctx.createList"),
+					disabled: taskIds.length !== 1,
+					onPress: () => store.createListFromTask(taskIds[0]!),
+				},
+				{
+					kind: "submenu",
+					key: "move",
+					glyph: "move",
+					label: t("ctx.moveTo"),
+					entries: [
+						{
+							kind: "action",
+							key: "move-default",
+							glyph: "home",
+							label: t("view.tasks"),
+							onPress: () => store.moveTasks(taskIds, null),
+						},
+						...ownedLists.map((list): ContextMenuEntry => ({
+							kind: "action",
+							key: `move-${list.id}`,
+							glyph: "list",
+							label: list.name,
+							onPress: () => store.moveTasks(taskIds, list.id),
+						})),
+					],
+				},
+			];
 	return [
 		{
 			kind: "action",
@@ -71,37 +110,7 @@ export function buildTaskMenu(
 				/>
 			),
 		},
-		{
-			kind: "action",
-			key: "new-list",
-			separatorBefore: true,
-			glyph: "list",
-			label: t("ctx.createList"),
-			disabled: taskIds.length !== 1,
-			onPress: () => store.createListFromTask(taskIds[0]!),
-		},
-		{
-			kind: "submenu",
-			key: "move",
-			glyph: "move",
-			label: t("ctx.moveTo"),
-			entries: [
-				{
-					kind: "action",
-					key: "move-default",
-					glyph: "home",
-					label: t("view.tasks"),
-					onPress: () => store.moveTasks(taskIds, null),
-				},
-				...store.get().lists.map((list): ContextMenuEntry => ({
-					kind: "action",
-					key: `move-${list.id}`,
-					glyph: "list",
-					label: list.name,
-					onPress: () => store.moveTasks(taskIds, list.id),
-				})),
-			],
-		},
+		...moveEntries,
 		{
 			kind: "action",
 			key: "delete",

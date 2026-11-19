@@ -18,6 +18,9 @@ export abstract class TaskView {
 	readonly showsMyDay: boolean = true;
 	readonly showsDate: boolean = false;
 	readonly allowsAdding: boolean = true;
+	get canEditList(): boolean {
+		return false;
+	}
 
 	abstract matches(task: Task, today: string): boolean;
 
@@ -102,6 +105,10 @@ export class CustomListView extends TaskView {
 	readonly titleKey = null;
 	override readonly isCustomList = true;
 	override readonly showsListName = false;
+
+	override get canEditList(): boolean {
+		return this.list.owned;
+	}
 
 	constructor(readonly list: TodoList) {
 		super();

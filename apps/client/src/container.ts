@@ -1,6 +1,8 @@
 import { AuthorizedHttp, type Fetcher } from "./api/authorized-http";
 import { ExpoPhotoPicker } from "./photos/expo-photo-picker";
 import { HttpPhotoGateway } from "./photos/http-photo-gateway";
+import { HttpShareGateway } from "./shares/http-share-gateway";
+import type { ShareGateway } from "./shares/share-gateway";
 import { PhotoLibrary } from "./photos/photo-library";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { ExpoListPrinter } from "./print/expo-list-printer";
@@ -34,6 +36,7 @@ export interface Container {
 	readonly photos: PhotoLibrary;
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
+	readonly shares: ShareGateway;
 	readonly motion: Motion;
 	readonly realtime: RealtimeClient;
 }
@@ -51,6 +54,7 @@ export interface ContainerOverrides {
 	readonly photoGateway?: PhotoGateway;
 	readonly photoPicker?: PhotoPicker;
 	readonly printer?: ListPrinter;
+	readonly shareGateway?: ShareGateway;
 	readonly motion?: Motion;
 	readonly sockets?: SocketFactory;
 }
@@ -96,6 +100,9 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		photos,
 		printer: overrides.printer ?? new ExpoListPrinter(),
 		paneWidths: new PaneWidths(dataStore),
+		shares:
+			overrides.shareGateway ??
+			new HttpShareGateway(new AuthorizedHttp(config.apiUrl, auth, overrides.fetcher)),
 		motion: overrides.motion ?? STANDARD_MOTION,
 		realtime: new RealtimeClient(
 			config.realtimeUrl,

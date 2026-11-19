@@ -228,6 +228,46 @@ export interface paths {
         patch: operations["updateGroup"];
         trace?: never;
     };
+    "/lists/{id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        /** List the people a list is shared with */
+        get: operations["listShares"];
+        put?: never;
+        /** Share a list with the person who has this email address */
+        post: operations["createShare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/lists/{id}/shares/{memberId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+                memberId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a member, or leave a list shared with you */
+        delete: operations["deleteShare"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -300,6 +340,10 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             groupId: string | null;
+            /** @description False when the list is shared with the caller by someone else */
+            owned: boolean;
+            /** @description True when the list is shared with anyone */
+            shared: boolean;
         };
         TodoListCollection: {
             lists: components["schemas"]["TodoList"][];
@@ -392,6 +436,18 @@ export interface components {
         UpdateGroup: {
             name?: string;
             position?: number;
+        };
+        Share: {
+            id: string;
+            email: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ShareCollection: {
+            shares: components["schemas"]["Share"][];
+        };
+        CreateShare: {
+            email: string;
         };
     };
     responses: {
@@ -931,6 +987,78 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Group"];
                 };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    listShares: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Members */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShareCollection"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    createShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateShare"];
+            };
+        };
+        responses: {
+            /** @description The new member */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Share"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteShare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["ResourceId"];
+                memberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             default: components["responses"]["Error"];
         };

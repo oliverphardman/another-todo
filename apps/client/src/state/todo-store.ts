@@ -250,7 +250,7 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	startRenaming(listId: string): void {
-		const known = this.get().views.some((view) => view.id === listId && view.isCustomList);
+		const known = this.get().views.some((view) => view.id === listId && view.canEditList);
 		if (known) {
 			this.set({
 				...this.get(),
@@ -588,7 +588,7 @@ export class TodoStore extends Observable<TodoState> {
 	setListGroup(listId: string, groupId: string | null): void {
 		const list = this.get().lists.find((candidate) => candidate.id === listId);
 		const known = groupId === null || this.get().groups.some((group) => group.id === groupId);
-		if (list === undefined || !known || list.groupId === groupId) {
+		if (list === undefined || !list.owned || !known || list.groupId === groupId) {
 			return;
 		}
 		this.commit((snapshot) => ({
@@ -654,7 +654,10 @@ export class TodoStore extends Observable<TodoState> {
 
 	renameList(listId: string, name: string): void {
 		const trimmed = name.trim();
-		if (trimmed.length === 0 || !this.get().lists.some((list) => list.id === listId)) {
+		if (
+			trimmed.length === 0 ||
+			!this.get().lists.some((list) => list.id === listId && list.owned)
+		) {
 			return;
 		}
 		this.commit((snapshot) => ({
@@ -679,7 +682,7 @@ export class TodoStore extends Observable<TodoState> {
 		const subject = this.get().lists.find((list) => list.id === listId);
 		const ordered = this.orderedLists().filter((list) => list.groupId === subject?.groupId);
 		const current = ordered.findIndex((list) => list.id === listId);
-		if (current === -1) {
+		if (current === -1 || !subject!.owned) {
 			return;
 		}
 		const others = ordered.filter((list) => list.id !== listId);

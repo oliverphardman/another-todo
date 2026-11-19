@@ -172,6 +172,31 @@ resource "aws_dynamodb_table" "groups" {
   }
 }
 
+resource "aws_dynamodb_table" "shares" {
+  name         = "${local.name}-shares"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ownerId"
+  range_key    = "id"
+
+  attribute {
+    name = "ownerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}
+
 resource "aws_cognito_user_pool" "main" {
   name                     = local.name
   username_attributes      = ["email"]
@@ -299,8 +324,23 @@ resource "aws_iam_role_policy" "lambda_tasks" {
         aws_dynamodb_table.settings.arn,
         aws_dynamodb_table.photos.arn,
         aws_dynamodb_table.groups.arn,
+        aws_dynamodb_table.shares.arn,
         aws_dynamodb_table.connections.arn,
       ]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_users" {
+  name = "find-users"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "cognito-idp:ListUsers"
+      Resource = aws_cognito_user_pool.main.arn
     }]
   })
 }
@@ -394,6 +434,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
       PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
       GROUPS_TABLE_NAME            = aws_dynamodb_table.groups.name
+      SHARES_TABLE_NAME            = aws_dynamodb_table.shares.name
       PHOTOS_BUCKET                = aws_s3_bucket.photos.id
       CONNECTIONS_TABLE_NAME       = aws_dynamodb_table.connections.name
       WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"

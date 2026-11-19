@@ -551,6 +551,88 @@
 					}
 				}
 			}
+		},
+		"/lists/{id}/shares": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				}
+			],
+			"get": {
+				"operationId": "listShares",
+				"summary": "List the people a list is shared with",
+				"responses": {
+					"200": {
+						"description": "Members",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ShareCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"post": {
+				"operationId": "createShare",
+				"summary": "Share a list with the person who has this email address",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateShare"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The new member",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Share"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/lists/{id}/shares/{memberId}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/ResourceId"
+				},
+				{
+					"name": "memberId",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string"
+					}
+				}
+			],
+			"delete": {
+				"operationId": "deleteShare",
+				"summary": "Remove a member, or leave a list shared with you",
+				"responses": {
+					"204": {
+						"description": "Removed"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -812,7 +894,7 @@
 			},
 			"TodoList": {
 				"type": "object",
-				"required": ["id", "name", "createdAt", "position", "groupId"],
+				"required": ["id", "name", "createdAt", "position", "groupId", "owned", "shared"],
 				"properties": {
 					"position": {
 						"type": "number",
@@ -831,6 +913,14 @@
 					"groupId": {
 						"type": "string",
 						"nullable": true
+					},
+					"owned": {
+						"type": "boolean",
+						"description": "False when the list is shared with the caller by someone else"
+					},
+					"shared": {
+						"type": "boolean",
+						"description": "True when the list is shared with anyone"
 					}
 				}
 			},
@@ -1129,6 +1219,45 @@
 					},
 					"position": {
 						"type": "number"
+					}
+				}
+			},
+			"Share": {
+				"type": "object",
+				"required": ["id", "email", "createdAt"],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"ShareCollection": {
+				"type": "object",
+				"required": ["shares"],
+				"properties": {
+					"shares": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Share"
+						}
+					}
+				}
+			},
+			"CreateShare": {
+				"type": "object",
+				"required": ["email"],
+				"additionalProperties": false,
+				"properties": {
+					"email": {
+						"type": "string",
+						"minLength": 3
 					}
 				}
 			}

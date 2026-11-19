@@ -10,6 +10,7 @@ const GLYPHS: IconGlyph[] = [
 	"sun",
 	"move",
 	"edit",
+	"people",
 	"group",
 	"search",
 	"chevronUp",

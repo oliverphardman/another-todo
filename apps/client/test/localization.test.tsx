@@ -242,6 +242,54 @@ describe("every user-visible string comes from the message catalog", () => {
 		expect(unlocalized()).toEqual([]);
 	});
 
+	it("search, groups, sharing and the step menu", async () => {
+		const app = await start();
+		byLabel("sidebar.search");
+		const field = byLabel("sidebar.search");
+		fireEvent.change(field, { target: { value: "zz" } });
+		byLabel("sidebar.clearSearch");
+		byText("view.search");
+		fireEvent.click(byLabel("sidebar.clearSearch"));
+		act(() => {
+			app.container.store.addList("Okapi");
+			app.container.store.select("my-day");
+		});
+		fireEvent.contextMenu(screen.getByLabelText("Okapi"));
+		byLabel("ctx.createGroup");
+		byLabel("ctx.moveToGroup");
+		fireEvent.click(byLabel("ctx.shareList"));
+		byLabel("share.title");
+		byLabel("share.email");
+		byLabel("share.add");
+		await screen.findByText(pseudo("share.empty"));
+		expect(unlocalized()).toEqual([]);
+		fireEvent.click(byLabel("share.close"));
+		fireEvent.contextMenu(screen.getByLabelText("Okapi"));
+		fireEvent.click(byLabel("ctx.createGroup"));
+		fireEvent.keyDown(byLabel("group.name"), { key: "Enter" });
+		byLabel("group.header", { name: pseudo("group.new") });
+		expect(unlocalized()).toEqual([]);
+		fireEvent.contextMenu(byLabel("group.header", { name: pseudo("group.new") }));
+		byLabel("ctx.renameGroup");
+		byLabel("ctx.ungroup");
+		fireEvent.click(byLabel("ctx.ungroup"));
+		act(() => {
+			app.container.store.select("my-day");
+		});
+		addTask("Zebra");
+		fireEvent.click(byLabel("task.open", { title: "Zebra" }));
+		fireEvent.click(byLabel("step.add"));
+		const step = byLabel("step.new");
+		fireEvent.change(step, { target: { value: "Gnu" } });
+		fireEvent.keyDown(step, { key: "Enter" });
+		fireEvent.keyDown(step, { key: "Escape" });
+		fireEvent.click(byLabel("step.options", { title: "Gnu" }));
+		screen.getByLabelText(pseudo("step.markCompleted"), { selector: "[role=menuitem]" });
+		byLabel("step.promote");
+		byLabel("step.deleteStep");
+		expect(unlocalized()).toEqual([]);
+	});
+
 	it("the narrow layout", async () => {
 		await start({ width: 400 });
 		byLabel("list.showLists");

@@ -121,9 +121,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					/>
 				) : (
 					<PressableSurface
-						accessibilityRole={view.isCustomList && !compact ? "button" : undefined}
-						accessibilityLabel={view.isCustomList && !compact ? t("list.renameHint") : undefined}
-						disabled={!view.isCustomList || compact}
+						accessibilityRole={view.canEditList && !compact ? "button" : undefined}
+						accessibilityLabel={view.canEditList && !compact ? t("list.renameHint") : undefined}
+						disabled={!view.canEditList || compact}
 						onPress={() => store.startRenaming(view.id)}
 						style={{ flex: 1 }}
 					>

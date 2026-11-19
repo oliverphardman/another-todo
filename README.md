@@ -1,6 +1,11 @@
 # Another To Do
 
+> [!CAUTION]
+> This software is in alpha. Any data you submit to the live demo may be retained and viewed by the maintainers. Use this software at your own risk!
+
 Welcome to Another To Do (ATD)! This is designed to be a replacement for Microsoft To Do, which is closing in July 2027.
+
+Check out the [live demo](https://another-todo.oliverhardman.dev/).
 
 ## Components
 

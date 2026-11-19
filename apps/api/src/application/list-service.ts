@@ -1,11 +1,12 @@
 import { EntityId } from "../domain/entity-id";
-import { NotFoundError, ValidationError } from "../domain/errors";
+import { ForbiddenError, NotFoundError, ValidationError } from "../domain/errors";
 import type { GroupRepository } from "../domain/group-repository";
 import type { TaskRepository } from "../domain/task-repository";
 import { TodoList } from "../domain/todo-list";
 import type { TodoListRepository } from "../domain/todo-list-repository";
 import type { ViewSettingsRepository } from "../domain/view-settings-repository";
 import type { Clock, IdGenerator } from "./ports";
+import type { SharedAccess } from "./shared-access";
 
 export interface ListInput {
 	readonly id?: unknown;
@@ -20,6 +21,7 @@ export class ListService {
 		private readonly tasks: TaskRepository,
 		private readonly settings: ViewSettingsRepository,
 		private readonly groups: GroupRepository,
+		private readonly access: SharedAccess,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 	) {}
@@ -35,24 +37,39 @@ export class ListService {
 		return list;
 	}
 
-	async get(ownerId: string, id: string): Promise<TodoList> {
-		const list = await this.lists.findById(ownerId, id);
-		if (list === null) {
+	async get(userId: string, id: string): Promise<TodoList> {
+		const own = await this.lists.findById(userId, id);
+		if (own !== null) {
+			return own;
+		}
+		const membership = await this.access.membershipFor(userId, id);
+		const shared =
+			membership === null ? null : await this.lists.findById(membership.listOwnerId, id);
+		if (shared === null) {
 			throw new NotFoundError(`List ${id} not found`);
 		}
-		return list;
+		return shared;
 	}
 
-	async list(ownerId: string): Promise<TodoList[]> {
-		const lists = await this.lists.list(ownerId);
+	async list(userId: string): Promise<TodoList[]> {
+		const lists = await this.lists.list(userId);
+		for (const membership of await this.access.memberships(userId)) {
+			const shared = await this.lists.findById(membership.listOwnerId, membership.listId);
+			if (shared !== null) {
+				lists.push(shared);
+			}
+		}
 		return lists.sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
 	}
 
-	async update(ownerId: string, id: string, input: ListInput): Promise<TodoList> {
+	async update(userId: string, id: string, input: ListInput): Promise<TodoList> {
 		if (input.name === undefined && input.position === undefined && input.groupId === undefined) {
 			throw new ValidationError("name, position or groupId is required");
 		}
-		let list = await this.get(ownerId, id);
+		let list = await this.get(userId, id);
+		if (list.ownerId !== userId) {
+			throw new ForbiddenError("Only the owner can change a shared list");
+		}
 		if (input.name !== undefined) {
 			list = list.rename(ListService.nameOf(input));
 		}
@@ -63,7 +80,7 @@ export class ListService {
 			list = list.moveTo(input.position);
 		}
 		if (input.groupId !== undefined) {
-			list = list.assignToGroup(await this.groupIdOf(ownerId, input.groupId));
+			list = list.assignToGroup(await this.groupIdOf(userId, input.groupId));
 		}
 		await this.lists.save(list);
 		return list;
@@ -82,14 +99,19 @@ export class ListService {
 		return value;
 	}
 
-	async delete(ownerId: string, id: string): Promise<void> {
-		await this.get(ownerId, id);
-		const tasks = await this.tasks.list(ownerId);
-		for (const task of tasks.filter((candidate) => candidate.listId === id)) {
-			await this.tasks.delete(ownerId, task.id);
+	async delete(userId: string, id: string): Promise<void> {
+		const list = await this.get(userId, id);
+		if (list.ownerId !== userId) {
+			await this.access.revoke(list.ownerId, id, userId);
+			return;
 		}
-		await this.settings.delete(ownerId, id);
-		await this.lists.delete(ownerId, id);
+		const tasks = await this.tasks.list(userId);
+		for (const task of tasks.filter((candidate) => candidate.listId === id)) {
+			await this.tasks.delete(userId, task.id);
+		}
+		await this.access.revokeAll(userId, id);
+		await this.settings.delete(userId, id);
+		await this.lists.delete(userId, id);
 	}
 
 	private static nameOf(input: ListInput): string {

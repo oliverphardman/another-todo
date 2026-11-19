@@ -7,6 +7,10 @@ import { ListService } from "../../src/application/list-service";
 import type { Clock, IdGenerator } from "../../src/application/ports";
 import { TaskService } from "../../src/application/task-service";
 import { InMemoryTaskRepository } from "../../src/domain/in-memory-task-repository";
+import { SharedAccess } from "../../src/application/shared-access";
+import { ShareService } from "../../src/application/share-service";
+import { InMemoryShareRepository } from "../../src/domain/in-memory-share-repository";
+import { FakeUserDirectory } from "./fake-user-directory";
 import { GroupService } from "../../src/application/group-service";
 import { InMemoryGroupRepository } from "../../src/domain/in-memory-group-repository";
 import { InMemoryTodoListRepository } from "../../src/domain/in-memory-todo-list-repository";
@@ -38,6 +42,8 @@ export interface TestServices {
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
 	readonly groups: GroupService;
+	readonly shares: ShareService;
+	readonly directory: FakeUserDirectory;
 	readonly storage: FakePhotoStorage;
 	readonly settingsRepository: InMemoryViewSettingsRepository;
 }
@@ -48,11 +54,16 @@ export function createServices(clock = new FixedClock()): TestServices {
 	const settings = new InMemoryViewSettingsRepository();
 	const photos = new InMemoryPhotoRepository();
 	const groupRepository = new InMemoryGroupRepository();
+	const shareRepository = new InMemoryShareRepository();
+	const access = new SharedAccess(shareRepository);
+	const directory = new FakeUserDirectory();
 	const storage = new FakePhotoStorage();
 	const ids = new SequenceIds();
 	return {
-		tasks: new TaskService(tasks, lists, ids, clock),
-		lists: new ListService(lists, tasks, settings, groupRepository, ids, clock),
+		tasks: new TaskService(tasks, lists, access, ids, clock),
+		lists: new ListService(lists, tasks, settings, groupRepository, access, ids, clock),
+		shares: new ShareService(shareRepository, lists, access, directory, clock),
+		directory,
 		groups: new GroupService(groupRepository, lists, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),

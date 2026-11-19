@@ -7,6 +7,7 @@ import type { ConnectionPusher } from "../../src/application/change-notifier";
 import { createApp, createServices, type ApiConfig } from "../../src/bootstrap";
 import { UnauthorizedError } from "../../src/domain/errors";
 import type { Authenticator } from "../../src/http/authenticator";
+import { FakeUserDirectory } from "./fake-user-directory";
 import { FakeDocumentClient } from "./fake-document-client";
 import { FakePhotoStorage } from "./fake-photo-storage";
 import type { ApiRequest } from "./events";
@@ -27,6 +28,7 @@ export const TEST_CONFIG: ApiConfig = {
 	settingsTableName: "settings",
 	photosTableName: "photos",
 	groupsTableName: "groups",
+	sharesTableName: "shares",
 	photosBucket: "photos-bucket",
 	connectionsTableName: "connections",
 	websocketManagementUrl: "https://ws.example.com/prod",
@@ -55,6 +57,7 @@ afterAll(async () => {
 });
 
 export const testStorage = new FakePhotoStorage();
+export const testDirectory = new FakeUserDirectory();
 
 export class RecordingPusher implements ConnectionPusher {
 	readonly pushed: { connectionId: string; message: string }[] = [];
@@ -73,10 +76,11 @@ export class RecordingPusher implements ConnectionPusher {
 export function createTestApi(
 	client: { asClient(): DynamoDBDocumentClient } = new FakeDocumentClient(2),
 	pusher: ConnectionPusher = new RecordingPusher(),
+	directory: FakeUserDirectory = testDirectory,
 ) {
 	const app = createApp(
 		TEST_CONFIG,
-		createServices(TEST_CONFIG, client.asClient(), testStorage, pusher),
+		createServices(TEST_CONFIG, client.asClient(), testStorage, pusher, directory),
 		new TokenIsSubjectAuthenticator(),
 		TEST_ISSUER,
 	);
