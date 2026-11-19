@@ -20,6 +20,13 @@
 			"name": "Another To Do",
 			"themeColor": "#2564cf",
 			"favicon": "./assets/favicon.png"
-		}
+		},
+		"plugins": [
+			"expo-audio",
+			"expo-localization",
+			"expo-secure-store",
+			"expo-web-browser",
+			"expo-asset"
+		]
 	}
 }

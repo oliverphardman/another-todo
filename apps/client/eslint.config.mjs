@@ -10,6 +10,7 @@ export default tseslint.config(
 			".expo",
 			"src/generated",
 			"eslint.config.mjs",
+			"metro.config.js",
 			"vitest.config.mts",
 		],
 	},

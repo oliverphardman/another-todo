@@ -78,7 +78,11 @@ describe("HttpPhotoGateway", () => {
 			size: 3,
 		});
 		const form = calls[1]!.body as FormData;
-		expect([...form.keys()]).toEqual(["key", "Content-Type", "file"]);
+		expect([...(form as unknown as { keys(): Iterable<string> }).keys()]).toEqual([
+			"key",
+			"Content-Type",
+			"file",
+		]);
 		expect(form.get("key")).toBe("u/p1");
 		expect((form.get("file") as File).name).toBe("beach.png");
 		expect(calls[1]!.url).toBe("https://upload.test/form");
@@ -89,7 +93,7 @@ describe("HttpPhotoGateway", () => {
 		const native = { uri: "file:///photo.png", name: "photo.png", type: "image/png" };
 		await gateway.create({ ...blobPhoto, body: native });
 		const form = calls[1]!.body as FormData;
-		expect([...form.keys()].at(-1)).toBe("file");
+		expect([...(form as unknown as { keys(): Iterable<string> }).keys()].at(-1)).toBe("file");
 	});
 
 	it("deletes the record again when the upload is refused or cannot be sent", async () => {

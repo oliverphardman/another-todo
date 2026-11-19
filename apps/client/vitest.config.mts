@@ -17,7 +17,7 @@ export default defineConfig({
 		setupFiles: ["./test/support/setup.ts"],
 		coverage: {
 			provider: "v8",
-			include: ["src/**/*.{ts,tsx}", "App.tsx", "index.ts"],
+			include: ["src/**/*.{ts,tsx}", "App.tsx", "index.ts", "index.macos.ts", "index.windows.ts"],
 			exclude: ["src/generated/**"],
 			thresholds: { lines: 100, functions: 100, branches: 100, statements: 100 },
 		},

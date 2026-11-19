@@ -17,6 +17,7 @@
 - Rearrange lists by dragging them around the sidebar (wide screens)
 - Remove the 'No tasks here yet' text
 - Add a search bar in the left sidebar above My Day
-- Add Terraform for an Azure app registration so we can setup Login with Microsoft, as well as access Graph API to get the user's tasks from Microsoft To Do.
 - The 'Add due date' menu should offer a native datetime input rather than a simple text filed
 - "Steps" on tasks should each have a meatball/kebab menu which offer: Mark as completed, Promote to task, Delete step
+
+Please massively speed up the animation of the task moving to the bottom. Please play the sound as soon as the task is completed, not after the animation. Clicking elsewhere in the list (not on a task) should deselect any selected task.

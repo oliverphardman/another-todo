@@ -82,7 +82,7 @@ export function MenuItem({
 	const color = danger ? palette.danger : disabled ? palette.textSecondary : palette.text;
 	return (
 		<PressableSurface
-			accessibilityRole={selected === undefined ? "menuitem" : "menuitemradio"}
+			accessibilityRole={(selected === undefined ? "menuitem" : "menuitemradio") as never}
 			accessibilityLabel={label}
 			aria-checked={selected}
 			disabled={disabled}

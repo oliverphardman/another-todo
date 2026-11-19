@@ -32,7 +32,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 - [x] Right-click on a list: Rename List, Print List, Delete List; the standalone Rename and trash buttons are removed and the same options are in the list options menu (Create Group and Share List wait for groups and sharing, see Dependencies)
 - [x] Right-click on a task (long press on touch): Add to My Day, Mark as Important, Mark as Completed, Due Today, Due Tomorrow, Pick a date, Create New List from This Task, Move Task to..., Delete Task
-- [ ] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS)
+- [ ] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS). The macOS and Windows projects exist (see AGENTS.md) but have not been built or run yet, so native menus are still to do
 
 ## 5. Real time
 
