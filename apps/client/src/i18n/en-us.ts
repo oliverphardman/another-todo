@@ -140,6 +140,8 @@ export const EN_US = {
 	"ctx.printList": "Print List",
 	"ctx.deleteList": "Delete List",
 	"ctx.listMenu": "List actions",
+	"resize.sidebar": "Resize lists",
+	"resize.detail": "Resize task details",
 	"ctx.taskMenu": "Task options",
 	"print.todo": "To do",
 	"print.completed": "Completed",

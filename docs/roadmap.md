@@ -21,7 +21,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 ## 3. Direct manipulation
 
-- [ ] Resize either sidebar by dragging its edge
+- [x] Resize either sidebar by dragging its edge (web and desktop; arrow keys and double-click to reset also work, widths are remembered)
 - [x] Rename a list by clicking its name at the top on wide screens
 - [x] Shift, Ctrl or Cmd clicking selects multiple tasks (on macOS Ctrl+click is the system's right-click, so Cmd+click is the toggle there)
 - [ ] Swipe gestures open and close the sidebars

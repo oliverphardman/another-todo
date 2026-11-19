@@ -20,7 +20,9 @@ export default function App() {
 	);
 	const locale = useMemo(() => DeviceLocale.resolved(), []);
 	useEffect(() => {
-		void container.database.load().then(() => container.auth.restore());
+		void Promise.all([container.database.load(), container.paneWidths.load()]).then(() =>
+			container.auth.restore(),
+		);
 		container.sync.start();
 		container.photos.start();
 		const rollover = setInterval(() => container.store.refreshToday(), 60_000);

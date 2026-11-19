@@ -7,6 +7,7 @@ import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
 import { ContextMenuHost } from "./context-menu";
+import { ResizeHandle } from "./resize-handle";
 import { ThemeOverride, useTheme } from "./theme-context";
 import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
@@ -53,13 +54,16 @@ export function AppShell({ providers }: AppShellProps) {
 }
 
 function MainLayout() {
-	const { store } = useContainer();
+	const { store, paneWidths } = useContainer();
 	const palette = useTheme();
 	useObservable(store);
+	const widths = useObservable(paneWidths);
 	const mode = useLayoutMode();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const task = store.selectedTask;
 	const closeDetail = () => store.selectTask(null);
+	const sidebarWidth = widths.sidebar ?? Layout.sidebarWidth(mode);
+	const detailWidth = widths.detail ?? Layout.detailWidth(mode);
 	if (mode === "compact") {
 		if (task !== null) {
 			return (
@@ -79,8 +83,19 @@ function MainLayout() {
 	}
 	return (
 		<View style={{ flex: 1, flexDirection: "row" }}>
-			<View style={{ width: Layout.sidebarWidth(mode) }}>
+			<View style={{ width: sidebarWidth }}>
 				<Sidebar onSelected={() => undefined} />
+				<ResizeHandle
+					side="right"
+					width={sidebarWidth}
+					labelKey="resize.sidebar"
+					onResize={(width) => paneWidths.resize("sidebar", width)}
+					onCommit={() => void paneWidths.save()}
+					onReset={() => {
+						paneWidths.reset("sidebar");
+						void paneWidths.save();
+					}}
+				/>
 			</View>
 			<View style={{ flex: 1 }}>
 				<ThemedArea>
@@ -90,11 +105,22 @@ function MainLayout() {
 			{task === null ? null : (
 				<View
 					style={{
-						width: Layout.detailWidth(mode),
+						width: detailWidth,
 						borderLeftWidth: 1,
 						borderLeftColor: palette.border,
 					}}
 				>
+					<ResizeHandle
+						side="left"
+						width={detailWidth}
+						labelKey="resize.detail"
+						onResize={(width) => paneWidths.resize("detail", width)}
+						onCommit={() => void paneWidths.save()}
+						onReset={() => {
+							paneWidths.reset("detail");
+							void paneWidths.save();
+						}}
+					/>
 					<ThemedArea>
 						<TaskDetailPane task={task} onClose={closeDetail} />
 					</ThemedArea>

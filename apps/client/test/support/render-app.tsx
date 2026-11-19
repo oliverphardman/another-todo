@@ -21,6 +21,7 @@ export interface RenderOptions {
 	readonly restore?: boolean;
 	readonly scheme?: "light" | "dark";
 	readonly locale?: string;
+	readonly saved?: Readonly<Record<string, string>>;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
 }
@@ -28,6 +29,10 @@ export interface RenderOptions {
 export async function renderApp(options: RenderOptions = {}) {
 	setViewport(options.width ?? 1280);
 	const test = createTestContainer(options.respond);
+	for (const [key, value] of Object.entries(options.saved ?? {})) {
+		await test.dataStore.set(key, value);
+	}
+	await test.container.paneWidths.load();
 	if (options.signedIn !== false) {
 		await test.container.auth.signIn();
 	} else if (options.restore !== false) {

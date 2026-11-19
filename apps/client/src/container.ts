@@ -15,6 +15,7 @@ import { TokenRepository } from "./auth/token-repository";
 import type { AppConfig } from "./config/app-config";
 import { RandomIdGenerator, SystemClock, type Clock, type IdGenerator } from "./domain/ports";
 import { NetInfoConnectivity, type Connectivity } from "./state/connectivity";
+import { PaneWidths } from "./state/pane-widths";
 import { TodoStore } from "./state/todo-store";
 import { AsyncStorageKeyValueStore } from "./storage/async-storage-key-value-store";
 import type { KeyValueStore } from "./storage/key-value-store";
@@ -30,6 +31,7 @@ export interface Container {
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
 	readonly printer: ListPrinter;
+	readonly paneWidths: PaneWidths;
 }
 
 export interface ContainerOverrides {
@@ -91,5 +93,6 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		sync,
 		photos,
 		printer: overrides.printer ?? new ExpoListPrinter(),
+		paneWidths: new PaneWidths(dataStore),
 	};
 }
