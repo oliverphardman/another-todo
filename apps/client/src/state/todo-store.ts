@@ -195,7 +195,12 @@ export class TodoStore extends Observable<TodoState> {
 	toggleMyDay(taskId: string): void {
 		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
 		if (task !== undefined) {
-			this.updateTask(taskId, { myDay: task.isInMyDay(this.today) ? null : this.today });
+			this.updateTask(
+				taskId,
+				task.isInMyDay(this.today)
+					? { myDay: null, myDayDismissed: this.today }
+					: { myDay: this.today, myDayDismissed: null },
+			);
 		}
 	}
 

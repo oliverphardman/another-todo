@@ -102,6 +102,45 @@ describe("TodoStore", () => {
 		});
 	});
 
+	it("adds tasks due today to My Day automatically, until the user removes them", async () => {
+		const { store, clock } = await setup();
+		store.select("tasks");
+		const id = store.addTask("Due today")!;
+		store.select("my-day");
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.setDueDay(id, "2026-11-19");
+		expect(store.visibleTasks().open.map((task) => task.id)).toEqual([id]);
+		expect(store.taskCount(store.selectedView)).toBe(1);
+		store.toggleMyDay(id);
+		expect(store.visibleTasks().open).toHaveLength(0);
+		expect(store.get().tasks[0]).toMatchObject({
+			data: { myDay: null, myDayDismissed: "2026-11-19" },
+		});
+		store.setDueDay(id, "2026-11-20");
+		store.setDueDay(id, "2026-11-19");
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.toggleMyDay(id);
+		expect(store.visibleTasks().open).toHaveLength(1);
+		expect(store.get().tasks[0]).toMatchObject({
+			data: { myDay: "2026-11-19", myDayDismissed: null },
+		});
+		clock.advance(86_400_000);
+		store.refreshToday();
+		expect(store.visibleTasks().open).toHaveLength(0);
+		store.setDueDay(id, "2026-11-20");
+		expect(store.visibleTasks().open).toHaveLength(1);
+	});
+
+	it("brings back a dismissed due task on a later due day, not the same day", async () => {
+		const { store } = await setup();
+		store.select("tasks");
+		const id = store.addTask("Recurring")!;
+		store.setDueDay(id, "2026-11-19");
+		store.toggleMyDay(id);
+		store.setDueDay(id, "2026-11-25");
+		expect(store.get().tasks[0]!.isInMyDay("2026-11-25")).toBe(true);
+	});
+
 	it("only notifies when the day actually changes", async () => {
 		const { store, clock } = await setup();
 		const listener = vi.fn();

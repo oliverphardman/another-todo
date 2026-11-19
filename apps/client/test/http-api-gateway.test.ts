@@ -60,6 +60,7 @@ describe("HttpApiGateway", () => {
 			importance: "normal",
 			listId: "l1",
 			myDay: null,
+			myDayDismissed: null,
 			dueDate: null,
 		});
 	});

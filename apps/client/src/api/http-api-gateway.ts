@@ -49,6 +49,7 @@ export class HttpApiGateway implements ApiGateway {
 			importance: task.importance,
 			listId: task.listId,
 			myDay: task.myDay,
+			myDayDismissed: task.myDayDismissed,
 			dueDate: task.dueDate,
 		});
 	}

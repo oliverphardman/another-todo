@@ -275,6 +275,28 @@ describe("expanded layout", () => {
 		expect(screen.queryByText("Not in My Day")).toBeNull();
 	});
 
+	it("shows tasks due today in My Day and lets the user take them out", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		addTask("Pay the invoice");
+		fireEvent.click(screen.getByLabelText("My Day"));
+		expect(screen.queryByText("Pay the invoice")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		fireEvent.click(screen.getByLabelText("Open Pay the invoice"));
+		fireEvent.click(screen.getByLabelText("Add due date"));
+		fireEvent.click(screen.getByLabelText("Due Today"));
+		expect(screen.getByLabelText("Added to My Day")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Close details"));
+		fireEvent.click(screen.getByLabelText("My Day"));
+		expect(screen.getByText("Pay the invoice")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Open Pay the invoice"));
+		fireEvent.click(screen.getByLabelText("Added to My Day"));
+		expect(screen.getByLabelText("Add to My Day")).toBeTruthy();
+		expect(app.container.store.get().tasks[0]!.data.myDayDismissed).toBe("2026-11-19");
+		fireEvent.click(screen.getByLabelText("Close details"));
+		expect(screen.queryByText("Pay the invoice")).toBeNull();
+	});
+
 	it("signs out from the sidebar", async () => {
 		const app = await start();
 		await act(async () => {

@@ -173,6 +173,7 @@ export function taskData(overrides: Partial<TaskData> & { id: string }): TaskDat
 		importance: "normal",
 		listId: null,
 		myDay: null,
+		myDayDismissed: null,
 		dueDate: null,
 		createdAt: "2026-11-19T10:00:00.000Z",
 		...overrides,

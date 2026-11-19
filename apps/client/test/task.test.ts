@@ -35,10 +35,18 @@ describe("Task", () => {
 		expect(changed.dueDay).toBe("2026-11-20");
 		expect(changed.with({ dueDate: null }).dueDay).toBeNull();
 		expect(changed.with({}).title).toBe("B");
-		const inMyDay = changed.with({ myDay: "2026-11-19" });
+		const inMyDay = changed.with({ myDay: "2026-11-19", dueDate: null });
 		expect(inMyDay.isInMyDay("2026-11-19")).toBe(true);
 		expect(inMyDay.isInMyDay("2026-11-20")).toBe(false);
 		expect(inMyDay.with({ myDay: null }).isInMyDay("2026-11-19")).toBe(false);
+		const due = Task.create("2", "Due", "x").with({ dueDate: "2026-11-19T00:00:00.000Z" });
+		expect(due.isInMyDay("2026-11-19")).toBe(true);
+		expect(due.isInMyDay("2026-11-20")).toBe(false);
+		expect(due.with({ myDayDismissed: "2026-11-19" }).isInMyDay("2026-11-19")).toBe(false);
+		expect(due.with({ myDayDismissed: "2026-11-18" }).isInMyDay("2026-11-19")).toBe(true);
+		expect(
+			due.with({ myDayDismissed: "2026-11-19", myDay: "2026-11-19" }).isInMyDay("2026-11-19"),
+		).toBe(true);
 		expect(changed.dueSortKey).toBe("2026-11-20T00:00:00.000Z");
 		expect(changed.with({ dueDate: null }).dueSortKey).toBe("9999-12-31");
 	});

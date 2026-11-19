@@ -7,6 +7,7 @@ export interface TaskData {
 	readonly importance: Importance;
 	readonly listId: string | null;
 	readonly myDay: string | null;
+	readonly myDayDismissed: string | null;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -17,6 +18,7 @@ export interface TaskChanges {
 	readonly importance?: Importance;
 	readonly listId?: string | null;
 	readonly myDay?: string | null;
+	readonly myDayDismissed?: string | null;
 	readonly dueDate?: string | null;
 }
 
@@ -31,6 +33,7 @@ export class Task {
 			importance: "normal",
 			listId,
 			myDay: null,
+			myDayDismissed: null,
 			dueDate: null,
 			createdAt,
 		});
@@ -57,7 +60,9 @@ export class Task {
 	}
 
 	isInMyDay(today: string): boolean {
-		return this.data.myDay === today;
+		return (
+			this.data.myDay === today || (this.dueDay === today && this.data.myDayDismissed !== today)
+		);
 	}
 
 	get dueDay(): string | null {
@@ -82,6 +87,7 @@ export class Task {
 			}),
 			...(changes.listId !== undefined && { listId: changes.listId }),
 			...(changes.myDay !== undefined && { myDay: changes.myDay }),
+			...(changes.myDayDismissed !== undefined && { myDayDismissed: changes.myDayDismissed }),
 			...(changes.dueDate !== undefined && { dueDate: changes.dueDate }),
 		});
 	}
