@@ -32,7 +32,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 - [x] Right-click on a list: Rename List, Print List, Delete List; the standalone Rename and trash buttons are removed and the same options are in the list options menu (Create Group and Share List are built)
 - [x] Right-click on a task (long press on touch): Add to My Day, Mark as Important, Mark as Completed, Due Today, Due Tomorrow, Pick a date, Create New List from This Task, Move Task to..., Delete Task
-- [ ] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS). The macOS and Windows projects exist (see AGENTS.md) but have not been built or run yet, so native menus are still to do
+- [x] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS): NativeMenu bridge in the client, an Objective-C module for macOS and a Win32 module for Windows; neither has been built or run on a device yet
 
 ## 5. Real time
 
@@ -45,6 +45,8 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Search bar in the left sidebar above My Day
 - [x] The due date menu uses the platform's date input (a date field on the web, the system picker on native)
 - [x] Each step has a menu: Mark as completed, Promote to task, Delete step
+
+- [x] Completed tasks move while the circle fills, and the right pane slides in and out
 
 ## Dependencies
 

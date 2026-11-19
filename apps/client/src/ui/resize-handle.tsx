@@ -7,6 +7,7 @@ import { useTheme } from "./theme-context";
 
 export interface ResizeHandleProps {
 	readonly side: "left" | "right";
+	readonly inset?: number;
 	readonly width: number;
 	readonly labelKey: MessageKey;
 	readonly onResize: (width: number) => void;
@@ -18,6 +19,7 @@ const STEP = 16;
 
 export function ResizeHandle({
 	side,
+	inset = -3,
 	width,
 	labelKey,
 	onResize,
@@ -72,7 +74,7 @@ export function ResizeHandle({
 					position: "absolute",
 					top: 0,
 					bottom: 0,
-					[side === "right" ? "right" : "left"]: -3,
+					[side === "right" ? "right" : "left"]: inset,
 					width: 6,
 					cursor: "col-resize",
 					zIndex: 5,

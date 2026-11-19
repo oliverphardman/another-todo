@@ -55,7 +55,7 @@ export function TaskRow({
 		}
 		setCompleting(true);
 		onCompleting();
-		Animated.sequence([
+		Animated.parallel([
 			Animated.timing(fill, { toValue: 1, duration: motion.fillMs, useNativeDriver: false }),
 			Animated.timing(slide, {
 				toValue: travel,

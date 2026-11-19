@@ -4,6 +4,7 @@ import { useI18n } from "../i18n/i18n-context";
 import { Observable } from "../state/observable";
 import type { IconGlyph } from "./icon";
 import { MenuItem, MenuPanel } from "./menu";
+import { NativeMenu } from "./native-menu";
 import { Pointer } from "./pointer";
 import { useObservable } from "./hooks";
 import { useTheme } from "./theme-context";
@@ -21,6 +22,7 @@ export type ContextMenuEntry =
 			readonly onPress: () => void;
 			readonly danger?: boolean;
 			readonly disabled?: boolean;
+			readonly checked?: boolean;
 	  })
 	| (EntryBase & { readonly kind: "submenu"; readonly entries: readonly ContextMenuEntry[] })
 	| (EntryBase & { readonly kind: "panel"; readonly render: (close: () => void) => ReactNode });
@@ -30,6 +32,7 @@ export interface ContextMenuState {
 	readonly y: number;
 	readonly label: string;
 	readonly entries: readonly ContextMenuEntry[];
+	readonly initialPanel?: ContextMenuEntry;
 }
 
 export class ContextMenuController extends Observable<ContextMenuState | null> {
@@ -66,6 +69,27 @@ export class MenuPlacement {
 	}
 }
 
+export class NativeMenuRunner {
+	static async run(controller: ContextMenuController, state: ContextMenuState): Promise<void> {
+		let key: string | null;
+		try {
+			key = await NativeMenu.bridge.show(NativeMenu.items(state.entries), state.x, state.y);
+		} catch {
+			controller.open(state);
+			return;
+		}
+		const chosen = key === null ? null : NativeMenu.find(state.entries, key);
+		if (chosen === null) {
+			return;
+		}
+		if (chosen.kind === "action") {
+			chosen.onPress();
+		} else if (chosen.kind === "panel") {
+			controller.open({ ...state, entries: [], initialPanel: chosen });
+		}
+	}
+}
+
 export interface ContextMenuTrigger {
 	readonly onContextMenu: (event: unknown) => void;
 	readonly onLongPress?: (event: unknown) => void;
@@ -78,7 +102,13 @@ export function useContextMenuTrigger(
 	const controller = useContext(ContextMenuContext);
 	const show = (event: unknown) => {
 		Pointer.suppressDefault(event);
-		controller.open({ ...Pointer.position(event), label, entries: build() });
+		const at = Pointer.position(event);
+		const entries = build();
+		if (!NativeMenu.bridge.isAvailable()) {
+			controller.open({ ...at, label, entries });
+			return;
+		}
+		void NativeMenuRunner.run(controller, { ...at, label, entries });
 	};
 	return { onContextMenu: show, onLongPress: Platform.OS === "web" ? undefined : show };
 }
@@ -103,7 +133,7 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 	const palette = useTheme();
 	const { width, height } = useWindowDimensions();
 	const [stack, setStack] = useState<readonly ContextMenuEntry[][]>([[...state.entries]]);
-	const [panel, setPanel] = useState<ContextMenuEntry | null>(null);
+	const [panel, setPanel] = useState<ContextMenuEntry | null>(state.initialPanel ?? null);
 	const entries = stack[stack.length - 1]!;
 	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, entries.length);
 	const finish = (action: () => void) => () => {

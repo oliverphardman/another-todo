@@ -10,7 +10,11 @@ import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { SyncBanner } from "./sync-banner";
+import { useContextMenuTrigger } from "./context-menu";
+import { buildListOptions } from "./list-options";
 import { ListMenu, type ListPanel } from "./list-menu";
+import { NativeMenu } from "./native-menu";
+import { usePrintList } from "./use-print-list";
 import { PaneBackground } from "./pane-background";
 import { Pointer } from "./pointer";
 import { buildTaskMenu } from "./task-menu";
@@ -39,6 +43,10 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const [panel, setPanel] = useState<ListPanel | null>(null);
 	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
+	const print = usePrintList();
+	const options = useContextMenuTrigger(t("list.options"), () =>
+		buildListOptions({ store, i18n, view, print }),
+	);
 	useEffect(() => {
 		setPanel(null);
 	}, [view.id]);
@@ -142,7 +150,11 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					accessibilityRole="button"
 					accessibilityLabel={t("list.options")}
 					accessibilityState={{ expanded: panel !== null }}
-					onPress={() => setPanel(panel === null ? "menu" : null)}
+					onPress={(event) =>
+						NativeMenu.bridge.isAvailable()
+							? options.onContextMenu(event)
+							: setPanel(panel === null ? "menu" : null)
+					}
 					style={{ padding: 8, marginLeft: 4 }}
 				>
 					<Icon glyph={compact ? "moreVertical" : "more"} color={palette.onAccent} />

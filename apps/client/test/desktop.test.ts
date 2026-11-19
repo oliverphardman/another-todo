@@ -248,7 +248,11 @@ describe("desktop platform adapters", () => {
 	});
 
 	it("resolves the locale from Intl on desktop", () => {
-		expect(MacLocale.resolved()).toBe("en-US");
+		const resolved = vi
+			.spyOn(Intl.DateTimeFormat.prototype, "resolvedOptions")
+			.mockReturnValue({ locale: "en-GB" } as Intl.ResolvedDateTimeFormatOptions);
+		expect(MacLocale.resolved()).toBe("en-GB");
+		resolved.mockReturnValue({ locale: "fr-FR" } as Intl.ResolvedDateTimeFormatOptions);
 		expect(WinLocale.resolved()).toBe("en-US");
 	});
 

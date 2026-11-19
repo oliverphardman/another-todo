@@ -13,6 +13,7 @@ target 'AnotherToDo-macOS' do
   platform :macos, '14.0'
   config = use_native_modules!(['npx', 'expo-modules-autolinking', 'react-native-config', '--json', '--platform', 'ios'])
   use_expo_modules!
+  pod 'AnotherToDoMenu', :path => './AnotherToDoMenu'
 
   flags = get_default_flags()
 

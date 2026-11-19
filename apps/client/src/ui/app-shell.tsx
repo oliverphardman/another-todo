@@ -1,13 +1,15 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
+import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
 import { ContextMenuHost } from "./context-menu";
 import { ResizeHandle } from "./resize-handle";
+import { SlidingPane } from "./sliding-pane";
 import { SwipeArea } from "./swipe";
 import { ThemeOverride, useTheme } from "./theme-context";
 import { useListTheme } from "./use-list-theme";
@@ -56,12 +58,15 @@ export function AppShell({ providers }: AppShellProps) {
 
 function MainLayout() {
 	const { store, paneWidths } = useContainer();
-	const palette = useTheme();
 	useObservable(store);
 	const widths = useObservable(paneWidths);
 	const mode = useLayoutMode();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const task = store.selectedTask;
+	const lastTask = useRef<Task | null>(null);
+	if (task !== null) {
+		lastTask.current = task;
+	}
 	const closeDetail = () => store.selectTask(null);
 	const sidebarWidth = widths.sidebar ?? Layout.sidebarWidth(mode);
 	const detailWidth = widths.detail ?? Layout.detailWidth(mode);
@@ -111,30 +116,25 @@ function MainLayout() {
 					<TaskListPane mode={mode} />
 				</ThemedArea>
 			</View>
-			{task === null ? null : (
-				<View
-					style={{
-						width: detailWidth,
-						borderLeftWidth: 1,
-						borderLeftColor: palette.border,
+			<SlidingPane open={task !== null} width={detailWidth}>
+				<ResizeHandle
+					side="left"
+					inset={0}
+					width={detailWidth}
+					labelKey="resize.detail"
+					onResize={(width) => paneWidths.resize("detail", width)}
+					onCommit={() => void paneWidths.save()}
+					onReset={() => {
+						paneWidths.reset("detail");
+						void paneWidths.save();
 					}}
-				>
-					<ResizeHandle
-						side="left"
-						width={detailWidth}
-						labelKey="resize.detail"
-						onResize={(width) => paneWidths.resize("detail", width)}
-						onCommit={() => void paneWidths.save()}
-						onReset={() => {
-							paneWidths.reset("detail");
-							void paneWidths.save();
-						}}
-					/>
-					<ThemedArea>
-						<TaskDetailPane task={task} onClose={closeDetail} />
-					</ThemedArea>
-				</View>
-			)}
+				/>
+				<ThemedArea>
+					{lastTask.current === null ? null : (
+						<TaskDetailPane task={lastTask.current} onClose={closeDetail} />
+					)}
+				</ThemedArea>
+			</SlidingPane>
 		</View>
 	);
 }

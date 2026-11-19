@@ -8,7 +8,7 @@ let finishers: ((result: { finished: boolean }) => void)[] = [];
 
 beforeEach(() => {
 	finishers = [];
-	vi.spyOn(Animated, "sequence").mockImplementation(
+	vi.spyOn(Animated, "parallel").mockImplementation(
 		() =>
 			({
 				start: (done: (result: { finished: boolean }) => void) => {
@@ -26,7 +26,7 @@ afterEach(() => {
 });
 
 async function start() {
-	const app = await renderApp({ motion: { fillMs: 100, travelMs: 100 } });
+	const app = await renderApp({ motion: { fillMs: 100, travelMs: 100, slideMs: 0 } });
 	stop = app.stop;
 	const input = screen.getByLabelText("Add a task");
 	for (const title of ["First", "Second"]) {
