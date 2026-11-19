@@ -47,3 +47,15 @@ output "dnssec_ds_record" {
     signing_algorithm_mnemonic = aws_route53_key_signing_key.main.signing_algorithm_mnemonic
   }
 }
+
+output "web_bucket" {
+  value = aws_s3_bucket.web.id
+}
+
+output "web_distribution_id" {
+  value = aws_cloudfront_distribution.web.id
+}
+
+output "web_url" {
+  value = "https://${var.domain_name}"
+}

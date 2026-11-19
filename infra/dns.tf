@@ -67,14 +67,6 @@ resource "aws_route53_hosted_zone_dnssec" "main" {
   signing_status = "SIGNING"
 }
 
-resource "aws_route53_record" "apex" {
-  zone_id = aws_route53_zone.main.zone_id
-  name    = var.domain_name
-  type    = "A"
-  ttl     = 300
-  records = ["192.0.2.1"]
-}
-
 resource "aws_acm_certificate" "main" {
   provider                  = aws.us_east_1
   domain_name               = var.domain_name

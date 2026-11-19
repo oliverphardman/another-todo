@@ -11,12 +11,15 @@
 			"supportsTablet": true,
 			"bundleIdentifier": "dev.oliverhardman.anothertodo"
 		},
-		"android": { "package": "dev.oliverhardman.anothertodo" },
+		"android": {
+			"package": "dev.oliverhardman.anothertodo"
+		},
 		"web": {
 			"bundler": "metro",
 			"output": "single",
 			"name": "Another To Do",
-			"themeColor": "#2564cf"
+			"themeColor": "#2564cf",
+			"favicon": "./assets/favicon.png"
 		}
 	}
 }

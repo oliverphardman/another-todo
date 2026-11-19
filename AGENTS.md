@@ -60,3 +60,7 @@
 - To look at the UI, build with `pnpm run build` and drive headless Chrome with a Cognito user's seeded `atd.tokens` in localStorage
 - Not yet built: My Day, steps, notes, reminders, repeat, list themes, the macOS and Windows targets, and the Google and Microsoft identity providers (they need client credentials)
 - Diagrams: docs/client.puml and docs/offline-sync.puml
+- The web client is hosted at https://another-todo.oliverhardman.dev (infra/web.tf: private S3 bucket, CloudFront with origin access control, a viewer-request function that serves index.html for extensionless paths). Deploy with `AWS_PROFILE=another-todo infra/deploy-web.sh` (builds, syncs to S3, invalidates index.html)
+- The Cognito domain must keep managed_login_version = 1 (the classic hosted UI). Version 2 shows "Login pages unavailable" until managed login branding exists
+- Web sign-in opens the hosted UI in a popup (expo-web-browser); a headless-Chrome check must follow the new target
+- If an interrupted `terraform apply` leaves a stale state lock, check for running terraform processes and partial changes before `terraform force-unlock`
