@@ -409,7 +409,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 								borderRadius: 4,
 							}}
 						>
-							<Icon glyph="group" color={palette.accent} />
+							<Icon glyph="newGroup" color={palette.accent} />
 						</PressableSurface>
 					</View>
 				)}

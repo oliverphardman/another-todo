@@ -17,6 +17,7 @@ afterEach(() => {
 async function start(options: Parameters<typeof renderApp>[0] = {}) {
 	const app = await renderApp(options);
 	stop = app.stop;
+	act(() => app.connectivity.setOnline(false));
 	return app;
 }
 

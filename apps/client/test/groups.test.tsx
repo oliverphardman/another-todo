@@ -99,7 +99,7 @@ describe("groups in the sidebar", () => {
 		fireEvent.blur(field);
 		expect(screen.getByLabelText("Group House")).toBeTruthy();
 		fireEvent.contextMenu(screen.getByLabelText("Group House"));
-		fireEvent.click(menuItem("Ungroup"));
+		fireEvent.click(menuItem("Delete group"));
 		expect(screen.queryByLabelText("Group House")).toBeNull();
 		expect(screen.getByLabelText("Alpha")).toBeTruthy();
 		expect(app.container.store.get().lists.every((list) => list.groupId === null)).toBe(true);

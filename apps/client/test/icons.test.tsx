@@ -12,6 +12,7 @@ const GLYPHS: IconGlyph[] = [
 	"edit",
 	"people",
 	"group",
+	"newGroup",
 	"search",
 	"chevronUp",
 	"bell",
