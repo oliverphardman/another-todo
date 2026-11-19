@@ -150,3 +150,29 @@ describe("groups in the sidebar", () => {
 		expect(order).toEqual(["Beta", "Alpha"]);
 	});
 });
+
+describe("creating groups without a list", () => {
+	it("creates and names a group from the small button next to New list", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Create group"));
+		const field = screen.getByLabelText("Group name");
+		fireEvent.change(field, { target: { value: "Errands" } });
+		fireEvent.keyDown(field, { key: "Enter" });
+		expect(app.container.store.get().groups.map((group) => group.name)).toEqual(["Errands"]);
+		expect(screen.getByLabelText("Group Errands")).toBeTruthy();
+		expect(app.container.store.newGroup("  ")).toBeNull();
+	});
+
+	it("offers Create Group when right-clicking empty space in the sidebar, but not on a list", async () => {
+		const app = await start();
+		fireEvent.contextMenu(screen.getByLabelText("Empty space in the lists"));
+		expect(screen.getByRole("menu", { name: "Sidebar actions" })).toBeTruthy();
+		fireEvent.click(menuItem("Create Group"));
+		expect(screen.getByLabelText("Group name")).toBeTruthy();
+		expect(app.container.store.get().groups).toHaveLength(1);
+		fireEvent.keyDown(screen.getByLabelText("Group name"), { key: "Enter" });
+		fireEvent.contextMenu(screen.getByLabelText("Alpha"));
+		expect(screen.getByRole("menu", { name: "List actions" })).toBeTruthy();
+		expect(screen.queryByRole("menu", { name: "Sidebar actions" })).toBeNull();
+	});
+});

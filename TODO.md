@@ -23,5 +23,5 @@
 - [x] Completed tasks should start animating/moving while the 'check circle' is animating. They should not wait for each other.
 - [x] Please animate the right sidebar so it 'slides' in/out
 - [x] If a step is promoted to a task, ensure it inherits its My Day/Important/Due Date/properties from its parent.
-- [ ] Right-clicking on the left sidebar on a blank space should show a context menu with the options: Create Group
-- [ ] There should be a mall 'Create Group' icon button to the right of the New list button
+- [x] Right-clicking on the left sidebar on a blank space should show a context menu with the options: Create Group
+- [x] There should be a mall 'Create Group' icon button to the right of the New list button

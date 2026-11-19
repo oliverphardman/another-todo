@@ -47,7 +47,7 @@ variable "microsoft_client_secret" {
 
 variable "microsoft_issuer" {
   type    = string
-  default = "https://login.microsoftonline.com/9188040d-6c67-4c5d-b012-9c1e34e4c8e4/v2.0"
+  default = ""
 }
 
 variable "timeout_seconds" {

@@ -578,6 +578,14 @@ export class TodoStore extends Observable<TodoState> {
 		return group.id;
 	}
 
+	newGroup(name: string): string | null {
+		const groupId = this.addGroup(name);
+		if (groupId !== null) {
+			this.startRenamingGroup(groupId);
+		}
+		return groupId;
+	}
+
 	createGroupFor(listId: string, name: string): string | null {
 		if (!this.get().lists.some((list) => list.id === listId)) {
 			return null;

@@ -39,6 +39,15 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	const print = usePrintList();
+	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => [
+		{
+			kind: "action",
+			key: "create-group",
+			glyph: "group",
+			label: t("ctx.createGroup"),
+			onPress: () => store.newGroup(t("group.new")),
+		},
+	]);
 	const custom = store.orderedLists();
 	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);
@@ -302,7 +311,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					</PressableSurface>
 				)}
 			</View>
-			<ScrollView>
+			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
 				{builtIns.map((view) => renderRow(view, false))}
 				{ungrouped.length === 0 && state.groups.length === 0 ? null : (
 					<View
@@ -346,6 +355,12 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						</View>
 					);
 				})}
+				<PressableSurface
+					accessibilityLabel={t("sidebar.blank")}
+					onContextMenu={blankMenu.onContextMenu}
+					onLongPress={blankMenu.onLongPress}
+					style={{ flexGrow: 1, minHeight: 24 }}
+				/>
 			</ScrollView>
 			<View
 				style={{
@@ -364,21 +379,39 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						onCancel={() => setCreating(false)}
 					/>
 				) : (
-					<PressableSurface
-						accessibilityRole="button"
-						accessibilityLabel={t("sidebar.createList")}
-						onPress={() => setCreating(true)}
-						hoverColor={palette.sidebarHover}
-						style={{
-							flexDirection: "row",
-							alignItems: "center",
-							minHeight: SIDEBAR_ROW_HEIGHT,
-							paddingHorizontal: 10,
-						}}
-					>
-						<Icon glyph="plus" color={palette.accent} />
-						<AppText style={{ marginLeft: 14 }}>{t("sidebar.newList")}</AppText>
-					</PressableSurface>
+					<View style={{ flexDirection: "row", alignItems: "center" }}>
+						<PressableSurface
+							accessibilityRole="button"
+							accessibilityLabel={t("sidebar.createList")}
+							onPress={() => setCreating(true)}
+							hoverColor={palette.sidebarHover}
+							style={{
+								flex: 1,
+								flexDirection: "row",
+								alignItems: "center",
+								minHeight: SIDEBAR_ROW_HEIGHT,
+								paddingHorizontal: 10,
+							}}
+						>
+							<Icon glyph="plus" color={palette.accent} />
+							<AppText style={{ marginLeft: 14 }}>{t("sidebar.newList")}</AppText>
+						</PressableSurface>
+						<PressableSurface
+							accessibilityRole="button"
+							accessibilityLabel={t("sidebar.createGroup")}
+							onPress={() => store.newGroup(t("group.new"))}
+							hoverColor={palette.sidebarHover}
+							style={{
+								minHeight: SIDEBAR_ROW_HEIGHT,
+								minWidth: SIDEBAR_ROW_HEIGHT,
+								alignItems: "center",
+								justifyContent: "center",
+								borderRadius: 4,
+							}}
+						>
+							<Icon glyph="group" color={palette.accent} />
+						</PressableSurface>
+					</View>
 				)}
 			</View>
 		</View>
