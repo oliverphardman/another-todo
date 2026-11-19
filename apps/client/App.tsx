@@ -39,7 +39,7 @@ export default function App() {
 			<ThemeProvider>
 				<I18nProvider locale={locale}>
 					<ContainerProvider container={container}>
-						<AppShell providers={[]} />
+						<AppShell providers={["Microsoft"]} />
 					</ContainerProvider>
 				</I18nProvider>
 				<StatusBar style="auto" />

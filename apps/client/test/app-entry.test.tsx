@@ -23,6 +23,7 @@ describe("App", () => {
 	it("composes the container and shows the sign-in screen for a new user", async () => {
 		const { unmount } = render(<App />);
 		await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
+		expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
 		expect(screen.getByTestId("status-bar")).toBeTruthy();
 		unmount();
 	});
