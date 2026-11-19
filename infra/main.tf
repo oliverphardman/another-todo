@@ -18,6 +18,10 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.7"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -31,15 +35,18 @@ provider "aws" {
 }
 
 locals {
-  name              = "another-todo-${var.environment}"
-  auth_domain       = "auth.${var.domain_name}"
-  api_domain        = "api.${var.domain_name}"
-  web_origin        = "https://${var.domain_name}"
-  callback_urls     = concat(var.callback_urls, ["${local.web_origin}/auth/callback"])
-  logout_urls       = concat(var.logout_urls, [local.web_origin])
-  cors_origins      = concat(var.cors_origins, [local.web_origin])
-  google_enabled    = var.google_client_id != "" && var.google_client_secret != ""
-  microsoft_enabled = var.microsoft_client_id != "" && var.microsoft_client_secret != ""
+  name                    = "another-todo-${var.environment}"
+  auth_domain             = "auth.${var.domain_name}"
+  api_domain              = "api.${var.domain_name}"
+  web_origin              = "https://${var.domain_name}"
+  callback_urls           = concat(var.callback_urls, ["${local.web_origin}/auth/callback"])
+  logout_urls             = concat(var.logout_urls, [local.web_origin])
+  cors_origins            = concat(var.cors_origins, [local.web_origin])
+  google_enabled          = var.google_client_id != "" && var.google_client_secret != ""
+  microsoft_client_id     = var.manage_azure_app ? azuread_application.cognito[0].client_id : var.microsoft_client_id
+  microsoft_client_secret = var.manage_azure_app ? azuread_application_password.cognito[0].value : var.microsoft_client_secret
+  microsoft_issuer        = var.manage_azure_app ? local.azure_issuer : var.microsoft_issuer
+  microsoft_enabled       = var.manage_azure_app || (var.microsoft_client_id != "" && var.microsoft_client_secret != "")
   supported_providers = concat(
     ["COGNITO"],
     local.google_enabled ? ["Google"] : [],
@@ -253,10 +260,10 @@ resource "aws_cognito_identity_provider" "microsoft" {
   provider_type = "OIDC"
 
   provider_details = {
-    client_id                 = var.microsoft_client_id
-    client_secret             = var.microsoft_client_secret
+    client_id                 = local.microsoft_client_id
+    client_secret             = local.microsoft_client_secret
     attributes_request_method = "GET"
-    oidc_issuer               = var.microsoft_issuer
+    oidc_issuer               = local.microsoft_issuer
     authorize_scopes          = "openid email profile"
   }
 

@@ -74,3 +74,15 @@ variable "domain_name" {
   type    = string
   default = "another-todo.oliverhardman.dev"
 }
+
+variable "manage_azure_app" {
+  type        = bool
+  default     = false
+  description = "Create the Microsoft Entra app registration that backs Microsoft sign-in through Cognito"
+}
+
+variable "azure_sign_in_audience" {
+  type        = string
+  default     = "PersonalMicrosoftAccount"
+  description = "Who may sign in with Microsoft: PersonalMicrosoftAccount, AzureADMyOrg or AzureADandPersonalMicrosoftAccount"
+}

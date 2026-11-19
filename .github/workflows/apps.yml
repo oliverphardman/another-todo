@@ -1,0 +1,166 @@
+name: Apps
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: apps-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: Web bundle
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/client/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: apps/client/dist
+
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/client/pnpm-lock.yaml
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - run: pnpm install --frozen-lockfile
+      - name: Generate the native project
+        run: pnpm exec expo prebuild --platform android --no-install
+      - name: Decode the signing key
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      - name: Build the release bundle
+        working-directory: apps/client/android
+        run: ./gradlew bundleRelease assembleRelease --no-daemon
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: |
+            apps/client/android/app/build/outputs/bundle/release/*.aab
+            apps/client/android/app/build/outputs/apk/release/*.apk
+
+  ios:
+    name: iOS
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/client/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Generate the native project
+        run: pnpm exec expo prebuild --platform ios
+      - name: Build without signing
+        working-directory: apps/client/ios
+        run: |
+          xcodebuild -workspace *.xcworkspace -scheme AnotherToDo -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: apps/client/ios/build/Build/Products/Release-iphoneos/*.app
+
+  macos:
+    name: macOS
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/client/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pod install --project-directory=macos
+      - name: Build without signing
+        run: |
+          xcodebuild -workspace macos/AnotherToDo.xcworkspace -scheme AnotherToDo-macOS \
+            -configuration Release -derivedDataPath macos/build CODE_SIGNING_ALLOWED=NO build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: apps/client/macos/build/Build/Products/Release/*.app
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/client/pnpm-lock.yaml
+      - uses: microsoft/setup-msbuild@v2
+      - run: pnpm install --frozen-lockfile
+      - name: Restore and build
+        run: |
+          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: apps/client/windows/x64/Release
