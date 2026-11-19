@@ -165,21 +165,118 @@ describe("expanded layout", () => {
 		expect(screen.getByLabelText("Due Tue, Nov 10")).toBeTruthy();
 	});
 
-	it("moves a task between lists and deletes it", async () => {
+	it("deletes a task from the details footer, which also shows when it was created", async () => {
 		const app = await start();
-		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
-		fireEvent.change(name, { target: { value: "Work" } });
-		fireEvent.keyDown(name, { key: "Enter" });
-		fireEvent.click(screen.getByLabelText("Tasks"));
-		addTask("Loose task");
-		fireEvent.click(screen.getByLabelText("Open Loose task"));
-		fireEvent.click(screen.getByLabelText("Move to Work"));
-		expect(app.container.store.get().tasks[0]!.listId).not.toBeNull();
-		fireEvent.click(screen.getByLabelText("Move to Tasks"));
-		expect(app.container.store.get().tasks[0]!.listId).toBeNull();
+		addTask("Short lived");
+		fireEvent.click(screen.getByLabelText("Open Short lived"));
+		expect(screen.getByText("Created Today")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Delete task"));
 		expect(app.container.store.get().tasks).toEqual([]);
+		expect(screen.queryByLabelText("Task details")).toBeNull();
+	});
+
+	it("shows the rows of the Microsoft To Do details pane in order", async () => {
+		await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		addTask("Layout check");
+		fireEvent.click(screen.getByLabelText("Open Layout check"));
+		const details = within(screen.getByLabelText("Task details"));
+		const labels = [
+			"Add step",
+			"Add to My Day",
+			"Remind me",
+			"Add due date",
+			"Repeat",
+			"Pick a category",
+			"Add file",
+			"Note",
+			"Close details",
+			"Delete task",
+		];
+		const positions = labels.map((label) => {
+			const element = details.getAllByLabelText(label)[0]!;
+			return Array.from(document.querySelectorAll("*")).indexOf(element);
+		});
+		expect(positions).toEqual([...positions].sort((a, b) => a - b));
+		for (const label of ["Remind me", "Repeat", "Pick a category", "Add file"]) {
+			expect(details.getByLabelText(label).getAttribute("aria-disabled")).toBe("true");
+		}
+	});
+
+	it("adds, completes, renames and deletes steps", async () => {
+		const app = await start();
+		addTask("Big project");
+		fireEvent.click(screen.getByLabelText("Open Big project"));
+		fireEvent.click(screen.getByLabelText("Add step"));
+		const field = screen.getByLabelText("New step");
+		expect(document.activeElement).toBe(field);
+		fireEvent.change(field, { target: { value: "First step" } });
+		fireEvent.keyDown(field, { key: "Enter" });
+		expect((screen.getByLabelText("New step") as HTMLInputElement).value).toBe("");
+		fireEvent.change(screen.getByLabelText("New step"), { target: { value: "Second step" } });
+		fireEvent.keyDown(screen.getByLabelText("New step"), { key: "Enter" });
+		expect(app.container.store.get().tasks[0]!.steps.map((step) => step.title)).toEqual([
+			"First step",
+			"Second step",
+		]);
+		fireEvent.keyDown(screen.getByLabelText("New step"), { key: "Escape" });
+		expect(screen.getByLabelText("Add step")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Mark step First step as completed"));
+		expect(app.container.store.get().tasks[0]!.stepsCompleted).toBe(1);
+		fireEvent.click(screen.getByLabelText("Mark step First step as not completed"));
+		expect(app.container.store.get().tasks[0]!.stepsCompleted).toBe(0);
+		const second = screen.getByLabelText("Step Second step");
+		fireEvent.change(second, { target: { value: "Second, renamed" } });
+		fireEvent.blur(second);
+		expect(app.container.store.get().tasks[0]!.steps[1]!.title).toBe("Second, renamed");
+		fireEvent.click(screen.getByLabelText("Delete step First step"));
+		expect(app.container.store.get().tasks[0]!.steps).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Close details"));
+		expect(screen.getByText(/0 of 1/)).toBeTruthy();
+	});
+
+	it("keeps a step that was typed when the field loses focus, and ignores an empty one", async () => {
+		const app = await start();
+		addTask("Blur steps");
+		fireEvent.click(screen.getByLabelText("Open Blur steps"));
+		fireEvent.click(screen.getByLabelText("Add step"));
+		fireEvent.change(screen.getByLabelText("New step"), { target: { value: "Kept on blur" } });
+		fireEvent.blur(screen.getByLabelText("New step"));
+		expect(app.container.store.get().tasks[0]!.steps).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Add step"));
+		fireEvent.blur(screen.getByLabelText("New step"));
+		expect(app.container.store.get().tasks[0]!.steps).toHaveLength(1);
+		fireEvent.click(screen.getByLabelText("Add step"));
+		fireEvent.keyDown(screen.getByLabelText("New step"), { key: "a" });
+		expect(screen.getByLabelText("New step")).toBeTruthy();
+	});
+
+	it("restores a step's title when it is emptied and leaves it alone when unchanged", async () => {
+		const app = await start();
+		addTask("Step edits");
+		fireEvent.click(screen.getByLabelText("Open Step edits"));
+		app.container.store.addStep(app.container.store.get().tasks[0]!.id, "Keep me");
+		const step = await screen.findByLabelText("Step Keep me");
+		fireEvent.change(step, { target: { value: "   " } });
+		fireEvent.blur(step);
+		expect((screen.getByLabelText("Step Keep me") as HTMLInputElement).value).toBe("Keep me");
+		fireEvent.blur(step);
+		expect(app.container.store.get().tasks[0]!.steps[0]!.title).toBe("Keep me");
+	});
+
+	it("saves the note when the field loses focus and not when nothing changed", async () => {
+		const app = await start();
+		addTask("Note taker");
+		fireEvent.click(screen.getByLabelText("Open Note taker"));
+		const note = screen.getByLabelText("Note");
+		fireEvent.blur(note);
+		expect(app.container.store.get().pendingChanges).toBe(1);
+		fireEvent.change(note, { target: { value: "Remember this" } });
+		fireEvent.blur(note);
+		expect(app.container.store.get().tasks[0]!.note).toBe("Remember this");
+		fireEvent.click(screen.getByLabelText("Close details"));
+		fireEvent.click(screen.getByLabelText("Open Note taker"));
+		expect((screen.getByLabelText("Note") as HTMLTextAreaElement).value).toBe("Remember this");
 	});
 
 	it("focuses the new list field as soon as it appears so the user can type straight away", async () => {

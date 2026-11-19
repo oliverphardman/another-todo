@@ -13,7 +13,7 @@ describe("Layout", () => {
 	it("sizes the side panes by mode", () => {
 		expect(Layout.sidebarWidth("expanded")).toBe(280);
 		expect(Layout.sidebarWidth("medium")).toBe(240);
-		expect(Layout.detailWidth("expanded")).toBe(360);
-		expect(Layout.detailWidth("medium")).toBe(320);
+		expect(Layout.detailWidth("expanded")).toBe(320);
+		expect(Layout.detailWidth("medium")).toBe(300);
 	});
 });

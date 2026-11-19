@@ -32,6 +32,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const subtitleFor = (task: Task): string | null => {
 		const parts = [
 			view.showsListName ? store.listName(task) : null,
+			task.steps.length === 0 ? null : `${task.stepsCompleted} of ${task.steps.length}`,
 			view.showsMyDay && task.isInMyDay(today) ? "My Day" : null,
 			task.dueDay === null ? null : DueDay.label(task.dueDay, today),
 		].filter((part): part is string => part !== null);

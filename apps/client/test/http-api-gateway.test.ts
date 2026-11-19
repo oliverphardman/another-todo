@@ -61,6 +61,8 @@ describe("HttpApiGateway", () => {
 			listId: "l1",
 			myDay: null,
 			myDayDismissed: null,
+			steps: [],
+			note: "",
 			dueDate: null,
 		});
 	});

@@ -2,6 +2,7 @@ import type { SoundPlayer } from "../audio/sound-player";
 import { DueDay } from "../domain/due-day";
 import type { Clock, IdGenerator } from "../domain/ports";
 import { Task, type TaskChanges } from "../domain/task";
+import type { TaskStepData } from "../domain/task-step";
 import { TaskView, ViewCatalog } from "../domain/task-view";
 import { TodoList } from "../domain/todo-list";
 import type { LocalDatabase, Snapshot } from "../storage/local-database";
@@ -189,6 +190,45 @@ export class TodoStore extends Observable<TodoState> {
 			this.updateTask(taskId, {
 				importance: task.important ? "normal" : "high",
 			});
+		}
+	}
+
+	addStep(taskId: string, title: string): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		const trimmed = title.trim();
+		if (task !== undefined && trimmed.length > 0) {
+			const step: TaskStepData = { id: this.ids.next(), title: trimmed, completed: false };
+			this.updateTask(taskId, { steps: [...task.steps, step] });
+		}
+	}
+
+	updateStep(taskId: string, stepId: string, changes: Partial<Omit<TaskStepData, "id">>): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task === undefined) {
+			return;
+		}
+		const title = changes.title?.trim();
+		if (title === "") {
+			return;
+		}
+		this.updateTask(taskId, {
+			steps: task.steps.map((step) =>
+				step.id === stepId ? { ...step, ...changes, ...(title !== undefined && { title }) } : step,
+			),
+		});
+	}
+
+	deleteStep(taskId: string, stepId: string): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task !== undefined) {
+			this.updateTask(taskId, { steps: task.steps.filter((step) => step.id !== stepId) });
+		}
+	}
+
+	setNote(taskId: string, note: string): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task !== undefined && task.note !== note) {
+			this.updateTask(taskId, { note });
 		}
 	}
 

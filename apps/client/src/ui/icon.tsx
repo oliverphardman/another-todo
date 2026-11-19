@@ -4,6 +4,12 @@ export type IconGlyph =
 	| "check"
 	| "circle"
 	| "sun"
+	| "bell"
+	| "repeat"
+	| "tag"
+	| "paperclip"
+	| "panelClose"
+	| "calendarDots"
 	| "star"
 	| "starFilled"
 	| "plus"
@@ -28,6 +34,22 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	},
 	sun: {
 		d: "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6",
+	},
+	bell: {
+		d: "M12 3.5a5 5 0 0 0-5 5v3.2c0 .8-.3 1.5-.8 2.1L5 15.5h14l-1.2-1.7a3.4 3.4 0 0 1-.8-2.1V8.5a5 5 0 0 0-5-5zM10 18.5a2 2 0 0 0 4 0",
+	},
+	repeat: {
+		d: "M5 11V9a3 3 0 0 1 3-3h10M15 3l3 3-3 3M19 13v2a3 3 0 0 1-3 3H6M9 21l-3-3 3-3",
+	},
+	tag: {
+		d: "M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.7 7.7a1 1 0 0 1-1.4 0l-7.6-7.6a1 1 0 0 1-.3-.7zM8 8h.01",
+	},
+	paperclip: {
+		d: "M20 11.5l-8 8a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L9.5 17.4a1.7 1.7 0 0 1-2.4-2.4l7.5-7.5",
+	},
+	panelClose: { d: "M4 5h16v14H4zM8.5 8.5v7M11.5 12h6M15 9.5l2.5 2.5-2.5 2.5" },
+	calendarDots: {
+		d: "M5 5h14v15H5zM5 9.5h14M9 13h.01M12 13h.01M15 13h.01M9 16.2h.01M12 16.2h.01M15 16.2h.01",
 	},
 	star: {
 		d: "M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z",
@@ -57,16 +79,17 @@ export interface IconProps {
 	readonly glyph: IconGlyph;
 	readonly size?: number;
 	readonly color: string;
+	readonly strokeWidth?: number;
 }
 
-export function Icon({ glyph, size = 20, color }: IconProps) {
+export function Icon({ glyph, size = 20, color, strokeWidth = 1.6 }: IconProps) {
 	const { d, fill = false } = PATHS[glyph];
 	return (
 		<Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
 			<Path
 				d={d}
 				stroke={color}
-				strokeWidth={1.6}
+				strokeWidth={strokeWidth}
 				strokeLinecap="round"
 				strokeLinejoin="round"
 				fill={fill ? color : "none"}

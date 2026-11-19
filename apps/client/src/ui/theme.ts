@@ -73,6 +73,6 @@ export class Layout {
 	}
 
 	static detailWidth(mode: LayoutMode): number {
-		return mode === "expanded" ? 360 : 320;
+		return mode === "expanded" ? 320 : 300;
 	}
 }

@@ -141,6 +141,33 @@ describe("TodoStore", () => {
 		expect(store.get().tasks[0]!.isInMyDay("2026-11-25")).toBe(true);
 	});
 
+	it("manages steps and notes", async () => {
+		const { store } = await setup();
+		const id = store.addTask("Parent")!;
+		store.addStep(id, "  First ");
+		store.addStep(id, "   ");
+		store.addStep("missing", "Orphan");
+		const first = store.get().tasks[0]!.steps[0]!;
+		expect(first).toMatchObject({ title: "First", completed: false });
+		store.addStep(id, "Second");
+		store.updateStep(id, first.id, { completed: true });
+		store.updateStep(id, first.id, { title: "  Renamed " });
+		store.updateStep(id, first.id, { title: "   " });
+		store.updateStep("missing", first.id, { completed: true });
+		expect(store.get().tasks[0]!.steps.map((step) => [step.title, step.completed])).toEqual([
+			["Renamed", true],
+			["Second", false],
+		]);
+		expect(store.get().tasks[0]!.stepsCompleted).toBe(1);
+		store.deleteStep(id, first.id);
+		store.deleteStep("missing", first.id);
+		expect(store.get().tasks[0]!.steps.map((step) => step.title)).toEqual(["Second"]);
+		store.setNote(id, "A note");
+		store.setNote(id, "A note");
+		store.setNote("missing", "x");
+		expect(store.get().tasks[0]!.note).toBe("A note");
+	});
+
 	it("only notifies when the day actually changes", async () => {
 		const { store, clock } = await setup();
 		const listener = vi.fn();

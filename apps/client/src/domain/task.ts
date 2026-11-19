@@ -1,3 +1,5 @@
+import type { TaskStepData } from "./task-step";
+
 export type Importance = "normal" | "high";
 
 export interface TaskData {
@@ -8,6 +10,8 @@ export interface TaskData {
 	readonly listId: string | null;
 	readonly myDay: string | null;
 	readonly myDayDismissed: string | null;
+	readonly steps: readonly TaskStepData[];
+	readonly note: string;
 	readonly dueDate: string | null;
 	readonly createdAt: string;
 }
@@ -19,6 +23,8 @@ export interface TaskChanges {
 	readonly listId?: string | null;
 	readonly myDay?: string | null;
 	readonly myDayDismissed?: string | null;
+	readonly steps?: readonly TaskStepData[];
+	readonly note?: string;
 	readonly dueDate?: string | null;
 }
 
@@ -34,6 +40,8 @@ export class Task {
 			listId,
 			myDay: null,
 			myDayDismissed: null,
+			steps: [],
+			note: "",
 			dueDate: null,
 			createdAt,
 		});
@@ -57,6 +65,18 @@ export class Task {
 
 	get listId(): string | null {
 		return this.data.listId;
+	}
+
+	get steps(): readonly TaskStepData[] {
+		return this.data.steps ?? [];
+	}
+
+	get note(): string {
+		return this.data.note ?? "";
+	}
+
+	get stepsCompleted(): number {
+		return this.steps.filter((step) => step.completed).length;
 	}
 
 	isInMyDay(today: string): boolean {
@@ -88,6 +108,8 @@ export class Task {
 			...(changes.listId !== undefined && { listId: changes.listId }),
 			...(changes.myDay !== undefined && { myDay: changes.myDay }),
 			...(changes.myDayDismissed !== undefined && { myDayDismissed: changes.myDayDismissed }),
+			...(changes.steps !== undefined && { steps: changes.steps }),
+			...(changes.note !== undefined && { note: changes.note }),
 			...(changes.dueDate !== undefined && { dueDate: changes.dueDate }),
 		});
 	}

@@ -52,6 +52,31 @@ describe("Task", () => {
 	});
 });
 
+describe("Task steps and notes", () => {
+	it("defaults to no steps and an empty note, including for records saved before they existed", () => {
+		const task = Task.create("1", "A", "x");
+		expect(task.steps).toEqual([]);
+		expect(task.note).toBe("");
+		const { steps: _steps, note: _note, ...legacy } = task.data;
+		const old = new Task(legacy as never);
+		expect(old.steps).toEqual([]);
+		expect(old.note).toBe("");
+		expect(old.stepsCompleted).toBe(0);
+	});
+
+	it("applies steps and notes as changes", () => {
+		const steps = [
+			{ id: "a", title: "One", completed: true },
+			{ id: "b", title: "Two", completed: false },
+		];
+		const task = Task.create("1", "A", "x").with({ steps, note: "Hello" });
+		expect(task.steps).toEqual(steps);
+		expect(task.note).toBe("Hello");
+		expect(task.stepsCompleted).toBe(1);
+		expect(task.with({ steps: [] }).steps).toEqual([]);
+	});
+});
+
 describe("TodoList", () => {
 	it("creates and renames immutably", () => {
 		const list = TodoList.create("l1", "Work", "x");
