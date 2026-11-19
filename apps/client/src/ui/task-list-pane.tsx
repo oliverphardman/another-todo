@@ -61,7 +61,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					alignItems: "center",
 					paddingHorizontal: 16,
 					paddingTop: 16,
-					paddingBottom: 8,
+					paddingBottom: 23,
 				}}
 			>
 				{compact ? (
