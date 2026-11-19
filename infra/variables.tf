@@ -77,7 +77,7 @@ variable "domain_name" {
 
 variable "manage_azure_app" {
   type        = bool
-  default     = false
+  default     = true
   description = "Create the Microsoft Entra app registration that backs Microsoft sign-in through Cognito"
 }
 

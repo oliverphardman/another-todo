@@ -63,9 +63,9 @@ jobs:
           TF_VAR_microsoft_client_id: ${{ vars.MICROSOFT_CLIENT_ID }}
           TF_VAR_microsoft_client_secret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
           TF_VAR_microsoft_issuer: ${{ vars.MICROSOFT_ISSUER }}
-          TF_VAR_manage_azure_app: ${{ vars.MANAGE_AZURE_APP || 'false' }}
+          TF_VAR_manage_azure_app: ${{ vars.MANAGE_AZURE_APP || 'true' }}
           TF_VAR_azure_sign_in_audience: ${{ vars.AZURE_SIGN_IN_AUDIENCE || 'PersonalMicrosoftAccount' }}
-          ARM_USE_OIDC: ${{ vars.MANAGE_AZURE_APP == 'true' && 'true' || 'false' }}
+          ARM_USE_OIDC: 'true'
           ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
           ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
 
