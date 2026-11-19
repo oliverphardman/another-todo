@@ -33,7 +33,6 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { t } = i18n;
 	const state = useObservable(store);
 	const [showDone, setShowDone] = useState(true);
-	const [renaming, setRenaming] = useState<string | null>(null);
 	const [panel, setPanel] = useState<ListPanel | null>(null);
 	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
@@ -107,8 +106,22 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 						<Icon glyph="menu" color={palette.onAccent} />
 					</PressableSurface>
 				) : null}
-				{renaming === null ? (
-					<View style={{ flex: 1 }}>
+				{state.renamingViewId === view.id ? (
+					<RenameField
+						initial={view.title}
+						onDone={(name) => {
+							store.renameList(view.id, name);
+							store.stopRenaming();
+						}}
+					/>
+				) : (
+					<PressableSurface
+						accessibilityRole={view.isCustomList && !compact ? "button" : undefined}
+						accessibilityLabel={view.isCustomList && !compact ? t("list.renameHint") : undefined}
+						disabled={!view.isCustomList || compact}
+						onPress={() => store.startRenaming(view.id)}
+						style={{ flex: 1 }}
+					>
 						<AppText role="heading" size={28} weight="600" tone="onAccent">
 							{i18n.viewTitle(view)}
 						</AppText>
@@ -117,55 +130,8 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 								{i18n.longDay(today)}
 							</AppText>
 						) : null}
-					</View>
-				) : (
-					<TextInput
-						accessibilityLabel={t("list.name")}
-						autoFocus
-						value={renaming}
-						onChangeText={setRenaming}
-						onBlur={() => {
-							store.renameList(view.id, renaming);
-							setRenaming(null);
-						}}
-						onSubmitEditing={() => {
-							store.renameList(view.id, renaming);
-							setRenaming(null);
-						}}
-						style={
-							{
-								flex: 1,
-								fontFamily: FONT_FAMILY,
-								fontSize: 28,
-								fontWeight: "600",
-								color: palette.onAccent,
-								outlineStyle: "none",
-							} as object
-						}
-					/>
+					</PressableSurface>
 				)}
-				{view.isCustomList ? (
-					<View style={{ flexDirection: "row" }}>
-						<PressableSurface
-							accessibilityRole="button"
-							accessibilityLabel={t("list.rename")}
-							onPress={() => setRenaming(view.title)}
-							style={{ padding: 8 }}
-						>
-							<AppText tone="onAccent" size={13}>
-								{t("list.renameShort")}
-							</AppText>
-						</PressableSurface>
-						<PressableSurface
-							accessibilityRole="button"
-							accessibilityLabel={t("list.delete")}
-							onPress={() => store.deleteList(view.id)}
-							style={{ padding: 8 }}
-						>
-							<Icon glyph="trash" size={18} color={palette.onAccent} />
-						</PressableSurface>
-					</View>
-				) : null}
 				<SyncIndicator />
 				<PressableSurface
 					accessibilityRole="button"
@@ -226,5 +192,33 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				/>
 			)}
 		</PaneBackground>
+	);
+}
+
+function RenameField({ initial, onDone }: { initial: string; onDone: (name: string) => void }) {
+	const { t } = useI18n();
+	const palette = useTheme();
+	const [text, setText] = useState(initial);
+	const finish = () => onDone(text);
+	return (
+		<TextInput
+			accessibilityLabel={t("list.name")}
+			autoFocus
+			selectTextOnFocus
+			value={text}
+			onChangeText={setText}
+			onBlur={finish}
+			onSubmitEditing={finish}
+			style={
+				{
+					flex: 1,
+					fontFamily: FONT_FAMILY,
+					fontSize: 28,
+					fontWeight: "600",
+					color: palette.onAccent,
+					outlineStyle: "none",
+				} as object
+			}
+		/>
 	);
 }

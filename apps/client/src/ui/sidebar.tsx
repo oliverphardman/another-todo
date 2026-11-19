@@ -1,13 +1,15 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
-import type { IconName } from "../domain/task-view";
+import type { IconName, TaskView } from "../domain/task-view";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon, type IconGlyph } from "./icon";
 import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
+import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { PressableSurface } from "./pressable-surface";
+import { usePrintList } from "./use-print-list";
 import { useTheme } from "./theme-context";
 
 const GLYPHS: Record<IconName, IconGlyph> = {
@@ -30,6 +32,38 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const palette = useTheme();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
+	const print = usePrintList();
+	const listEntries = (viewId: string): ContextMenuEntry[] => [
+		{
+			kind: "action",
+			key: "rename",
+			glyph: "edit",
+			label: t("ctx.renameList"),
+			onPress: () => {
+				store.startRenaming(viewId);
+				onSelected();
+			},
+		},
+		{
+			kind: "action",
+			key: "print",
+			glyph: "print",
+			label: t("ctx.printList"),
+			onPress: () => {
+				store.select(viewId);
+				print();
+			},
+		},
+		{
+			kind: "action",
+			key: "delete",
+			separatorBefore: true,
+			danger: true,
+			glyph: "trash",
+			label: t("ctx.deleteList"),
+			onPress: () => store.deleteList(viewId),
+		},
+	];
 	return (
 		<View
 			style={{ flex: 1, backgroundColor: palette.sidebar }}
@@ -65,37 +99,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 									}}
 								/>
 							) : null}
-							<PressableSurface
-								accessibilityRole="button"
-								accessibilityLabel={i18n.viewTitle(view)}
-								accessibilityState={{ selected }}
-								onPress={() => {
-									store.select(view.id);
-									onSelected();
-								}}
-								hoverColor={palette.sidebarHover}
-								style={{
-									flexDirection: "row",
-									alignItems: "center",
-									paddingHorizontal: 16,
-									paddingVertical: 11,
-									backgroundColor: selected ? palette.sidebarSelected : undefined,
-								}}
-							>
-								<Icon glyph={GLYPHS[view.icon]} color={palette.accent} />
-								<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
-									{i18n.viewTitle(view)}
-								</AppText>
-								{count === 0 ? null : (
-									<AppText
-										size={12}
-										tone="secondary"
-										accessibilityLabel={t("sidebar.openCount", { count })}
-									>
-										{count}
-									</AppText>
-								)}
-							</PressableSurface>
+							<SidebarRow
+								view={view}
+								selected={selected}
+								count={count}
+								onSelected={onSelected}
+								buildMenu={() => listEntries(view.id)}
+								hasMenu={view.isCustomList}
+							/>
 						</View>
 					);
 				})}
@@ -135,5 +146,53 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				)}
 			</View>
 		</View>
+	);
+}
+
+interface SidebarRowProps {
+	readonly view: TaskView;
+	readonly selected: boolean;
+	readonly count: number;
+	readonly onSelected: () => void;
+	readonly buildMenu: () => ContextMenuEntry[];
+	readonly hasMenu: boolean;
+}
+
+function SidebarRow({ view, selected, count, onSelected, buildMenu, hasMenu }: SidebarRowProps) {
+	const { store } = useContainer();
+	const i18n = useI18n();
+	const { t } = i18n;
+	const palette = useTheme();
+	const menu = useContextMenuTrigger(t("ctx.listMenu"), buildMenu);
+	return (
+		<PressableSurface
+			accessibilityRole="button"
+			accessibilityLabel={i18n.viewTitle(view)}
+			accessibilityState={{ selected }}
+			onPress={() => {
+				store.select(view.id);
+				onSelected();
+			}}
+			onContextMenu={hasMenu ? menu.onContextMenu : undefined}
+			onLongPress={hasMenu ? menu.onLongPress : undefined}
+			hoverColor={palette.sidebarHover}
+			style={{
+				flexDirection: "row",
+				alignItems: "center",
+				paddingHorizontal: 16,
+				paddingVertical: 11,
+				backgroundColor: selected ? palette.sidebarSelected : undefined,
+			}}
+		>
+			<Icon glyph={GLYPHS[view.icon]} color={palette.accent} />
+			<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
+				{i18n.viewTitle(view)}
+			</AppText>
+			{count === 0 ? null : (
+				<AppText size={12} tone="secondary" accessibilityLabel={t("sidebar.openCount", { count })}>
+					{count}
+				</AppText>
+			)}
+		</PressableSurface>
 	);
 }

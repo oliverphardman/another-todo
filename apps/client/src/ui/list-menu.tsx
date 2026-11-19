@@ -1,11 +1,11 @@
 import { useI18n } from "../i18n/i18n-context";
 import { SORT_OPTIONS, type SortKey } from "../domain/view-settings";
-import { ListPrintDocument } from "../print/list-print-document";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import type { IconGlyph } from "./icon";
 import { MenuItem, MenuOverlay, MenuPanel } from "./menu";
 import { ThemePanel } from "./theme-panel";
+import { usePrintList } from "./use-print-list";
 
 export type ListPanel = "menu" | "sort" | "theme";
 
@@ -29,7 +29,7 @@ export interface ListMenuProps {
 }
 
 export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
-	const { store, printer } = useContainer();
+	const { store } = useContainer();
 	const i18n = useI18n();
 	const { t } = i18n;
 	useObservable(store);
@@ -40,20 +40,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 		action();
 		onClose();
 	};
-	const print = () => {
-		const { open, done } = store.visibleTasks();
-		const html = ListPrintDocument.html(
-			{
-				title: i18n.viewTitle(view),
-				subtitle: view.showsDate ? i18n.longDay(store.today) : null,
-				open,
-				done,
-				today: store.today,
-			},
-			i18n,
-		);
-		printer.print(html).catch(() => undefined);
-	};
+	const print = usePrintList();
 	const sortItems = SORT_OPTIONS.map((option) => (
 		<MenuItem
 			key={option.key}
@@ -98,7 +85,22 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 							)}
 						/>
 					) : null}
+					{view.isCustomList ? (
+						<MenuItem
+							glyph="edit"
+							label={t("ctx.renameList")}
+							onPress={finish(() => store.startRenaming(view.id))}
+						/>
+					) : null}
 					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
+					{view.isCustomList ? (
+						<MenuItem
+							glyph="trash"
+							label={t("ctx.deleteList")}
+							danger
+							onPress={finish(() => store.deleteList(view.id))}
+						/>
+					) : null}
 					<MenuItem
 						glyph="check"
 						label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}

@@ -337,9 +337,61 @@ describe("expanded layout", () => {
 		fireEvent.change(screen.getByLabelText("List name"), { target: { value: "Errands" } });
 		fireEvent.keyDown(screen.getByLabelText("List name"), { key: "Enter" });
 		expect(screen.getByRole("heading", { name: "Errands" })).toBeTruthy();
-		fireEvent.click(screen.getByLabelText("Delete list"));
+		fireEvent.contextMenu(screen.getByLabelText("Errands"));
+		fireEvent.click(screen.getByLabelText("Delete List"));
 		expect(app.container.store.get().lists).toEqual([]);
 		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
+	});
+
+	it("renames and prints from the sidebar right-click menu, and only for custom lists", async () => {
+		const app = await start();
+		fireEvent.contextMenu(screen.getByLabelText("My Day"));
+		expect(screen.queryByRole("menu")).toBeNull();
+		expect(screen.queryByLabelText("Rename list")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Create a new list"));
+		const name = screen.getByLabelText("New list");
+		fireEvent.change(name, { target: { value: "Garden" } });
+		fireEvent.keyDown(name, { key: "Enter" });
+		fireEvent.click(screen.getByLabelText("My Day"));
+		fireEvent.contextMenu(screen.getByLabelText("Garden"));
+		expect(screen.getByRole("menu", { name: "List actions" })).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Print List"));
+		await waitFor(() => expect(app.printer.documents).toHaveLength(1));
+		expect(screen.getByRole("heading", { name: "Garden" })).toBeTruthy();
+		fireEvent.contextMenu(screen.getByLabelText("Garden"));
+		fireEvent.click(screen.getByLabelText("Rename List"));
+		const field = screen.getByLabelText("List name");
+		fireEvent.change(field, { target: { value: "Yard" } });
+		fireEvent.keyDown(field, { key: "Enter" });
+		expect(screen.getByRole("heading", { name: "Yard" })).toBeTruthy();
+		expect(screen.queryByLabelText("List name")).toBeNull();
+		app.container.store.startRenaming("my-day");
+		expect(screen.queryByLabelText("List name")).toBeNull();
+	});
+
+	it("does not rename on a built-in list or a narrow screen when the title is clicked", async () => {
+		await start();
+		fireEvent.click(screen.getByRole("heading", { name: "My Day" }));
+		expect(screen.queryByLabelText("List name")).toBeNull();
+	});
+
+	it("offers rename and delete in the kebab menu on narrow screens", async () => {
+		const app = await start({ width: 400 });
+		act(() => {
+			app.container.store.addList("Pets");
+		});
+		expect(screen.queryByLabelText("Rename list")).toBeNull();
+		fireEvent.click(screen.getByRole("heading", { name: "Pets" }));
+		expect(screen.queryByLabelText("List name")).toBeNull();
+		fireEvent.click(screen.getByLabelText("List options"));
+		fireEvent.click(screen.getByLabelText("Rename List"));
+		const field = screen.getByLabelText("List name");
+		fireEvent.change(field, { target: { value: "Cats" } });
+		fireEvent.blur(field);
+		expect(screen.getByRole("heading", { name: "Cats" })).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("List options"));
+		fireEvent.click(screen.getByLabelText("Delete List"));
+		expect(app.container.store.get().lists).toEqual([]);
 	});
 
 	it("shows list names on tasks in smart views and open counts in the sidebar", async () => {

@@ -24,6 +24,7 @@ export interface TodoState {
 	readonly selectedTaskId: string | null;
 	readonly selectedTaskIds: readonly string[];
 	readonly anchorTaskId: string | null;
+	readonly renamingViewId: string | null;
 	readonly pendingChanges: number;
 	readonly today: string;
 }
@@ -45,16 +46,17 @@ export class TodoStore extends Observable<TodoState> {
 			TodoStore.derive(database.get(), DEFAULT_VIEW_ID, [], null, DueDay.fromDate(clock.now())),
 		);
 		database.subscribe(() => {
-			const { selectedViewId, selectedTaskIds, anchorTaskId } = this.get();
-			this.set(
-				TodoStore.derive(
+			const { selectedViewId, selectedTaskIds, anchorTaskId, renamingViewId } = this.get();
+			this.set({
+				...TodoStore.derive(
 					database.get(),
 					selectedViewId,
 					selectedTaskIds,
 					anchorTaskId,
 					DueDay.fromDate(clock.now()),
 				),
-			);
+				renamingViewId,
+			});
 		});
 	}
 
@@ -80,6 +82,7 @@ export class TodoStore extends Observable<TodoState> {
 				selectedIds.filter((id) => tasks.some((task) => task.id === id)),
 				tasks.some((task) => task.id === anchorId) ? anchorId : null,
 			),
+			renamingViewId: null,
 			pendingChanges: snapshot.outbox.length,
 			today,
 		};
@@ -214,8 +217,25 @@ export class TodoStore extends Observable<TodoState> {
 		this.set({
 			...this.get(),
 			selectedViewId: known ? viewId : DEFAULT_VIEW_ID,
+			renamingViewId: null,
 			...TodoStore.selection([], null),
 		});
+	}
+
+	startRenaming(listId: string): void {
+		const known = this.get().views.some((view) => view.id === listId && view.isCustomList);
+		if (known) {
+			this.set({
+				...this.get(),
+				...TodoStore.selection([], null),
+				selectedViewId: listId,
+				renamingViewId: listId,
+			});
+		}
+	}
+
+	stopRenaming(): void {
+		this.set({ ...this.get(), renamingViewId: null });
 	}
 
 	selectTask(taskId: string | null): void {

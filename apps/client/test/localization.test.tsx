@@ -182,11 +182,11 @@ describe("every user-visible string comes from the message catalog", () => {
 		const field = screen.getByPlaceholderText(pseudo("sidebar.newList"));
 		fireEvent.change(field, { target: { value: "Okapi" } });
 		fireEvent.keyDown(field, { key: "Enter" });
-		byLabel("list.rename");
-		byLabel("list.delete");
-		byText("list.renameShort");
+		byLabel("list.renameHint");
 		expect(unlocalized()).toEqual([]);
 		fireEvent.click(byLabel("list.options"));
+		byLabel("ctx.renameList");
+		byLabel("ctx.deleteList");
 		byLabel("menu.duplicate");
 		fireEvent.click(byLabel("menu.duplicate"));
 		expect(

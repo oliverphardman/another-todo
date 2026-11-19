@@ -11,6 +11,7 @@ export type IconGlyph =
 	| "palette"
 	| "duplicate"
 	| "print"
+	| "edit"
 	| "arrowsUpDown"
 	| "calendarPlus"
 	| "bell"
@@ -73,6 +74,7 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 		d: "M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.5-1.9-.3-1 .3-2.1 1.5-2.1H17a3.5 3.5 0 0 0 3.5-3.5C20.5 6.7 16.7 3.5 12 3.5zM7.5 11h.01M10 7.5h.01M14 7.5h.01",
 	},
 	duplicate: { d: "M8 8h11v11H8zM5 15V5h10" },
+	edit: { d: "M4 20h4L19 9l-4-4L4 16zM13 7l4 4" },
 	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
 	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },
 	calendarPlus: { d: "M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4M12 12.5v4M10 14.5h4" },

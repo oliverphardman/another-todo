@@ -22,7 +22,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 ## 3. Direct manipulation
 
 - [ ] Resize either sidebar by dragging its edge
-- [ ] Rename a list by clicking its name at the top on wide screens
+- [x] Rename a list by clicking its name at the top on wide screens
 - [x] Shift, Ctrl or Cmd clicking selects multiple tasks (on macOS Ctrl+click is the system's right-click, so Cmd+click is the toggle there)
 - [ ] Swipe gestures open and close the sidebars
 - [ ] Completing a task fades in the check circle fill, then animates the task to the completed section behind the other items
@@ -30,7 +30,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 ## 4. Context menus
 
-- [ ] Right-click on a list: Create Group, Share List, Rename List, Print List, Delete List (the standalone Rename and trash buttons at the top are removed; on narrow screens these options are in the kebab menu)
+- [x] Right-click on a list: Rename List, Print List, Delete List; the standalone Rename and trash buttons are removed and the same options are in the list options menu (Create Group and Share List wait for groups and sharing, see Dependencies)
 - [x] Right-click on a task (long press on touch): Add to My Day, Mark as Important, Mark as Completed, Due Today, Due Tomorrow, Pick a date, Create New List from This Task, Move Task to..., Delete Task
 - [ ] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS)
 
