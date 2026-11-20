@@ -5,6 +5,8 @@
 
 Welcome to Another To Do (ATD)! This is designed to be a replacement for Microsoft To Do, which is closing in July 2027.
 
+![Another To Do](docs/screenshot.png)
+
 Check out the [live demo](https://another-todo.oliverhardman.dev/).
 
 ## Components
