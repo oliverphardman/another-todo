@@ -20,6 +20,17 @@ jobs:
   deploy:
     name: Terraform and web
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_google_client_id: ${{ vars.GOOGLE_CLIENT_ID }}
+      TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+      TF_VAR_microsoft_client_id: ${{ vars.MICROSOFT_CLIENT_ID }}
+      TF_VAR_microsoft_client_secret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
+      TF_VAR_microsoft_issuer: ${{ vars.MICROSOFT_ISSUER }}
+      TF_VAR_manage_azure_app: ${{ vars.MANAGE_AZURE_APP || 'true' }}
+      TF_VAR_azure_sign_in_audience: ${{ vars.AZURE_SIGN_IN_AUDIENCE || 'PersonalMicrosoftAccount' }}
+      ARM_USE_OIDC: 'true'
+      ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v7
 
@@ -57,17 +68,6 @@ jobs:
       - name: Plan
         run: terraform plan -input=false -out=tfplan
         working-directory: infra
-        env:
-          TF_VAR_google_client_id: ${{ vars.GOOGLE_CLIENT_ID }}
-          TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          TF_VAR_microsoft_client_id: ${{ vars.MICROSOFT_CLIENT_ID }}
-          TF_VAR_microsoft_client_secret: ${{ secrets.MICROSOFT_CLIENT_SECRET }}
-          TF_VAR_microsoft_issuer: ${{ vars.MICROSOFT_ISSUER }}
-          TF_VAR_manage_azure_app: ${{ vars.MANAGE_AZURE_APP || 'true' }}
-          TF_VAR_azure_sign_in_audience: ${{ vars.AZURE_SIGN_IN_AUDIENCE || 'PersonalMicrosoftAccount' }}
-          ARM_USE_OIDC: 'true'
-          ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-          ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
 
       - name: Apply
         run: terraform apply -input=false tfplan

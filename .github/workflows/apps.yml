@@ -61,7 +61,7 @@ jobs:
           java-version: 17
       - run: pnpm install --frozen-lockfile
       - name: Drop the desktop forks the React Native CLI cannot load here
-        run: pnpm remove react-native-windows react-native-macos --no-frozen-lockfile
+        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform android --no-install
       - name: Decode the signing key
@@ -101,7 +101,7 @@ jobs:
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - name: Drop the desktop forks the React Native CLI cannot load here
-        run: pnpm remove react-native-windows react-native-macos --no-frozen-lockfile
+        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform ios --no-install
       - name: Install pods
@@ -136,7 +136,7 @@ jobs:
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - name: Drop the Windows fork the React Native CLI cannot load here
-        run: pnpm remove react-native-windows --no-frozen-lockfile
+        run: pnpm remove react-native-windows --config.frozen-lockfile=false
       - run: pod install --project-directory=macos
       - name: Build without signing
         run: |
@@ -172,7 +172,7 @@ jobs:
           "WINSDK=$($sdk.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Restore and build
         run: |
-          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK
+          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK /p:BundleEntryFile=index.windows.ts
       - uses: actions/upload-artifact@v4
         with:
           name: windows
