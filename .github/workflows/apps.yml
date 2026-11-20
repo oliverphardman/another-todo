@@ -159,7 +159,8 @@ jobs:
       - name: Build without signing
         run: |
           xcodebuild -workspace macos/AnotherToDo.xcworkspace -scheme AnotherToDo-macOS \
-            -configuration Release -derivedDataPath macos/build CODE_SIGNING_ALLOWED=NO build
+            -configuration Release -derivedDataPath macos/build -quiet \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         with:
           name: macos
