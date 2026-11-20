@@ -27,6 +27,12 @@ describe("PaneBackground", () => {
 		expect(image.getAttribute("style") ?? "").toContain("fixed");
 	});
 
+	it("clips the fixed photo to its pane so it never covers the sidebar", () => {
+		renderBackground();
+		const pane = screen.getByLabelText("List background photo").parentElement!;
+		expect(pane.getAttribute("style") ?? "").toContain("clip-path: inset(0");
+	});
+
 	it("sizes the photo to the window elsewhere", () => {
 		Platform.OS = "ios";
 		renderBackground();

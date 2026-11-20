@@ -17,7 +17,16 @@ export function PaneBackground({
 	}
 	const { width, height } = useWindowDimensions();
 	return (
-		<View style={{ flex: 1, overflow: "hidden", backgroundColor: palette.background }}>
+		<View
+			style={
+				{
+					flex: 1,
+					overflow: "hidden",
+					backgroundColor: palette.background,
+					...(Platform.OS === "web" ? { clipPath: "inset(0)" } : {}),
+				} as object
+			}
+		>
 			<Image
 				accessibilityLabel={t("list.backgroundPhoto")}
 				source={{ uri: imageUrl }}
