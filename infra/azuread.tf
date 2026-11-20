@@ -5,7 +5,6 @@ data "azuread_client_config" "current" {
 locals {
   azure_idp_response_urls = [
     "https://${local.auth_domain}/oauth2/idpresponse",
-    "https://${aws_cognito_user_pool_domain.main.domain}.auth.${var.region}.amazoncognito.com/oauth2/idpresponse",
   ]
   azure_issuer = var.azure_sign_in_audience == "PersonalMicrosoftAccount" ? "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0" : (var.manage_azure_app ? "https://login.microsoftonline.com/${data.azuread_client_config.current[0].tenant_id}/v2.0" : "")
 }
