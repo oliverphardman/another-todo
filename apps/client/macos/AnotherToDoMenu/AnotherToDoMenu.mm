@@ -1,3 +1,6 @@
+#undef OS_OBJECT_USE_OBJC
+#define OS_OBJECT_USE_OBJC 1
+
 #import <AppKit/AppKit.h>
 #import <React/RCTBridgeModule.h>
 

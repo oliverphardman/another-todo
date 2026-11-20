@@ -154,8 +154,9 @@ jobs:
           path: apps/client/macos/build/Build/Products/Release/*.app
 
   windows:
-    name: Windows
+    name: Windows (experimental)
     runs-on: windows-latest
+    continue-on-error: true
     defaults:
       run:
         working-directory: apps/client

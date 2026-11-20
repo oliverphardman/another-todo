@@ -9,5 +9,6 @@ Pod::Spec.new do |s|
   s.source = { :path => "." }
   s.source_files = "*.{h,m,mm}"
   s.requires_arc = true
+  s.pod_target_xcconfig = { "GCC_PREPROCESSOR_DEFINITIONS" => "$(inherited) OS_OBJECT_USE_OBJC=1" }
   s.dependency "React-Core"
 end
