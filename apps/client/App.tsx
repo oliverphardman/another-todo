@@ -26,12 +26,15 @@ export default function App() {
 		container.sync.start();
 		container.photos.start();
 		container.realtime.start();
+		const unwatchMicrosoft = container.microsoft.watch();
 		const rollover = setInterval(() => container.store.refreshToday(), 60_000);
 		return () => {
 			clearInterval(rollover);
 			container.sync.stop();
 			container.photos.stop();
 			container.realtime.stop();
+			unwatchMicrosoft();
+			container.microsoft.stop();
 		};
 	}, [container]);
 	return (

@@ -23,6 +23,36 @@ resource "azuread_application" "cognito" {
     redirect_uris = local.azure_idp_response_urls
   }
 
+  single_page_application {
+    redirect_uris = [
+      "${local.web_origin}/auth/microsoft",
+      "http://localhost:8081/auth/microsoft",
+    ]
+  }
+
+  public_client {
+    redirect_uris = ["anothertodo://auth/microsoft"]
+  }
+
+  required_resource_access {
+    resource_app_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
+
+    resource_access {
+      id   = azuread_service_principal.msgraph[0].oauth2_permission_scope_ids["Tasks.ReadWrite"]
+      type = "Scope"
+    }
+
+    resource_access {
+      id   = azuread_service_principal.msgraph[0].oauth2_permission_scope_ids["offline_access"]
+      type = "Scope"
+    }
+
+    resource_access {
+      id   = azuread_service_principal.msgraph[0].oauth2_permission_scope_ids["openid"]
+      type = "Scope"
+    }
+  }
+
   optional_claims {
     id_token {
       name = "email"

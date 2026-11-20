@@ -3,6 +3,13 @@ import { ExpoPhotoPicker } from "./photos/expo-photo-picker";
 import { HttpPhotoGateway } from "./photos/http-photo-gateway";
 import { HttpShareGateway } from "./shares/http-share-gateway";
 import type { ShareGateway } from "./shares/share-gateway";
+import { ExpoMicrosoftAuthorizer } from "./microsoft/expo-microsoft-authorizer";
+import { GraphTodoGateway, type GraphFetcher } from "./microsoft/graph-todo-gateway";
+import type { MicrosoftAuthorizer } from "./microsoft/microsoft-authorizer";
+import { LinkRepository } from "./microsoft/microsoft-links";
+import { MicrosoftSession } from "./microsoft/microsoft-session";
+import { MicrosoftSyncEngine } from "./microsoft/microsoft-sync-engine";
+import { MicrosoftSyncService } from "./microsoft/microsoft-sync-service";
 import { PhotoLibrary } from "./photos/photo-library";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { ExpoListPrinter } from "./print/expo-list-printer";
@@ -37,6 +44,7 @@ export interface Container {
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
 	readonly shares: ShareGateway;
+	readonly microsoft: MicrosoftSyncService;
 	readonly motion: Motion;
 	readonly realtime: RealtimeClient;
 }
@@ -55,6 +63,8 @@ export interface ContainerOverrides {
 	readonly photoPicker?: PhotoPicker;
 	readonly printer?: ListPrinter;
 	readonly shareGateway?: ShareGateway;
+	readonly microsoftAuthorizer?: MicrosoftAuthorizer;
+	readonly graphFetcher?: GraphFetcher;
 	readonly motion?: Motion;
 	readonly sockets?: SocketFactory;
 }
@@ -92,10 +102,41 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		overrides.photoPicker ?? new ExpoPhotoPicker(),
 		auth,
 	);
+	const store = new TodoStore(
+		database,
+		ids,
+		clock,
+		sync,
+		overrides.sounds ?? new ExpoSoundPlayer(),
+	);
+	const authorizer =
+		overrides.microsoftAuthorizer ??
+		new ExpoMicrosoftAuthorizer(
+			{ clientId: config.microsoftClientId, scheme: config.scheme },
+			clock,
+		);
+	const microsoftSession = new MicrosoftSession(tokenStore, authorizer, clock);
+	const microsoftLinks = new LinkRepository(dataStore);
+	const microsoft = new MicrosoftSyncService(
+		auth,
+		authorizer,
+		microsoftSession,
+		new MicrosoftSyncEngine(
+			store,
+			new GraphTodoGateway(microsoftSession, overrides.graphFetcher),
+			microsoftLinks,
+			ids,
+			clock,
+		),
+		microsoftLinks,
+		dataStore,
+		connectivity,
+	);
 	return {
 		auth,
 		database,
-		store: new TodoStore(database, ids, clock, sync, overrides.sounds ?? new ExpoSoundPlayer()),
+		store,
+		microsoft,
 		sync,
 		photos,
 		printer: overrides.printer ?? new ExpoListPrinter(),

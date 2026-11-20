@@ -1,4 +1,5 @@
 import { createContainer, type Container } from "../../src/container";
+import { FakeMicrosoftAuthorizer } from "./fake-microsoft";
 import { NO_MOTION, type Motion } from "../../src/ui/motion";
 import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
@@ -20,6 +21,7 @@ export const TEST_CONFIG: AppConfig = {
 	authUrl: "https://auth.test",
 	clientId: "client",
 	realtimeUrl: "wss://realtime.test/dev",
+	microsoftClientId: "ms-client",
 	scheme: "anothertodo",
 };
 
@@ -33,6 +35,8 @@ export interface TestContainer {
 	readonly photoGateway: FakePhotoGateway;
 	readonly photoPicker: FakePhotoPicker;
 	readonly shareGateway: FakeShareGateway;
+	readonly microsoftAuthorizer: FakeMicrosoftAuthorizer;
+	readonly graphRequests: string[];
 	readonly sockets: FakeSocket[];
 	readonly requests: { method: string; url: string; body: unknown }[];
 	readonly tokenStore: MemoryKeyValueStore;
@@ -45,6 +49,7 @@ export function createTestContainer(
 			status: 200,
 		}),
 	motion: Motion = NO_MOTION,
+	microsoftAvailable = true,
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -58,6 +63,9 @@ export function createTestContainer(
 	const requests: TestContainer["requests"] = [];
 	const sockets: FakeSocket[] = [];
 	const shareGateway = new FakeShareGateway();
+	const microsoftAuthorizer = new FakeMicrosoftAuthorizer();
+	microsoftAuthorizer.available = microsoftAvailable;
+	const graphRequests: string[] = [];
 	const container = createContainer(TEST_CONFIG, {
 		platform: "web",
 		dataStore,
@@ -71,6 +79,11 @@ export function createTestContainer(
 		clock,
 		motion,
 		shareGateway,
+		microsoftAuthorizer,
+		graphFetcher: async (url, init) => {
+			graphRequests.push(`${init?.method ?? "GET"} ${url}`);
+			return new Response(JSON.stringify({ value: [] }), { status: 200 });
+		},
 		sockets: (url) => {
 			const socket = new FakeSocket(url);
 			sockets.push(socket);
@@ -86,6 +99,8 @@ export function createTestContainer(
 	return {
 		container,
 		shareGateway,
+		microsoftAuthorizer,
+		graphRequests,
 		sockets,
 		clock,
 		connectivity,

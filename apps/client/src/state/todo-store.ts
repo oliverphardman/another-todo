@@ -397,6 +397,25 @@ export class TodoStore extends Observable<TodoState> {
 		return this.get().tasks.filter((task) => taskIds.includes(task.id));
 	}
 
+	importTask(task: Task): string {
+		this.insertTask(task);
+		return task.id;
+	}
+
+	importList(name: string): string {
+		const list = TodoList.create(this.ids.next(), name.trim(), this.clock.now().toISOString());
+		this.commit((snapshot) => ({
+			...snapshot,
+			lists: [...snapshot.lists, list.data],
+			outbox: this.enqueue(snapshot, {
+				kind: "createList",
+				opId: this.ids.next(),
+				list: list.data,
+			}),
+		}));
+		return list.id;
+	}
+
 	private insertTask(task: Task): void {
 		this.commit((snapshot) => ({
 			...snapshot,

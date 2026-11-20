@@ -23,6 +23,8 @@ export interface RenderOptions {
 	readonly scheme?: "light" | "dark";
 	readonly locale?: string;
 	readonly motion?: Motion;
+	readonly accessToken?: string;
+	readonly microsoftAvailable?: boolean;
 	readonly saved?: Readonly<Record<string, string>>;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
@@ -30,11 +32,19 @@ export interface RenderOptions {
 
 export async function renderApp(options: RenderOptions = {}) {
 	setViewport(options.width ?? 1280);
-	const test = createTestContainer(options.respond, options.motion);
+	const test = createTestContainer(options.respond, options.motion, options.microsoftAvailable);
 	for (const [key, value] of Object.entries(options.saved ?? {})) {
 		await test.dataStore.set(key, value);
 	}
 	await test.container.paneWidths.load();
+	if (options.accessToken !== undefined) {
+		test.authorizationServer.authorizeResult = {
+			accessToken: options.accessToken,
+			refreshToken: "refresh-1",
+			expiresAt: Date.now() + 3_600_000,
+		};
+	}
+	const unwatchMicrosoft = test.container.microsoft.watch();
 	if (options.signedIn !== false) {
 		await test.container.auth.signIn();
 	} else if (options.restore !== false) {
@@ -52,6 +62,13 @@ export async function renderApp(options: RenderOptions = {}) {
 	await act(async () => {
 		test.container.sync.start();
 	});
-	return { ...view, ...test, stop: () => test.container.sync.stop() } as ReturnType<typeof render> &
-		TestContainer & { stop: () => void };
+	return {
+		...view,
+		...test,
+		stop: () => {
+			test.container.sync.stop();
+			unwatchMicrosoft();
+			test.container.microsoft.stop();
+		},
+	} as ReturnType<typeof render> & TestContainer & { stop: () => void };
 }

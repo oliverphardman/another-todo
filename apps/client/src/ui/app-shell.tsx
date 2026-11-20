@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import type { Task } from "../domain/task";
@@ -7,7 +7,7 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
-import { ConfirmHost } from "./confirm";
+import { ConfirmHost, useConfirm } from "./confirm";
 import { ContextMenuHost } from "./context-menu";
 import { ResizeHandle } from "./resize-handle";
 import { SlidingPane } from "./sliding-pane";
@@ -65,6 +65,21 @@ function MainLayout() {
 	const widths = useObservable(paneWidths);
 	const mode = useLayoutMode();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const { microsoft } = useContainer();
+	const microsoftStatus = useObservable(microsoft);
+	const confirm = useConfirm();
+	const { t } = useI18n();
+	useEffect(() => {
+		if (microsoftStatus === "offered") {
+			void confirm({
+				title: t("ms.consentTitle"),
+				body: t("ms.consentBody"),
+				confirmLabel: t("ms.consentConfirm"),
+				cancelLabel: t("ms.consentDecline"),
+				destructive: false,
+			}).then((accepted) => (accepted ? microsoft.accept() : microsoft.decline()));
+		}
+	}, [microsoftStatus]);
 	const task = store.selectedTask;
 	const lastTask = useRef<Task | null>(null);
 	if (task !== null) {

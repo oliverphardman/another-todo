@@ -162,6 +162,13 @@ export const EN_US = {
 	"group.menu": "Group actions",
 	"group.header": "Group {name}",
 	"group.name": "Group name",
+	"ms.consentTitle": "Sync with Microsoft To Do?",
+	"ms.consentBody":
+		"You signed in with a Microsoft account. Allow Another To Do to read and update your Microsoft To Do lists and tasks so both stay in step?",
+	"ms.consentConfirm": "Sync",
+	"ms.consentDecline": "Not now",
+	"ctx.msConnect": "Sync with Microsoft To Do…",
+	"ctx.msDisconnect": "Stop syncing with Microsoft To Do",
 	"ctx.shareList": "Share List",
 	"ctx.leaveList": "Leave List",
 	"share.title": "Share list",

@@ -11,6 +11,8 @@ export interface ConfirmRequest {
 	readonly title: string;
 	readonly body: string;
 	readonly confirmLabel: string;
+	readonly cancelLabel?: string;
+	readonly destructive?: boolean;
 }
 
 interface Pending {
@@ -95,12 +97,14 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 							>
 								<PressableSurface
 									accessibilityRole="button"
-									accessibilityLabel={t("dialog.cancel")}
+									accessibilityLabel={pending.request.cancelLabel ?? t("dialog.cancel")}
 									onPress={() => controller.answer(false)}
 									hoverColor={palette.surfaceHover}
 									style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 4 }}
 								>
-									<AppText weight="600">{t("dialog.cancel")}</AppText>
+									<AppText weight="600">
+										{pending.request.cancelLabel ?? t("dialog.cancel")}
+									</AppText>
 								</PressableSurface>
 								<PressableSurface
 									accessibilityRole="button"
@@ -110,7 +114,8 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 										paddingHorizontal: 16,
 										paddingVertical: 8,
 										borderRadius: 4,
-										backgroundColor: palette.danger,
+										backgroundColor:
+											pending.request.destructive === false ? palette.accent : palette.danger,
 									}}
 								>
 									<AppText weight="600" tone="onAccent">

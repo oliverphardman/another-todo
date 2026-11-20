@@ -32,22 +32,45 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ onSelected }: SidebarProps) {
-	const { store, auth } = useContainer();
+	const { store, auth, microsoft } = useContainer();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const palette = useTheme();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	const print = usePrintList();
-	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => [
-		{
-			kind: "action",
-			key: "create-group",
-			glyph: "group",
-			label: t("ctx.createGroup"),
-			onPress: () => store.newGroup(t("group.new")),
-		},
-	]);
+	const microsoftStatus = useObservable(microsoft);
+	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
+		const entries: ContextMenuEntry[] = [
+			{
+				kind: "action",
+				key: "create-group",
+				glyph: "group",
+				label: t("ctx.createGroup"),
+				onPress: () => store.newGroup(t("group.new")),
+			},
+		];
+		if (microsoftStatus === "idle") {
+			entries.push({
+				kind: "action",
+				key: "microsoft-connect",
+				separatorBefore: true,
+				glyph: "sync",
+				label: t("ctx.msConnect"),
+				onPress: () => void microsoft.accept(),
+			});
+		} else if (microsoftStatus !== "unavailable" && microsoftStatus !== "offered") {
+			entries.push({
+				kind: "action",
+				key: "microsoft-disconnect",
+				separatorBefore: true,
+				glyph: "sync",
+				label: t("ctx.msDisconnect"),
+				onPress: () => void microsoft.disconnect(),
+			});
+		}
+		return entries;
+	});
 	const custom = store.orderedLists();
 	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);

@@ -56,6 +56,7 @@ describe("AppConfigReader", () => {
 			authUrl: "https://auth.another-todo.oliverhardman.dev",
 			clientId: "rm2gcmocak3qo442q9p0r191q",
 			realtimeUrl: "wss://s1gss3s4qg.execute-api.eu-west-1.amazonaws.com/dev",
+			microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
 			scheme: "anothertodo",
 		});
 	});
@@ -66,12 +67,14 @@ describe("AppConfigReader", () => {
 			EXPO_PUBLIC_AUTH_URL: "http://localhost:9000//",
 			EXPO_PUBLIC_CLIENT_ID: "dev-client",
 			EXPO_PUBLIC_REALTIME_URL: "ws://localhost:3001/",
+			EXPO_PUBLIC_MICROSOFT_CLIENT_ID: "dev-ms",
 		});
 		expect(config).toMatchObject({
 			apiUrl: "http://localhost:3000",
 			authUrl: "http://localhost:9000",
 			clientId: "dev-client",
 			realtimeUrl: "ws://localhost:3001",
+			microsoftClientId: "dev-ms",
 		});
 	});
 });
