@@ -180,9 +180,11 @@ jobs:
         shell: pwsh
         run: |
           $vs = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
-          $path = & "$vs\vswhere.exe" -latest -property installationPath
-          $arguments = "modify --installPath `"$path`" --add Microsoft.VisualStudio.Workload.Universal --includeRecommended --quiet --norestart --nocache --wait"
-          $process = Start-Process "$vs\setup.exe" -ArgumentList $arguments -Wait -PassThru
+          $path = (& "$vs\vswhere.exe" -latest -products * -property installationPath | Select-Object -First 1)
+          "Visual Studio at: $path"
+          & "$vs\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Workload.Universal -property displayName
+          $arguments = @("modify", "--installPath", "`"$path`"", "--add", "Microsoft.VisualStudio.Workload.Universal", "--quiet", "--norestart", "--wait")
+          $process = Start-Process -FilePath "$vs\setup.exe" -ArgumentList $arguments -Wait -PassThru
           "Installer exit code: $($process.ExitCode)"
       - name: Link native modules
         run: pnpm exec react-native autolink-windows --sln windows/AnotherToDo.sln --proj windows/AnotherToDo/AnotherToDo.vcxproj

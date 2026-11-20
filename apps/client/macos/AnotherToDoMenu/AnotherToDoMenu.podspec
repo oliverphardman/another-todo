@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.authors = { "Another To Do" => "https://another-todo.oliverhardman.dev" }
   s.platforms = { :macos => "14.0" }
   s.source = { :path => "." }
-  s.source_files = "*.{h,m}"
+  s.source_files = "*.{h,m,mm}"
   s.requires_arc = true
   s.dependency "React-Core"
 end
