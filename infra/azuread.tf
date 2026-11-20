@@ -13,6 +13,7 @@ resource "azuread_application" "cognito" {
   count            = var.manage_azure_app ? 1 : 0
   display_name     = "Another To Do (${var.environment})"
   sign_in_audience = var.azure_sign_in_audience
+  logo_image       = filebase64("${path.module}/../apps/client/public/icon-512.png")
 
   api {
     requested_access_token_version = 2
