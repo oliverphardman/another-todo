@@ -13,6 +13,7 @@ vi.mock("react-native-safe-area-context", () => ({
 vi.mock("expo-status-bar", () => ({ StatusBar: () => <div data-testid="status-bar" /> }));
 
 import App from "../App";
+import { AppConfigReader } from "../src/config/app-config";
 import { setViewport } from "./support/render-app";
 
 describe("App", () => {
@@ -20,10 +21,15 @@ describe("App", () => {
 		setViewport(1280);
 	});
 
-	it("composes the container and shows the sign-in screen for a new user", async () => {
+	it("composes the container and shows the sign-in screen for a new user unless demo mode signs in", async () => {
+		const demo = AppConfigReader.read(process.env).demo !== null;
 		const { unmount } = render(<App />);
-		await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
-		expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
+		if (demo) {
+			await waitFor(() => expect(screen.queryByLabelText("Sign in")).toBeNull());
+		} else {
+			await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
+			expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
+		}
 		expect(screen.getByTestId("status-bar")).toBeTruthy();
 		unmount();
 	});
