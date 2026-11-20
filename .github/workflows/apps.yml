@@ -149,6 +149,12 @@ jobs:
           grep -q "React/RCTAssert.h" "$f" || sed -i '' 's|#import <objc/runtime.h>|#import <objc/runtime.h>\
           #import <React/RCTAssert.h>|' "$f"
           grep -n "RCTAssert.h" "$f"
+      - name: Drop the duplicate UIApplication alias in expo-modules-core
+        run: |
+          f="$(dirname "$(node --print "require.resolve('expo/package.json')")")"
+          f=$(node --print "require('path').join(require('path').dirname(require.resolve('expo-modules-core/package.json', {paths: ['$f']})), 'ios/Platform/Platform.h')")
+          sed -i '' '/^#ifndef UIApplication$/,/^#endif$/d' "$f"
+          grep -c "alias UIApplication" "$f" || true
       - run: pod install --project-directory=macos
       - name: Build without signing
         run: |
