@@ -71,3 +71,11 @@ output "websocket_url" {
 output "connections_table" {
   value = aws_dynamodb_table.connections.name
 }
+
+output "azure_tenant_id" {
+  value = var.manage_azure_app ? data.azuread_client_config.current[0].tenant_id : ""
+}
+
+output "azure_ci_client_id" {
+  value = var.manage_azure_app ? azuread_application.ci[0].client_id : ""
+}

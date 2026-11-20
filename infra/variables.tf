@@ -86,3 +86,9 @@ variable "azure_sign_in_audience" {
   default     = "PersonalMicrosoftAccount"
   description = "Who may sign in with Microsoft: PersonalMicrosoftAccount, AzureADMyOrg or AzureADandPersonalMicrosoftAccount"
 }
+
+variable "github_repository" {
+  type        = string
+  default     = "oliverphardman/another-todo"
+  description = "owner/name of the repository whose GitHub Actions may deploy"
+}
