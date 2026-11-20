@@ -180,7 +180,7 @@ jobs:
         run: pnpm exec react-native autolink-windows --sln windows/AnotherToDo.sln --proj windows/AnotherToDo/AnotherToDo.vcxproj
       - name: Restore and build
         run: |
-          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK /p:BundleEntryFile=index.windows.ts
+          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK /p:BundleEntryFile=index.windows.ts /p:WindowsAppSDKVerifyTransitiveDependencies=false
       - uses: actions/upload-artifact@v4
         with:
           name: windows
