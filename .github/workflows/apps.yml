@@ -143,6 +143,12 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Drop the Windows fork the React Native CLI cannot load here
         run: pnpm remove react-native-windows --config.frozen-lockfile=false
+      - name: Import RCTAssert in react-native-svg for macOS
+        run: |
+          f=$(node --print "require('path').join(require('path').dirname(require.resolve('react-native-svg/package.json')), 'apple/RNSVGUIKit.macos.mm')")
+          grep -q "React/RCTAssert.h" "$f" || sed -i '' 's|#import <objc/runtime.h>|#import <objc/runtime.h>\
+          #import <React/RCTAssert.h>|' "$f"
+          grep -n "RCTAssert.h" "$f"
       - run: pod install --project-directory=macos
       - name: Build without signing
         run: |

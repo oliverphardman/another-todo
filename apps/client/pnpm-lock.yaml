@@ -7,9 +7,6 @@ settings:
 overrides:
   '@xmldom/xmldom@0.7.13': 0.8.15
 
-patchedDependencies:
-  react-native-svg@15.15.3: 68a7d2608972278fa3f7de5f9c4c46bdc875abd8c055889e1b42d04d0b8122d9
-
 importers:
 
   .:
@@ -76,7 +73,7 @@ importers:
         version: 5.6.2(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
       react-native-svg:
         specifier: ^15.15.3
-        version: 15.15.3(patch_hash=68a7d2608972278fa3f7de5f9c4c46bdc875abd8c055889e1b42d04d0b8122d9)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
+        version: 15.15.3(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
       react-native-web:
         specifier: ^0.21.4
         version: 0.21.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -9049,7 +9046,7 @@ snapshots:
       react: 19.2.0
       react-native: 0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2)
 
-  react-native-svg@15.15.3(patch_hash=68a7d2608972278fa3f7de5f9c4c46bdc875abd8c055889e1b42d04d0b8122d9)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0):
+  react-native-svg@15.15.3(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0):
     dependencies:
       css-select: 5.2.2
       css-tree: 1.1.3

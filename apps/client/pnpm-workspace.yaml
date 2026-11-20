@@ -2,5 +2,3 @@ allowBuilds:
   esbuild: true
 overrides:
   "@xmldom/xmldom@0.7.13": 0.8.15
-patchedDependencies:
-  react-native-svg@15.15.3: patches/react-native-svg@15.15.3.patch
