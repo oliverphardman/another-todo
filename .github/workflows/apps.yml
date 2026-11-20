@@ -155,7 +155,13 @@ jobs:
           f=$(node --print "require('path').join(require('path').dirname(require.resolve('expo-modules-core/package.json', {paths: ['$f']})), 'ios/Platform/Platform.h')")
           sed -i '' '/^#ifndef UIApplication$/,/^#endif$/d' "$f"
           grep -c "alias UIApplication" "$f" || true
-      - run: pod install --project-directory=macos
+      - name: Install pods
+        run: |
+          for attempt in 1 2 3; do
+            pod install --project-directory=macos && exit 0
+            rm -rf macos/Pods macos/build
+          done
+          exit 1
       - name: Build without signing
         run: |
           xcodebuild -workspace macos/AnotherToDo.xcworkspace -scheme AnotherToDo-macOS \
