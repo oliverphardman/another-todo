@@ -18,7 +18,7 @@ target 'AnotherToDo-macOS' do
   flags = get_default_flags()
 
   use_react_native!(
-    :path => "#{config[:reactNativePath]}-macos",
+    :path => '../node_modules/react-native-macos',
     :fabric_enabled => ENV['RCT_NEW_ARCH_ENABLED'] == '1',
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )

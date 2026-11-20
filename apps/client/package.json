@@ -43,6 +43,7 @@
 		"react-native-windows": "0.83.3"
 	},
 	"devDependencies": {
+		"@babel/runtime": "^8.1.2",
 		"@eslint/js": "^10.0.1",
 		"@react-native-community/cli": "^21.0.0",
 		"@react-native/metro-config": "0.83.10",

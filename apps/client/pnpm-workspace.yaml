@@ -2,5 +2,3 @@ allowBuilds:
   esbuild: true
 overrides:
   "@xmldom/xmldom@0.7.13": 0.8.15
-  expo-application: 58.1.0
-  expo-crypto: 58.0.4
