@@ -17,7 +17,7 @@ Designed to run serverless for minimal cost.
 - Oauth (Amazon Cognito)
 - MCP
 
-### Client
+### Client
 
 Expo/React Native client for managing your tasks.
 
