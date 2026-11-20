@@ -455,6 +455,11 @@ describe("expanded layout", () => {
 		expect(screen.getByLabelText("Sign in")).toBeTruthy();
 	});
 
+	it("hides sign out in demo mode", async () => {
+		await start({ demo: true });
+		expect(screen.queryByLabelText("Sign out")).toBeNull();
+	});
+
 	it("renders in dark mode", async () => {
 		await start({ scheme: "dark" });
 		expect(screen.getByLabelText("Add a task")).toBeTruthy();

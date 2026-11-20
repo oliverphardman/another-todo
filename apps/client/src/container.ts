@@ -19,6 +19,7 @@ import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
 import { AuthenticationService } from "./auth/authentication-service";
 import type { AuthorizationServer } from "./auth/authorization-server";
+import { DemoAuthorizationServer } from "./auth/demo-authorization-server";
 import { ExpoAuthorizationServer } from "./auth/expo-authorization-server";
 import { TokenRepository } from "./auth/token-repository";
 import type { AppConfig } from "./config/app-config";
@@ -56,6 +57,7 @@ export interface ContainerOverrides {
 	readonly connectivity?: Connectivity;
 	readonly authorizationServer?: AuthorizationServer;
 	readonly fetcher?: Fetcher;
+	readonly authFetcher?: Fetcher;
 	readonly clock?: Clock;
 	readonly ids?: IdGenerator;
 	readonly sounds?: SoundPlayer;
@@ -78,16 +80,26 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		(overrides.platform === "web"
 			? new AsyncStorageKeyValueStore()
 			: new SecureStoreKeyValueStore());
+	const now = () => clock.now().getTime();
+	const server =
+		config.demo === null
+			? new ExpoAuthorizationServer({
+					authUrl: config.authUrl,
+					clientId: config.clientId,
+					scheme: config.scheme,
+					now,
+				})
+			: new DemoAuthorizationServer({
+					...config.demo,
+					clientId: config.clientId,
+					now,
+					fetcher: overrides.authFetcher,
+				});
 	const auth = new AuthenticationService(
-		overrides.authorizationServer ??
-			new ExpoAuthorizationServer({
-				authUrl: config.authUrl,
-				clientId: config.clientId,
-				scheme: config.scheme,
-				now: () => clock.now().getTime(),
-			}),
+		overrides.authorizationServer ?? server,
 		new TokenRepository(tokenStore),
 		clock,
+		config.demo !== null,
 	);
 	const database = new LocalDatabase(dataStore);
 	const gateway = new HttpApiGateway(config.apiUrl, auth, overrides.fetcher);

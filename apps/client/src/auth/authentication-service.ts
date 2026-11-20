@@ -18,12 +18,16 @@ export class AuthenticationService extends Observable<AuthStatus> implements Tok
 		private readonly server: AuthorizationServer,
 		private readonly repository: TokenRepository,
 		private readonly clock: Clock,
+		readonly automatic = false,
 	) {
 		super("loading");
 	}
 
 	async restore(): Promise<void> {
 		this.tokens = await this.repository.load();
+		if (this.tokens === null && this.automatic) {
+			await this.signIn().catch(() => undefined);
+		}
 		this.set(this.tokens === null ? "signedOut" : "signedIn");
 	}
 

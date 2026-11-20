@@ -72,7 +72,7 @@ variable "rate_limit" {
 
 variable "domain_name" {
   type    = string
-  default = "another-todo.oliverhardman.dev"
+  default = "itsanotherdemo.app"
 }
 
 variable "manage_azure_app" {
@@ -97,4 +97,10 @@ variable "github_oidc_subject_prefix" {
   type        = string
   default     = "repo:oliverphardman@5571446/another-todo@1464163539"
   description = "Subject prefix GitHub puts in its OIDC tokens (this repository uses immutable subjects)"
+}
+
+variable "demo_password" {
+  type        = string
+  default     = "DefaultDemoUser2026"
+  description = "Password of the shared default user the demo signs in as; it is published in the client bundle by design"
 }

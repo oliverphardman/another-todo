@@ -285,12 +285,24 @@ resource "aws_cognito_user_pool_client" "app" {
   supported_identity_providers         = local.supported_providers
   prevent_user_existence_errors        = "ENABLED"
   enable_token_revocation              = true
-  explicit_auth_flows                  = ["ALLOW_USER_SRP_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_ADMIN_USER_PASSWORD_AUTH"]
+  explicit_auth_flows                  = ["ALLOW_USER_SRP_AUTH", "ALLOW_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_ADMIN_USER_PASSWORD_AUTH"]
 
   depends_on = [
     aws_cognito_identity_provider.google,
     aws_cognito_identity_provider.microsoft,
   ]
+}
+
+resource "aws_cognito_user" "demo" {
+  user_pool_id   = aws_cognito_user_pool.main.id
+  username       = "default@${var.domain_name}"
+  password       = var.demo_password
+  message_action = "SUPPRESS"
+
+  attributes = {
+    email          = "default@${var.domain_name}"
+    email_verified = "true"
+  }
 }
 
 resource "aws_iam_role" "lambda" {

@@ -52,13 +52,22 @@ describe("ports", () => {
 describe("AppConfigReader", () => {
 	it("uses the production endpoints by default", () => {
 		expect(AppConfigReader.read({})).toEqual({
-			apiUrl: "https://api.another-todo.oliverhardman.dev",
-			authUrl: "https://auth.another-todo.oliverhardman.dev",
+			apiUrl: "https://api.itsanotherdemo.app",
+			authUrl: "https://auth.itsanotherdemo.app",
 			clientId: "rm2gcmocak3qo442q9p0r191q",
 			realtimeUrl: "wss://s1gss3s4qg.execute-api.eu-west-1.amazonaws.com/dev",
 			microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
 			scheme: "anothertodo",
+			demo: {
+				region: "eu-west-1",
+				username: "default@itsanotherdemo.app",
+				password: "DefaultDemoUser2026",
+			},
 		});
+	});
+
+	it("turns demo sign-in off when asked", () => {
+		expect(AppConfigReader.read({ EXPO_PUBLIC_DEMO: "false" }).demo).toBeNull();
 	});
 
 	it("accepts overrides and trims trailing slashes", () => {

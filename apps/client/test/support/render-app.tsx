@@ -25,6 +25,7 @@ export interface RenderOptions {
 	readonly motion?: Motion;
 	readonly accessToken?: string;
 	readonly microsoftAvailable?: boolean;
+	readonly demo?: boolean;
 	readonly saved?: Readonly<Record<string, string>>;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
@@ -32,7 +33,12 @@ export interface RenderOptions {
 
 export async function renderApp(options: RenderOptions = {}) {
 	setViewport(options.width ?? 1280);
-	const test = createTestContainer(options.respond, options.motion, options.microsoftAvailable);
+	const test = createTestContainer(
+		options.respond,
+		options.motion,
+		options.microsoftAvailable,
+		options.demo === true ? { region: "eu-west-1", username: "u", password: "p" } : null,
+	);
 	for (const [key, value] of Object.entries(options.saved ?? {})) {
 		await test.dataStore.set(key, value);
 	}

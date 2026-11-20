@@ -23,6 +23,7 @@ export const TEST_CONFIG: AppConfig = {
 	realtimeUrl: "wss://realtime.test/dev",
 	microsoftClientId: "ms-client",
 	scheme: "anothertodo",
+	demo: null,
 };
 
 export interface TestContainer {
@@ -50,6 +51,7 @@ export function createTestContainer(
 		}),
 	motion: Motion = NO_MOTION,
 	microsoftAvailable = true,
+	demo: AppConfig["demo"] = null,
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -66,36 +68,40 @@ export function createTestContainer(
 	const microsoftAuthorizer = new FakeMicrosoftAuthorizer();
 	microsoftAuthorizer.available = microsoftAvailable;
 	const graphRequests: string[] = [];
-	const container = createContainer(TEST_CONFIG, {
-		platform: "web",
-		dataStore,
-		tokenStore,
-		connectivity,
-		authorizationServer,
-		sounds,
-		printer,
-		photoGateway,
-		photoPicker,
-		clock,
-		motion,
-		shareGateway,
-		microsoftAuthorizer,
-		graphFetcher: async (url, init) => {
-			graphRequests.push(`${init?.method ?? "GET"} ${url}`);
-			return new Response(JSON.stringify({ value: [] }), { status: 200 });
+	const container = createContainer(
+		{ ...TEST_CONFIG, demo },
+		{
+			platform: "web",
+			dataStore,
+			tokenStore,
+			connectivity,
+			authorizationServer,
+			sounds,
+			printer,
+			photoGateway,
+			photoPicker,
+			clock,
+			motion,
+			shareGateway,
+			microsoftAuthorizer,
+			graphFetcher: async (url, init) => {
+				graphRequests.push(`${init?.method ?? "GET"} ${url}`);
+				return new Response(JSON.stringify({ value: [] }), { status: 200 });
+			},
+			sockets: (url) => {
+				const socket = new FakeSocket(url);
+				sockets.push(socket);
+				return socket;
+			},
+			ids: new SequenceIds(),
+			fetcher: async (input, init) => {
+				const body =
+					typeof init?.body === "string" ? (JSON.parse(init.body) as unknown) : undefined;
+				requests.push({ method: init?.method ?? "GET", url: input, body });
+				return await respond(init?.method ?? "GET", input, body);
+			},
 		},
-		sockets: (url) => {
-			const socket = new FakeSocket(url);
-			sockets.push(socket);
-			return socket;
-		},
-		ids: new SequenceIds(),
-		fetcher: async (input, init) => {
-			const body = typeof init?.body === "string" ? (JSON.parse(init.body) as unknown) : undefined;
-			requests.push({ method: init?.method ?? "GET", url: input, body });
-			return await respond(init?.method ?? "GET", input, body);
-		},
-	});
+	);
 	return {
 		container,
 		shareGateway,

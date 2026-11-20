@@ -41,7 +41,7 @@ describe("progressive web app metadata", () => {
 			'name="theme-color"',
 			'property="og:title"',
 			'property="og:description"',
-			'property="og:image" content="https://another-todo.oliverhardman.dev/og.png"',
+			'property="og:image" content="https://itsanotherdemo.app/og.png"',
 			'name="twitter:card" content="summary_large_image"',
 			'rel="canonical"',
 		]) {

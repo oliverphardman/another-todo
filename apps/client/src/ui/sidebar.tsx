@@ -278,15 +278,17 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				<AppText size={18} weight="600" style={{ flex: 1, color: palette.accent }}>
 					{t("app.name")}
 				</AppText>
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={t("signOut.button")}
-					onPress={() => void auth.signOut()}
-					hoverColor={palette.sidebarHover}
-					style={{ padding: 8, borderRadius: 4 }}
-				>
-					<Icon glyph="signOut" color={palette.textSecondary} />
-				</PressableSurface>
+				{auth.automatic ? null : (
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={t("signOut.button")}
+						onPress={() => void auth.signOut()}
+						hoverColor={palette.sidebarHover}
+						style={{ padding: 8, borderRadius: 4 }}
+					>
+						<Icon glyph="signOut" color={palette.textSecondary} />
+					</PressableSurface>
+				)}
 			</View>
 			<View
 				style={{

@@ -23,6 +23,34 @@ describe("AuthenticationService", () => {
 		await expect(service.getAccessToken()).rejects.toBeInstanceOf(AuthRequiredError);
 	});
 
+	it("signs in by itself when automatic", async () => {
+		const server = new FakeAuthorizationServer();
+		const service = new AuthenticationService(
+			server,
+			new TokenRepository(new MemoryKeyValueStore()),
+			new FixedClock(),
+			true,
+		);
+		await service.restore();
+		expect(service.get()).toBe("signedIn");
+		expect(server.authorizeCalls).toEqual([undefined]);
+	});
+
+	it("falls back to signed out when automatic sign-in fails", async () => {
+		const server = new FakeAuthorizationServer();
+		server.authorize = async () => {
+			throw new Error("down");
+		};
+		const service = new AuthenticationService(
+			server,
+			new TokenRepository(new MemoryKeyValueStore()),
+			new FixedClock(),
+			true,
+		);
+		await service.restore();
+		expect(service.get()).toBe("signedOut");
+	});
+
 	it("restores a stored session", async () => {
 		const { service, repository, clock } = setup();
 		await repository.save({

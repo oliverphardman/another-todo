@@ -7,7 +7,7 @@ Welcome to Another To Do (ATD)! This is designed to be a replacement for Microso
 
 ![Another To Do](docs/screenshot.png)
 
-Check out the [live demo](https://another-todo.oliverhardman.dev/).
+Check out the [live demo](https://itsanotherdemo.app/).
 
 ## Components
 
