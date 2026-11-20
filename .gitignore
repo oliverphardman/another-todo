@@ -168,3 +168,5 @@ infra/.build/
 .expo/
 
 .claude/worktrees/
+
+TODO.md
