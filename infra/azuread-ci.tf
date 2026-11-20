@@ -23,6 +23,11 @@ resource "azuread_application" "ci" {
       id   = azuread_service_principal.msgraph[0].app_role_ids["Application.Read.All"]
       type = "Role"
     }
+
+    resource_access {
+      id   = azuread_service_principal.msgraph[0].app_role_ids["Directory.Read.All"]
+      type = "Role"
+    }
   }
 }
 
@@ -41,6 +46,13 @@ resource "azuread_app_role_assignment" "ci_manage_owned_apps" {
 resource "azuread_app_role_assignment" "ci_read_apps" {
   count               = var.manage_azure_app ? 1 : 0
   app_role_id         = azuread_service_principal.msgraph[0].app_role_ids["Application.Read.All"]
+  principal_object_id = azuread_service_principal.ci[0].object_id
+  resource_object_id  = azuread_service_principal.msgraph[0].object_id
+}
+
+resource "azuread_app_role_assignment" "ci_read_directory" {
+  count               = var.manage_azure_app ? 1 : 0
+  app_role_id         = azuread_service_principal.msgraph[0].app_role_ids["Directory.Read.All"]
   principal_object_id = azuread_service_principal.ci[0].object_id
   resource_object_id  = azuread_service_principal.msgraph[0].object_id
 }
