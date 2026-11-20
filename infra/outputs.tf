@@ -79,3 +79,7 @@ output "azure_tenant_id" {
 output "azure_ci_client_id" {
   value = var.manage_azure_app ? azuread_application.ci[0].client_id : ""
 }
+
+output "github_deploy_role_arn" {
+  value = aws_iam_role.github_deploy.arn
+}

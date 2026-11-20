@@ -59,7 +59,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
       - run: pnpm install --frozen-lockfile
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform android --no-install
@@ -101,6 +100,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform ios
+      - name: Install pods
+        working-directory: apps/client/ios
+        run: pod install
       - name: Build without signing
         working-directory: apps/client/ios
         run: |
@@ -157,9 +159,14 @@ jobs:
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - uses: microsoft/setup-msbuild@v2
       - run: pnpm install --frozen-lockfile
+      - name: Find the installed Windows SDK
+        shell: pwsh
+        run: |
+          $sdk = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\Include" -Directory | Where-Object { $_.Name -match '^10\.0\.\d+\.0$' } | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
+          "WINSDK=$($sdk.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Restore and build
         run: |
-          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never
+          msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK
       - uses: actions/upload-artifact@v4
         with:
           name: windows

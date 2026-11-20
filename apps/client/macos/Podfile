@@ -5,7 +5,7 @@ ws_dir = ws_dir.parent until
   File.exist?("#{ws_dir}/node_modules/react-native-macos/scripts/react_native_pods.rb") ||
   ws_dir.expand_path.to_s == '/'
 require "#{ws_dir}/node_modules/react-native-macos/scripts/react_native_pods.rb"
-require Pod::Executable.execute_command('node', ['-p', 'require.resolve("expo/scripts/autolinking", {paths: [require.resolve("expo/package.json")]})'], true).strip
+require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 
 prepare_react_native_project!
 
