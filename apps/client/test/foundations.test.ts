@@ -52,15 +52,15 @@ describe("ports", () => {
 describe("AppConfigReader", () => {
 	it("uses the production endpoints by default", () => {
 		expect(AppConfigReader.read({})).toEqual({
-			apiUrl: "https://api.itsanotherdemo.app",
-			authUrl: "https://auth.itsanotherdemo.app",
+			apiUrl: "https://api.itsanothertodo.app",
+			authUrl: "https://auth.itsanothertodo.app",
 			clientId: "rm2gcmocak3qo442q9p0r191q",
 			realtimeUrl: "wss://s1gss3s4qg.execute-api.eu-west-1.amazonaws.com/dev",
 			microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
 			scheme: "anothertodo",
 			demo: {
 				region: "eu-west-1",
-				username: "default@itsanotherdemo.app",
+				username: "default@itsanothertodo.app",
 				password: "DefaultDemoUser2026",
 			},
 		});

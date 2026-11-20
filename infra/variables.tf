@@ -72,7 +72,7 @@ variable "rate_limit" {
 
 variable "domain_name" {
   type    = string
-  default = "itsanotherdemo.app"
+  default = "itsanothertodo.app"
 }
 
 variable "manage_azure_app" {
