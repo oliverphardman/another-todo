@@ -8,5 +8,6 @@ Pod::Spec.new do |s|
   s.platforms = { :macos => "14.0" }
   s.source = { :path => "." }
   s.source_files = "*.{h,m}"
+  s.requires_arc = true
   s.dependency "React-Core"
 end
