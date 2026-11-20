@@ -176,6 +176,8 @@ jobs:
         run: |
           $sdk = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\Include" -Directory | Where-Object { $_.Name -match '^10\.0\.\d+\.0$' } | Sort-Object { [version]$_.Name } -Descending | Select-Object -First 1
           "WINSDK=$($sdk.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Link native modules
+        run: pnpm exec react-native autolink-windows --sln windows/AnotherToDo.sln --proj windows/AnotherToDo/AnotherToDo.vcxproj
       - name: Restore and build
         run: |
           msbuild windows/AnotherToDo.sln /restore /p:Configuration=Release /p:Platform=x64 /p:AppxBundle=Never /p:WindowsTargetPlatformVersion=$env:WINSDK /p:BundleEntryFile=index.windows.ts
