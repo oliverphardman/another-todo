@@ -92,3 +92,9 @@ variable "github_repository" {
   default     = "oliverphardman/another-todo"
   description = "owner/name of the repository whose GitHub Actions may deploy"
 }
+
+variable "github_oidc_subject_prefix" {
+  type        = string
+  default     = "repo:oliverphardman@5571446/another-todo@1464163539"
+  description = "Subject prefix GitHub puts in its OIDC tokens (this repository uses immutable subjects)"
+}

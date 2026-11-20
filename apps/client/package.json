@@ -45,6 +45,7 @@
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
 		"@react-native-community/cli": "^21.0.0",
+		"@react-native/metro-config": "0.83.10",
 		"@testing-library/react": "^16.3.0",
 		"@types/node": "^26.6.6",
 		"@types/react": "~19.2.18",

@@ -60,6 +60,8 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: pnpm install --frozen-lockfile
+      - name: Drop the desktop forks the React Native CLI cannot load here
+        run: pnpm remove react-native-windows react-native-macos --no-frozen-lockfile
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform android --no-install
       - name: Decode the signing key
@@ -98,8 +100,10 @@ jobs:
           cache: pnpm
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: Drop the desktop forks the React Native CLI cannot load here
+        run: pnpm remove react-native-windows react-native-macos --no-frozen-lockfile
       - name: Generate the native project
-        run: pnpm exec expo prebuild --platform ios
+        run: pnpm exec expo prebuild --platform ios --no-install
       - name: Install pods
         working-directory: apps/client/ios
         run: pod install
@@ -131,6 +135,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: Drop the Windows fork the React Native CLI cannot load here
+        run: pnpm remove react-native-windows --no-frozen-lockfile
       - run: pod install --project-directory=macos
       - name: Build without signing
         run: |

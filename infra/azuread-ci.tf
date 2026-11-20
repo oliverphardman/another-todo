@@ -58,5 +58,5 @@ resource "azuread_application_federated_identity_credential" "github_main" {
   description    = "GitHub Actions on the main branch of ${var.github_repository}"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "repo:${var.github_repository}:ref:refs/heads/main"
+  subject        = "${var.github_oidc_subject_prefix}:ref:refs/heads/main"
 }
