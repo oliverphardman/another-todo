@@ -5,7 +5,7 @@ Pod::Spec.new do |s|
   s.homepage = "https://another-todo.oliverhardman.dev"
   s.license = "MIT"
   s.authors = { "Another To Do" => "https://another-todo.oliverhardman.dev" }
-  s.platforms = { :macos => "14.0" }
+  s.platforms = { :osx => "14.0" }
   s.source = { :path => "." }
   s.source_files = "*.{h,m,mm}"
   s.requires_arc = true
