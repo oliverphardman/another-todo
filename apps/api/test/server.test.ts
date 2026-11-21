@@ -33,6 +33,7 @@ describe("self-hosted server entry point", () => {
 		expect(await (await fetch(`${base}/config`)).json()).toEqual({
 			authentication: "password",
 			notice: null,
+			realtimeUrl: null,
 		});
 		expect((await fetch(`${base}/tasks`)).status).toBe(401);
 		expect((await fetch(`${base}/`)).status).toBe(404);

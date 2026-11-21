@@ -10,6 +10,7 @@ export const REALTIME_PATH = "/realtime";
 
 export class WebSocketRealtime implements Realtime, ChangeChannel {
 	readonly channel: ChangeChannel = this;
+	readonly endpoint = null;
 	private readonly sockets = new Map<string, Set<WebSocket>>();
 	private readonly server = new WebSocketServer({ noServer: true });
 

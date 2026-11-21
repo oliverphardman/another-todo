@@ -59,6 +59,7 @@ describe("PlatformFactory", () => {
 		expect(platform.identity.issuer).toBe(
 			"https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_pool",
 		);
+		expect(platform.realtime.endpoint).toBe("wss://ws.example.com/prod");
 		expect(platform.media.router).toBeNull();
 		expect(platform.identity.router).toBeNull();
 		expect(() => platform.realtime.attach({} as never)).not.toThrow();
@@ -119,7 +120,7 @@ describe("public configuration", () => {
 	it("tells clients how to authenticate and what notice to show", async () => {
 		const api = createTestApi();
 		const reply = await api(event({ path: "/config" }));
-		expect(reply.body).toEqual({ authentication: "external", notice: null });
+		expect(reply.body).toEqual({ authentication: "external", notice: null, realtimeUrl: null });
 	});
 });
 
@@ -159,11 +160,15 @@ describe("mounted provider routers", () => {
 		};
 		const media: Pick<Media, "router"> = { router: mediaRouter };
 		const data = new InMemoryDataStore();
-		const realtime: Realtime = { channel: { deliver: async () => undefined }, attach: () => {} };
+		const realtime: Realtime = {
+			channel: { deliver: async () => undefined },
+			endpoint: "wss://rt.example.com/dev",
+			attach: () => {},
+		};
 		const app = createApp(
 			{ ...TEST_CONFIG, notice: "Shared" },
 			createServices(data, new FakeMediaStorage(), realtime.channel, identity.directory),
-			{ identity, media },
+			{ identity, media, realtime },
 		);
 		const server = app.listen(0, "127.0.0.1");
 		await new Promise((resolve) => server.once("listening", resolve));
@@ -174,6 +179,7 @@ describe("mounted provider routers", () => {
 		expect(await (await fetch(`${base}/config`)).json()).toEqual({
 			authentication: "password",
 			notice: "Shared",
+			realtimeUrl: "wss://rt.example.com/dev",
 		});
 		const discovery = await (await fetch(`${base}/.well-known/oauth-protected-resource`)).json();
 		expect(discovery.authorization_servers).toEqual([TEST_CONFIG.publicUrl]);

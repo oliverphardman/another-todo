@@ -25,6 +25,7 @@ export interface Media {
 
 export interface Realtime {
 	readonly channel: ChangeChannel;
+	readonly endpoint: string | null;
 	attach(server: Server): void;
 }
 

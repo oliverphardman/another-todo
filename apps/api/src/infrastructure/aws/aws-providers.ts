@@ -72,6 +72,7 @@ function apigateway(env: Env): Realtime {
 			AwsClients.connections(env),
 			ApiGatewayPusher.forEndpoint(WEBSOCKET_MANAGEMENT_URL),
 		),
+		endpoint: WEBSOCKET_MANAGEMENT_URL.replace(/^https:/, "wss:"),
 		attach: () => undefined,
 	};
 }

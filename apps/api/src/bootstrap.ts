@@ -16,7 +16,7 @@ import type { UserDirectory } from "./application/user-directory";
 import { TaskService } from "./application/task-service";
 import { ViewSettingsService } from "./application/view-settings-service";
 import { Settings } from "./composition/env";
-import type { Env, Identity, Media, Platform } from "./composition/platform";
+import type { Env, Identity, Media, Platform, Realtime } from "./composition/platform";
 import { ChangeBroadcast } from "./http/change-broadcast";
 import { ConfigController } from "./http/config-controller";
 import { CorsPolicy } from "./http/cors-policy";
@@ -65,15 +65,25 @@ export function readConfig(env: Env, fallbackUrl?: string): ApiConfig {
 export function createApp(
 	config: ApiConfig,
 	services: Services,
-	platform: { readonly identity: Identity; readonly media: Pick<Media, "router"> },
+	platform: {
+		readonly identity: Identity;
+		readonly media: Pick<Media, "router">;
+		readonly realtime: Pick<Realtime, "endpoint">;
+	},
 	web: Router | null = null,
 ): Express {
-	const { identity, media } = platform;
+	const { identity, media, realtime } = platform;
 	const app = express();
 	app.disable("x-powered-by");
 	app.use(new CorsPolicy(config.corsOrigins).middleware());
 	app.use(new DiscoveryController(identity.issuer ?? config.publicUrl, config.publicUrl).router());
-	app.use(new ConfigController({ authentication: identity.mode, notice: config.notice }).router());
+	app.use(
+		new ConfigController({
+			authentication: identity.mode,
+			notice: config.notice,
+			realtimeUrl: realtime.endpoint,
+		}).router(),
+	);
 	if (identity.router !== null) {
 		app.use(identity.router);
 	}

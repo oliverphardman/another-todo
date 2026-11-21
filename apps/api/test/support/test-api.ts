@@ -100,7 +100,7 @@ export function createTestApi(
 			),
 			directory,
 		),
-		{ identity, media: { router: null } },
+		{ identity, media: { router: null }, realtime: { endpoint: null } },
 	);
 	let started: Promise<string> | undefined;
 	const start = (): Promise<string> => {

@@ -4,6 +4,7 @@ import type { AuthenticationMode } from "../composition/platform";
 export interface PublicConfig {
 	readonly authentication: AuthenticationMode;
 	readonly notice: string | null;
+	readonly realtimeUrl: string | null;
 }
 
 export class ConfigController {

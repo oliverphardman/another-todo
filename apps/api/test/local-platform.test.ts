@@ -193,6 +193,7 @@ describe("enforced username", () => {
 		expect(await (await fetch(`${app.base}/config`)).json()).toEqual({
 			authentication: "none",
 			notice: "Shared demo",
+			realtimeUrl: null,
 		});
 		expect((await fetch(`${app.base}/auth/login`, { method: "POST" })).status).toBe(404);
 	});
