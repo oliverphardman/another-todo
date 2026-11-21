@@ -21,6 +21,7 @@ export function enforced(env: Env): Identity {
 	const { ENFORCED_USERNAME } = new Settings(env).require("ENFORCED_USERNAME");
 	return {
 		mode: "none",
+		providers: [],
 		authenticator: new EnforcedAuthenticator(ENFORCED_USERNAME),
 		directory: new NoUserDirectory(),
 		issuer: null,

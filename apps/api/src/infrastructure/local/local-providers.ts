@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { SystemClock } from "../../application/ports";
+import { publicUrlOf } from "../../listen-address";
 import { Settings } from "../../composition/env";
 import type { Env, Identity, Media, Realtime } from "../../composition/platform";
 import type { ProviderRegistry } from "../../composition/provider-registry";
@@ -11,6 +12,7 @@ import {
 	LocalUserDirectory,
 	authenticatorFor,
 } from "./password-identity";
+import { MicrosoftSignIn } from "./microsoft-sign-in";
 import { PasswordHasher } from "./password-hasher";
 import { SecretKey } from "./secret-key";
 import { SqliteDataStore } from "./sqlite-data-store";
@@ -48,12 +50,34 @@ function password(env: Env): Identity {
 		settings.optional("ADMIN_PASSWORD"),
 		(message) => process.stdout.write(`${message}\n`),
 	);
+	const router = new AccountRoutes(accounts).router();
+	const clientId = settings.optional("AZURE_CLIENT_ID");
+	const clientSecret = settings.optional("AZURE_CLIENT_SECRET");
+	const microsoft =
+		clientId === null || clientSecret === null
+			? null
+			: new MicrosoftSignIn(
+					{
+						clientId,
+						clientSecret,
+						tenant: settings.optional("AZURE_TENANT_ID") ?? "common",
+						publicUrl: publicUrlOf(env),
+						origins: settings.list("CORS_ORIGINS"),
+					},
+					accounts,
+					jwtOf(env),
+					new SystemClock(),
+				);
+	if (microsoft !== null) {
+		router.use(microsoft.router());
+	}
 	return {
 		mode: "password",
+		providers: microsoft === null ? [] : ["Microsoft"],
 		authenticator: authenticatorFor(accounts),
 		directory: new LocalUserDirectory(users),
 		issuer: null,
-		router: new AccountRoutes(accounts).router(),
+		router,
 	};
 }
 

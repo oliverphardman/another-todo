@@ -140,7 +140,12 @@ describe("public configuration", () => {
 	it("tells clients how to authenticate and what notice to show", async () => {
 		const api = createTestApi();
 		const reply = await api(event({ path: "/config" }));
-		expect(reply.body).toEqual({ authentication: "external", notice: null, realtimeUrl: null });
+		expect(reply.body).toEqual({
+			authentication: "external",
+			providers: [],
+			notice: null,
+			realtimeUrl: null,
+		});
 	});
 });
 
@@ -173,6 +178,7 @@ describe("mounted provider routers", () => {
 		});
 		const identity: Identity = {
 			mode: "password",
+			providers: ["Microsoft"],
 			authenticator: new TokenIsSubjectAuthenticator(),
 			directory: new FakeUserDirectory(),
 			issuer: null,
@@ -198,6 +204,7 @@ describe("mounted provider routers", () => {
 		expect(await (await fetch(`${base}/from-media`)).json()).toEqual({ ok: "media" });
 		expect(await (await fetch(`${base}/config`)).json()).toEqual({
 			authentication: "password",
+			providers: ["Microsoft"],
 			notice: "Shared",
 			realtimeUrl: "wss://rt.example.com/dev",
 		});

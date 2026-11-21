@@ -191,6 +191,7 @@ describe("enforced username", () => {
 		expect(listed.tasks).toHaveLength(1);
 		expect(await (await fetch(`${app.base}/config`)).json()).toEqual({
 			authentication: "none",
+			providers: [],
 			notice: "Shared demo",
 			realtimeUrl: null,
 		});

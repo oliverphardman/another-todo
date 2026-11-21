@@ -15,6 +15,11 @@ export interface AccountClock {
 	now(): Date;
 }
 
+export interface AccessGrant {
+	readonly accessToken: string;
+	readonly expiresIn: number;
+}
+
 export class LocalAccounts {
 	constructor(
 		private readonly users: UserRepository,
@@ -44,7 +49,7 @@ export class LocalAccounts {
 		}
 	}
 
-	login(username: unknown, password: unknown): { accessToken: string; expiresIn: number } {
+	login(username: unknown, password: unknown): AccessGrant {
 		const user =
 			typeof username === "string" && typeof password === "string"
 				? this.users.findByUsername(username)
@@ -52,9 +57,21 @@ export class LocalAccounts {
 		if (user === null || !this.hasher.matches(password as string, user.passwordHash)) {
 			throw new UnauthorizedError("Invalid username or password");
 		}
+		return this.issue(user.username);
+	}
+
+	external(provider: string, subject: string, email: string | null): AccessGrant {
+		const username = `${provider}:${subject}`;
+		if (this.users.findByUsername(username) === null) {
+			this.users.save({ username, email, passwordHash: "!", admin: false });
+		}
+		return this.issue(username);
+	}
+
+	private issue(username: string): AccessGrant {
 		const exp = Math.floor(this.clock.now().getTime() / 1000) + SESSION_SECONDS;
 		return {
-			accessToken: this.jwt.sign({ aud: ACCESS_AUDIENCE, sub: user.username, exp }),
+			accessToken: this.jwt.sign({ aud: ACCESS_AUDIENCE, sub: username, exp }),
 			expiresIn: SESSION_SECONDS,
 		};
 	}

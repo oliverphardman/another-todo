@@ -34,6 +34,7 @@ function cognito(env: Env): Identity {
 	const verifier = new CognitoTokenVerifier(COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID);
 	return {
 		mode: "external",
+		providers: [],
 		authenticator: new BearerAuthenticator(verifier),
 		directory: CognitoUserDirectory.forPool(COGNITO_USER_POOL_ID),
 		issuer: verifier.issuer,

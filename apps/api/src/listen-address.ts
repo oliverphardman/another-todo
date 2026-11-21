@@ -28,3 +28,8 @@ export function readPort(value: string | undefined): number {
 	}
 	return port;
 }
+
+export function publicUrlOf(env: Readonly<Record<string, string | undefined>>): string {
+	const configured = env.PUBLIC_API_URL?.trim();
+	return configured || `http://localhost:${readPort(env.PORT)}`;
+}

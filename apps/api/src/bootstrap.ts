@@ -80,6 +80,7 @@ export function createApp(
 	app.use(
 		new ConfigController({
 			authentication: identity.mode,
+			providers: identity.providers,
 			notice: config.notice,
 			realtimeUrl: realtime.endpoint,
 		}).router(),

@@ -32,6 +32,7 @@ describe("self-hosted server entry point", () => {
 		const { server, base } = await start();
 		expect(await (await fetch(`${base}/config`)).json()).toEqual({
 			authentication: "password",
+			providers: [],
 			notice: null,
 			realtimeUrl: null,
 		});

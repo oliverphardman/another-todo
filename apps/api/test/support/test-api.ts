@@ -84,6 +84,7 @@ export function createTestApi(
 ) {
 	const identity: Identity = {
 		mode: "external",
+		providers: [],
 		authenticator: new TokenIsSubjectAuthenticator(),
 		directory,
 		issuer: TEST_ISSUER,

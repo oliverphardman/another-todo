@@ -12,6 +12,7 @@ export type AuthenticationMode = "none" | "password" | "external";
 
 export interface Identity {
 	readonly mode: AuthenticationMode;
+	readonly providers: readonly string[];
 	readonly authenticator: Authenticator;
 	readonly directory: UserDirectory;
 	readonly issuer: string | null;

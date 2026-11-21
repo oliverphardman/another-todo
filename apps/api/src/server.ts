@@ -6,13 +6,13 @@ import {
 	ProviderRegistries,
 } from "./composition/provider-registry";
 import { WebHost } from "./http/web-host";
-import { readPort } from "./listen-address";
+import { publicUrlOf, readPort } from "./listen-address";
 import { LOCAL_DEFAULTS, localProviders } from "./infrastructure/local/local-providers";
 import { sharedProviders } from "./infrastructure/shared/enforced-identity";
 
 const settings = new Settings(process.env);
 const port = readPort(process.env.PORT);
-const config = readConfig(process.env, `http://localhost:${port}`);
+const config = readConfig(process.env, publicUrlOf(process.env));
 const webDirectory = settings.optional("WEB_DIR");
 
 const platform = new PlatformFactory(
