@@ -1,6 +1,6 @@
 # Another To Do
 
-- NEVER write comments in any code.
+- NEVER write comments in any code. The one exception is a version comment (e.g. `# v7.0.1`) after a SHA-pinned action in .github/workflows
 - Ensure full test code coverage
 - Aim for a diverse range of tests, including unit, integration, functional, E2E, acceptance, performance and smoke
 - Use Terraform and AWS for infrastructure
