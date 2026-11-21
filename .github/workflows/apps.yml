@@ -207,6 +207,18 @@ jobs:
               "Patched $($_.FullName)"
             }
           }
+      - name: Point react-native-windows at the tracing sources of react-native 0.83.10
+        shell: pwsh
+        run: |
+          $rnw = node --print "require('path').dirname(require.resolve('react-native-windows/package.json'))"
+          $file = "$rnw/Shared/Shared.vcxitems"
+          $dir = '$(ReactNativeDir)\ReactCommon\jsinspector-modern\tracing'
+          $old = '<ClCompile Include="' + $dir + '\TraceRecordingStateSerializer.cpp" />'
+          $new = '<ClCompile Include="' + $dir + '\HostTracingProfileSerializer.cpp" />' + "`n    " + '<ClCompile Include="' + $dir + '\TraceEventGenerator.cpp" />'
+          $text = Get-Content $file -Raw
+          if (-not $text.Contains($old)) { throw "Entry not found in $file" }
+          $text.Replace($old, $new) | Set-Content $file -NoNewline
+          Select-String -Path $file -Pattern "HostTracingProfileSerializer|TraceEventGenerator"
       - name: Find the installed Windows SDK
         shell: pwsh
         run: |
