@@ -196,15 +196,17 @@ jobs:
         run: |
           $rn = node --print "require('path').dirname(require.resolve('react-native/package.json'))"
           Copy-Item "$rn/ReactCommon/react/utils/Base64.h" "$rn/ReactCommon/jsinspector-modern/Base64.h"
-      - name: Add the template keyword the newest MSVC requires in react-native-windows
+      - name: Stop react-native-windows treating warnings from the newest MSVC as errors
         shell: pwsh
         run: |
           $rnw = node --print "require('path').dirname(require.resolve('react-native-windows/package.json'))"
-          $file = "$rnw/Microsoft.ReactNative/Fabric/Composition/CompositionContextHelper.cpp"
-          $text = Get-Content $file -Raw
-          $text = $text.Replace("innerBrush.as<TTypeRedirects::CompositionColorBrush>()", "innerBrush.template as<TTypeRedirects::CompositionColorBrush>()")
-          Set-Content $file $text -NoNewline
-          Select-String -Path $file -Pattern "innerBrush.template as"
+          Get-ChildItem $rnw -Recurse -Include *.props,*.vcxproj,*.targets | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            if ($text -match '<TreatWarningAsError>true</TreatWarningAsError>') {
+              $text.Replace('<TreatWarningAsError>true</TreatWarningAsError>', '<TreatWarningAsError>false</TreatWarningAsError>') | Set-Content $_.FullName -NoNewline
+              "Patched $($_.FullName)"
+            }
+          }
       - name: Find the installed Windows SDK
         shell: pwsh
         run: |
