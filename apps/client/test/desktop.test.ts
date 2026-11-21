@@ -20,6 +20,8 @@ import { ExpoListPrinter as WinPrinter } from "../src/print/expo-list-printer.wi
 import { UnavailableListPrinter } from "../src/print/unavailable-list-printer";
 import { SecureStoreKeyValueStore as MacStore } from "../src/storage/secure-store-key-value-store.macos";
 import { SecureStoreKeyValueStore as WinStore } from "../src/storage/secure-store-key-value-store.windows";
+import { NetInfoConnectivity as WinConnectivity } from "../src/state/connectivity.windows";
+import { AlwaysOnlineConnectivity } from "../src/state/always-online-connectivity";
 import { AsyncStorageKeyValueStore } from "../src/storage/async-storage-key-value-store";
 
 vi.mock("../App", () => ({ default: () => null }));
@@ -266,5 +268,14 @@ describe("desktop platform adapters", () => {
 			expect(factory()).toBeDefined();
 		}
 		expect(register.mock.calls.map(([name]) => name)).toEqual(["main", "main"]);
+	});
+});
+
+describe("Windows connectivity", () => {
+	it("is the always online implementation and never notifies", () => {
+		const connectivity = new WinConnectivity();
+		expect(connectivity).toBeInstanceOf(AlwaysOnlineConnectivity);
+		expect(connectivity.isOnline()).toBe(true);
+		expect(connectivity.subscribe()()).toBeUndefined();
 	});
 });
