@@ -1,0 +1,19 @@
+services:
+  another-todo:
+    image: ghcr.io/oliverphardman/another-todo:latest
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      - data:/data
+    environment:
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3000}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ENFORCED_USERNAME: ${ENFORCED_USERNAME:-}
+      ENFORCED_SERVER_URL: ${ENFORCED_SERVER_URL:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      SERVER_NOTICE: ${SERVER_NOTICE:-}
+
+volumes:
+  data:

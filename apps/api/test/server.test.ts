@@ -63,7 +63,6 @@ describe("self-hosted server entry point", () => {
 	});
 
 	it("runs the demo configuration: enforced user and a notice", async () => {
-		vi.stubEnv("AUTH_PROVIDER", "enforced");
 		vi.stubEnv("ENFORCED_USERNAME", "demo");
 		vi.stubEnv("SERVER_NOTICE", "Shared demo");
 		const { server, base } = await start();

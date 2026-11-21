@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/coverage
+.git
+.github
+.claude
+infra
+docs
+apps/client/macos
+apps/client/windows
+apps/client/.expo
+apps/api/integration
+**/test
+**/*.md
+!apps/client/public/**

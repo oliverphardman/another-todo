@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll } from "vitest";
 import { createApplication, readConfig } from "../../src/bootstrap";
-import { PlatformFactory, ProviderRegistries } from "../../src/composition/provider-registry";
+import {
+	PlatformFactory,
+	ProviderDefaultsFor,
+	ProviderRegistries,
+} from "../../src/composition/provider-registry";
 import type { Platform } from "../../src/composition/platform";
 import { LOCAL_DEFAULTS, localProviders } from "../../src/infrastructure/local/local-providers";
 import { SqliteDatabase } from "../../src/infrastructure/local/sqlite-database";
@@ -35,7 +39,7 @@ export async function startLocalApp(
 	const config = readConfig(merged, "http://localhost:3000");
 	const platform = new PlatformFactory(
 		ProviderRegistries.merge(localProviders, sharedProviders),
-		LOCAL_DEFAULTS,
+		ProviderDefaultsFor.withEnforcedUser(LOCAL_DEFAULTS),
 	).create(merged, config.publicUrl);
 	const server = createApplication(config, platform, web).listen(0, "127.0.0.1");
 	platform.realtime.attach(server);

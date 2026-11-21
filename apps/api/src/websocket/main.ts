@@ -1,5 +1,9 @@
 import { SystemClock } from "../application/ports";
-import { PlatformFactory, ProviderRegistries } from "../composition/provider-registry";
+import {
+	PlatformFactory,
+	ProviderDefaultsFor,
+	ProviderRegistries,
+} from "../composition/provider-registry";
 import { AWS_DEFAULTS, AwsClients, awsProviders } from "../infrastructure/aws/aws-providers";
 import { sharedProviders } from "../infrastructure/shared/enforced-identity";
 import { WebSocketHandler, type WebSocketEvent } from "./websocket-handler";
@@ -8,7 +12,7 @@ export class WebSocketEntry {
 	static create(env: Record<string, string | undefined>): WebSocketHandler {
 		const identity = new PlatformFactory(
 			ProviderRegistries.merge(awsProviders, sharedProviders),
-			AWS_DEFAULTS,
+			ProviderDefaultsFor.withEnforcedUser(AWS_DEFAULTS),
 		).identity(env);
 		return new WebSocketHandler(
 			identity.authenticator,

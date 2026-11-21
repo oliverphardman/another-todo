@@ -161,7 +161,7 @@ describe("local realtime", () => {
 	});
 
 	it("accepts sockets without a token when authentication is enforced", async () => {
-		const app = await startLocalApp({ AUTH_PROVIDER: "enforced", ENFORCED_USERNAME: "me" });
+		const app = await startLocalApp({ ENFORCED_USERNAME: "me" });
 		const socket = await open(`${app.base.replace("http", "ws")}/realtime`);
 		const heard: string[] = [];
 		socket.on("message", (data) => heard.push(String(data)));
@@ -178,7 +178,6 @@ describe("local realtime", () => {
 describe("enforced username", () => {
 	it("serves everything as the one user without credentials and announces it", async () => {
 		const app = await startLocalApp({
-			AUTH_PROVIDER: "enforced",
 			ENFORCED_USERNAME: "me",
 			SERVER_NOTICE: "Shared demo",
 		});

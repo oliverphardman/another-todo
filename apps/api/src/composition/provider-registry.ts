@@ -33,10 +33,17 @@ export class ProviderRegistries {
 	}
 }
 
+export class ProviderDefaultsFor {
+	static withEnforcedUser(defaults: ProviderDefaults): (env: Env) => ProviderDefaults {
+		return (env) =>
+			env.ENFORCED_USERNAME?.trim() ? { ...defaults, identity: "enforced" } : defaults;
+	}
+}
+
 export class PlatformFactory {
 	constructor(
 		private readonly registry: ProviderRegistry,
-		private readonly defaults: ProviderDefaults,
+		private readonly defaults: (env: Env) => ProviderDefaults,
 	) {}
 
 	identity(env: Env): Identity {
@@ -59,7 +66,7 @@ export class PlatformFactory {
 		env: Env,
 	): T {
 		const variable = PROVIDER_VARIABLES[kind];
-		const name = env[variable]?.trim() || this.defaults[kind];
+		const name = env[variable]?.trim() || this.defaults(env)[kind];
 		const provider = providers[name];
 		if (provider === undefined) {
 			throw new Error(

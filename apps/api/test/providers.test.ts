@@ -2,7 +2,11 @@ import { Router } from "express";
 import { describe, expect, it } from "vitest";
 import { Settings } from "../src/composition/env";
 import type { Identity, Media, Realtime } from "../src/composition/platform";
-import { PlatformFactory, ProviderRegistries } from "../src/composition/provider-registry";
+import {
+	PlatformFactory,
+	ProviderDefaultsFor,
+	ProviderRegistries,
+} from "../src/composition/provider-registry";
 import { AWS_DEFAULTS, awsProviders } from "../src/infrastructure/aws/aws-providers";
 import { InMemoryDataStore } from "../src/infrastructure/memory/in-memory-data-store";
 import {
@@ -50,7 +54,7 @@ describe("Settings", () => {
 describe("PlatformFactory", () => {
 	const factory = new PlatformFactory(
 		ProviderRegistries.merge(awsProviders, sharedProviders),
-		AWS_DEFAULTS,
+		ProviderDefaultsFor.withEnforcedUser(AWS_DEFAULTS),
 	);
 
 	it("builds the AWS providers by default", () => {
@@ -73,6 +77,22 @@ describe("PlatformFactory", () => {
 		expect(platform.identity.mode).toBe("none");
 		expect(await platform.identity.authenticator.authenticate({ header: () => undefined })).toBe(
 			"demo",
+		);
+	});
+
+	it("enforces the user whenever one is configured, unless another provider is named", async () => {
+		const enforcedByDefault = factory.create(
+			{ ...AWS_ENV, ENFORCED_USERNAME: "demo" },
+			"https://api.example.com",
+		);
+		expect(enforcedByDefault.identity.mode).toBe("none");
+		const named = factory.create(
+			{ ...AWS_ENV, ENFORCED_USERNAME: "demo", AUTH_PROVIDER: "cognito" },
+			"https://api.example.com",
+		);
+		expect(named.identity.mode).toBe("external");
+		expect(factory.create({ ...AWS_ENV, ENFORCED_USERNAME: " " }, "u").identity.mode).toBe(
+			"external",
 		);
 	});
 

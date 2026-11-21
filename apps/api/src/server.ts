@@ -1,6 +1,10 @@
 import { createApplication, readConfig } from "./bootstrap";
 import { Settings } from "./composition/env";
-import { PlatformFactory, ProviderRegistries } from "./composition/provider-registry";
+import {
+	PlatformFactory,
+	ProviderDefaultsFor,
+	ProviderRegistries,
+} from "./composition/provider-registry";
 import { WebHost } from "./http/web-host";
 import { readPort } from "./listen-address";
 import { LOCAL_DEFAULTS, localProviders } from "./infrastructure/local/local-providers";
@@ -13,7 +17,7 @@ const webDirectory = settings.optional("WEB_DIR");
 
 const platform = new PlatformFactory(
 	ProviderRegistries.merge(localProviders, sharedProviders),
-	LOCAL_DEFAULTS,
+	ProviderDefaultsFor.withEnforcedUser(LOCAL_DEFAULTS),
 ).create(process.env, config.publicUrl);
 
 const web =
