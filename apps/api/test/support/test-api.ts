@@ -9,7 +9,7 @@ import { UnauthorizedError } from "../../src/domain/errors";
 import type { Authenticator } from "../../src/http/authenticator";
 import { FakeUserDirectory } from "./fake-user-directory";
 import { FakeDocumentClient } from "./fake-document-client";
-import { FakePhotoStorage } from "./fake-photo-storage";
+import { FakeMediaStorage } from "./fake-media-storage";
 import type { ApiRequest } from "./events";
 
 export interface ApiReply {
@@ -56,7 +56,7 @@ afterAll(async () => {
 	);
 });
 
-export const testStorage = new FakePhotoStorage();
+export const testStorage = new FakeMediaStorage();
 export const testDirectory = new FakeUserDirectory();
 
 export class RecordingPusher implements ConnectionPusher {

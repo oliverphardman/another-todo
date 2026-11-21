@@ -1,8 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { SystemClock } from "../application/ports";
-import { CognitoTokenVerifier } from "../infrastructure/cognito-token-verifier";
-import { DynamoConnectionRepository } from "../infrastructure/dynamo-connection-repository";
+import { CognitoTokenVerifier } from "../infrastructure/aws/cognito-token-verifier";
+import { DynamoConnectionRepository } from "../infrastructure/aws/dynamo-connection-repository";
 import { WebSocketHandler, type WebSocketEvent } from "./websocket-handler";
 
 export class WebSocketEntry {

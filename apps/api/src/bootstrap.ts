@@ -5,20 +5,20 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
 import spec from "../openapi.json";
 import { ChangeNotifier, type ConnectionPusher } from "./application/change-notifier";
 import { ChangeBroadcast } from "./http/change-broadcast";
-import { ApiGatewayPusher } from "./infrastructure/api-gateway-pusher";
-import { DynamoConnectionRepository } from "./infrastructure/dynamo-connection-repository";
+import { ApiGatewayPusher } from "./infrastructure/aws/api-gateway-pusher";
+import { DynamoConnectionRepository } from "./infrastructure/aws/dynamo-connection-repository";
 import { SharedAccess } from "./application/shared-access";
 import { ShareService } from "./application/share-service";
 import type { UserDirectory } from "./application/user-directory";
 import { ShareController } from "./http/share-controller";
-import { CognitoUserDirectory } from "./infrastructure/cognito-user-directory";
-import { DynamoShareRepository } from "./infrastructure/dynamo-share-repository";
+import { CognitoUserDirectory } from "./infrastructure/aws/cognito-user-directory";
+import { DynamoShareRepository } from "./infrastructure/aws/dynamo-share-repository";
 import { GroupService } from "./application/group-service";
 import { GroupController } from "./http/group-controller";
-import { DynamoGroupRepository } from "./infrastructure/dynamo-group-repository";
+import { DynamoGroupRepository } from "./infrastructure/aws/dynamo-group-repository";
 import { ListService } from "./application/list-service";
 import { PhotoService } from "./application/photo-service";
-import type { PhotoStorage } from "./application/photo-storage";
+import type { MediaStorage } from "./application/media-storage";
 import { SystemClock, UuidGenerator } from "./application/ports";
 import { TaskService } from "./application/task-service";
 import { ViewSettingsService } from "./application/view-settings-service";
@@ -29,15 +29,15 @@ import { ErrorHandler } from "./http/error-handler";
 import { ListController } from "./http/list-controller";
 import { RouteSupport } from "./http/route-support";
 import { TaskController } from "./http/task-controller";
-import { CognitoTokenVerifier } from "./infrastructure/cognito-token-verifier";
+import { CognitoTokenVerifier } from "./infrastructure/aws/cognito-token-verifier";
 import { S3Client } from "@aws-sdk/client-s3";
-import { DynamoPhotoRepository } from "./infrastructure/dynamo-photo-repository";
-import { DynamoViewSettingsRepository } from "./infrastructure/dynamo-view-settings-repository";
-import { S3PhotoStorage } from "./infrastructure/s3-photo-storage";
+import { DynamoPhotoRepository } from "./infrastructure/aws/dynamo-photo-repository";
+import { DynamoViewSettingsRepository } from "./infrastructure/aws/dynamo-view-settings-repository";
+import { S3MediaStorage } from "./infrastructure/aws/s3-media-storage";
 import { PhotoController } from "./http/photo-controller";
 import { SettingsController } from "./http/settings-controller";
-import { DynamoTaskRepository } from "./infrastructure/dynamo-task-repository";
-import { DynamoTodoListRepository } from "./infrastructure/dynamo-todo-list-repository";
+import { DynamoTaskRepository } from "./infrastructure/aws/dynamo-task-repository";
+import { DynamoTodoListRepository } from "./infrastructure/aws/dynamo-todo-list-repository";
 import { McpController } from "./mcp/mcp-controller";
 import { McpServer } from "./mcp/mcp-server";
 import { createTools } from "./mcp/tools";
@@ -167,7 +167,7 @@ export function createApp(
 export function createServices(
 	config: ApiConfig,
 	client: DynamoDBDocumentClient,
-	storage: PhotoStorage,
+	storage: MediaStorage,
 	pusher: ConnectionPusher,
 	directory: UserDirectory,
 ): Services {
@@ -199,7 +199,7 @@ export function createApplication(config: ApiConfig, client: DynamoDBDocumentCli
 		createServices(
 			config,
 			client,
-			new S3PhotoStorage(new S3Client({}), config.photosBucket),
+			new S3MediaStorage(new S3Client({}), config.photosBucket),
 			ApiGatewayPusher.forEndpoint(config.websocketManagementUrl),
 			CognitoUserDirectory.forPool(config.userPoolId),
 		),

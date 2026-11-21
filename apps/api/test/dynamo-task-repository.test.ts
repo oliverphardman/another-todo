@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { Task } from "../src/domain/task";
 import { TodoList } from "../src/domain/todo-list";
-import { DynamoTodoListRepository } from "../src/infrastructure/dynamo-todo-list-repository";
-import { DynamoTaskRepository } from "../src/infrastructure/dynamo-task-repository";
+import { DynamoTodoListRepository } from "../src/infrastructure/aws/dynamo-todo-list-repository";
+import { DynamoTaskRepository } from "../src/infrastructure/aws/dynamo-task-repository";
 import { EmptyQueryClient, FakeDocumentClient } from "./support/fake-document-client";
 
 const now = new Date("2026-01-01T00:00:00Z");

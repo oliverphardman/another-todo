@@ -1,5 +1,5 @@
-import { TodoList, type TodoListRecord } from "../domain/todo-list";
-import type { TodoListRepository } from "../domain/todo-list-repository";
+import { TodoList, type TodoListRecord } from "../../domain/todo-list";
+import type { TodoListRepository } from "../../domain/todo-list-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoTodoListRepository

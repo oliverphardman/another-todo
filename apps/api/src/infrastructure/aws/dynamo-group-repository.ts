@@ -1,5 +1,5 @@
-import { Group, type GroupRecord } from "../domain/group";
-import type { GroupRepository } from "../domain/group-repository";
+import { Group, type GroupRecord } from "../../domain/group";
+import type { GroupRepository } from "../../domain/group-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoGroupRepository

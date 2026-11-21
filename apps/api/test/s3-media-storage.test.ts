@@ -9,9 +9,9 @@ vi.mock("@aws-sdk/s3-presigned-post", () => ({ createPresignedPost: presign.crea
 vi.mock("@aws-sdk/s3-request-presigner", () => ({ getSignedUrl: presign.getSignedUrl }));
 
 import { DeleteObjectCommand, GetObjectCommand, type S3Client } from "@aws-sdk/client-s3";
-import { S3PhotoStorage } from "../src/infrastructure/s3-photo-storage";
+import { S3MediaStorage } from "../src/infrastructure/aws/s3-media-storage";
 
-describe("S3PhotoStorage", () => {
+describe("S3MediaStorage", () => {
 	const send = vi.fn();
 	const client = { send } as unknown as S3Client;
 
@@ -25,7 +25,7 @@ describe("S3PhotoStorage", () => {
 	});
 
 	it("creates an upload form restricted to the content type and size", async () => {
-		const storage = new S3PhotoStorage(client, "bucket");
+		const storage = new S3MediaStorage(client, "bucket");
 		const upload = await storage.createUpload("u/1", "image/png", 1000);
 		expect(upload).toEqual({
 			url: "https://bucket.s3.amazonaws.com/",
@@ -44,7 +44,7 @@ describe("S3PhotoStorage", () => {
 	});
 
 	it("signs download links for an hour", async () => {
-		const storage = new S3PhotoStorage(client, "bucket");
+		const storage = new S3MediaStorage(client, "bucket");
 		expect(await storage.downloadUrl("u/1")).toBe("https://signed.example.com/u/1");
 		const [, command, options] = presign.getSignedUrl.mock.calls[0]!;
 		expect(command).toBeInstanceOf(GetObjectCommand);
@@ -53,7 +53,7 @@ describe("S3PhotoStorage", () => {
 	});
 
 	it("deletes objects", async () => {
-		await new S3PhotoStorage(client, "bucket").remove("u/1");
+		await new S3MediaStorage(client, "bucket").remove("u/1");
 		const [command] = send.mock.calls[0]!;
 		expect(command).toBeInstanceOf(DeleteObjectCommand);
 		expect(command.input).toEqual({ Bucket: "bucket", Key: "u/1" });

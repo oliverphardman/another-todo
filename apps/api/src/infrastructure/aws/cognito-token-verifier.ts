@@ -1,6 +1,6 @@
 import { CognitoJwtVerifier } from "aws-jwt-verify";
 import type { Jwks } from "aws-jwt-verify/jwk";
-import type { TokenVerifier } from "../http/authenticator";
+import type { TokenVerifier } from "../../http/authenticator";
 
 export class CognitoTokenVerifier implements TokenVerifier {
 	private readonly verifier;

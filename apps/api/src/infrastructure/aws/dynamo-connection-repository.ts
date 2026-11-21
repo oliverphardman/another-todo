@@ -1,5 +1,5 @@
-import { Connection, type ConnectionRecord } from "../domain/connection";
-import type { ConnectionRepository } from "../domain/connection-repository";
+import { Connection, type ConnectionRecord } from "../../domain/connection";
+import type { ConnectionRepository } from "../../domain/connection-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoConnectionRepository

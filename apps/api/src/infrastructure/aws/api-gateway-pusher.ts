@@ -3,7 +3,7 @@ import {
 	GoneException,
 	PostToConnectionCommand,
 } from "@aws-sdk/client-apigatewaymanagementapi";
-import type { ConnectionPusher } from "../application/change-notifier";
+import type { ConnectionPusher } from "../../application/change-notifier";
 
 export class ApiGatewayPusher implements ConnectionPusher {
 	constructor(private readonly client: Pick<ApiGatewayManagementApiClient, "send">) {}

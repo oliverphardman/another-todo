@@ -1,19 +1,19 @@
 import { PhotoService } from "../../src/application/photo-service";
 import { ViewSettingsService } from "../../src/application/view-settings-service";
-import { InMemoryPhotoRepository } from "../../src/domain/in-memory-photo-repository";
-import { InMemoryViewSettingsRepository } from "../../src/domain/in-memory-view-settings-repository";
-import { FakePhotoStorage } from "./fake-photo-storage";
+import { InMemoryPhotoRepository } from "../../src/infrastructure/memory/in-memory-photo-repository";
+import { InMemoryViewSettingsRepository } from "../../src/infrastructure/memory/in-memory-view-settings-repository";
+import { FakeMediaStorage } from "./fake-media-storage";
 import { ListService } from "../../src/application/list-service";
 import type { Clock, IdGenerator } from "../../src/application/ports";
 import { TaskService } from "../../src/application/task-service";
-import { InMemoryTaskRepository } from "../../src/domain/in-memory-task-repository";
+import { InMemoryTaskRepository } from "../../src/infrastructure/memory/in-memory-task-repository";
 import { SharedAccess } from "../../src/application/shared-access";
 import { ShareService } from "../../src/application/share-service";
-import { InMemoryShareRepository } from "../../src/domain/in-memory-share-repository";
+import { InMemoryShareRepository } from "../../src/infrastructure/memory/in-memory-share-repository";
 import { FakeUserDirectory } from "./fake-user-directory";
 import { GroupService } from "../../src/application/group-service";
-import { InMemoryGroupRepository } from "../../src/domain/in-memory-group-repository";
-import { InMemoryTodoListRepository } from "../../src/domain/in-memory-todo-list-repository";
+import { InMemoryGroupRepository } from "../../src/infrastructure/memory/in-memory-group-repository";
+import { InMemoryTodoListRepository } from "../../src/infrastructure/memory/in-memory-todo-list-repository";
 
 export class FixedClock implements Clock {
 	constructor(private current = new Date("2026-01-01T00:00:00Z")) {}
@@ -44,7 +44,7 @@ export interface TestServices {
 	readonly groups: GroupService;
 	readonly shares: ShareService;
 	readonly directory: FakeUserDirectory;
-	readonly storage: FakePhotoStorage;
+	readonly storage: FakeMediaStorage;
 	readonly settingsRepository: InMemoryViewSettingsRepository;
 	readonly listRepository: InMemoryTodoListRepository;
 }
@@ -58,7 +58,7 @@ export function createServices(clock = new FixedClock()): TestServices {
 	const shareRepository = new InMemoryShareRepository();
 	const access = new SharedAccess(shareRepository);
 	const directory = new FakeUserDirectory();
-	const storage = new FakePhotoStorage();
+	const storage = new FakeMediaStorage();
 	const ids = new SequenceIds();
 	return {
 		tasks: new TaskService(tasks, lists, access, ids, clock),

@@ -2,7 +2,7 @@ import { CreateTableCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { beforeAll, describe, expect, it } from "vitest";
 import { Task } from "../src/domain/task";
-import { DynamoTaskRepository } from "../src/infrastructure/dynamo-task-repository";
+import { DynamoTaskRepository } from "../src/infrastructure/aws/dynamo-task-repository";
 import { event, rpcEvent } from "../test/support/events";
 import { createTestApi } from "../test/support/test-api";
 

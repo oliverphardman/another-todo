@@ -1,11 +1,11 @@
-import type { PhotoStorage, PhotoUpload } from "../../src/application/photo-storage";
+import type { MediaStorage, MediaUpload } from "../../src/application/media-storage";
 
-export class FakePhotoStorage implements PhotoStorage {
+export class FakeMediaStorage implements MediaStorage {
 	readonly uploads: { key: string; contentType: string; maxBytes: number }[] = [];
 	readonly removed: string[] = [];
 	failRemoval = false;
 
-	async createUpload(key: string, contentType: string, maxBytes: number): Promise<PhotoUpload> {
+	async createUpload(key: string, contentType: string, maxBytes: number): Promise<MediaUpload> {
 		this.uploads.push({ key, contentType, maxBytes });
 		return { url: "https://upload.test/photos", fields: { key, "Content-Type": contentType } };
 	}

@@ -1,18 +1,18 @@
 import { DeleteObjectCommand, GetObjectCommand, type S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import type { PhotoStorage, PhotoUpload } from "../application/photo-storage";
+import type { MediaStorage, MediaUpload } from "../../application/media-storage";
 
 const UPLOAD_SECONDS = 300;
 const DOWNLOAD_SECONDS = 3600;
 
-export class S3PhotoStorage implements PhotoStorage {
+export class S3MediaStorage implements MediaStorage {
 	constructor(
 		private readonly client: S3Client,
 		private readonly bucket: string,
 	) {}
 
-	async createUpload(key: string, contentType: string, maxBytes: number): Promise<PhotoUpload> {
+	async createUpload(key: string, contentType: string, maxBytes: number): Promise<MediaUpload> {
 		const { url, fields } = await createPresignedPost(this.client, {
 			Bucket: this.bucket,
 			Key: key,

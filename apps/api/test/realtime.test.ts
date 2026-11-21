@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { ChangeNotifier, CHANGED_MESSAGE } from "../src/application/change-notifier";
 import { Connection } from "../src/domain/connection";
 import { ChangeBroadcast } from "../src/http/change-broadcast";
-import { ApiGatewayPusher } from "../src/infrastructure/api-gateway-pusher";
-import { DynamoConnectionRepository } from "../src/infrastructure/dynamo-connection-repository";
+import { ApiGatewayPusher } from "../src/infrastructure/aws/api-gateway-pusher";
+import { DynamoConnectionRepository } from "../src/infrastructure/aws/dynamo-connection-repository";
 import { WebSocketEntry, handle } from "../src/websocket/main";
 import {
 	CONNECTION_LIFETIME_SECONDS,

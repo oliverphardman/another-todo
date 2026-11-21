@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ValidationError } from "../src/domain/errors";
-import { InMemoryTodoListRepository } from "../src/domain/in-memory-todo-list-repository";
+import { InMemoryTodoListRepository } from "../src/infrastructure/memory/in-memory-todo-list-repository";
 import { TodoList } from "../src/domain/todo-list";
 
 const now = new Date("2026-01-01T00:00:00Z");

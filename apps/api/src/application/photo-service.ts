@@ -3,7 +3,7 @@ import { Photo } from "../domain/photo";
 import type { PhotoRepository } from "../domain/photo-repository";
 import type { ViewSettingsRepository } from "../domain/view-settings-repository";
 import type { Clock, IdGenerator } from "./ports";
-import type { PhotoStorage, PhotoUpload } from "./photo-storage";
+import type { MediaStorage, MediaUpload } from "./media-storage";
 
 export const PHOTO_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -20,14 +20,14 @@ export interface PhotoWithUrl {
 }
 
 export interface CreatedPhoto extends PhotoWithUrl {
-	readonly upload: PhotoUpload;
+	readonly upload: MediaUpload;
 }
 
 export class PhotoService {
 	constructor(
 		private readonly photos: PhotoRepository,
 		private readonly settings: ViewSettingsRepository,
-		private readonly storage: PhotoStorage,
+		private readonly storage: MediaStorage,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
 	) {}

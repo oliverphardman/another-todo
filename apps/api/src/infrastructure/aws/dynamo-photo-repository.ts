@@ -1,5 +1,5 @@
-import { Photo, type PhotoRecord } from "../domain/photo";
-import type { PhotoRepository } from "../domain/photo-repository";
+import { Photo, type PhotoRecord } from "../../domain/photo";
+import type { PhotoRepository } from "../../domain/photo-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoPhotoRepository

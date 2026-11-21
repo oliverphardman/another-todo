@@ -1,5 +1,5 @@
-import { Share, type ShareRecord } from "../domain/share";
-import type { ShareRepository } from "../domain/share-repository";
+import { Share, type ShareRecord } from "../../domain/share";
+import type { ShareRepository } from "../../domain/share-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoShareRepository

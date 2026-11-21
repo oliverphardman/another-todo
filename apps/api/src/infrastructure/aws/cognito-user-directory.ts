@@ -2,7 +2,7 @@ import {
 	CognitoIdentityProviderClient,
 	ListUsersCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
-import type { DirectoryUser, UserDirectory } from "../application/user-directory";
+import type { DirectoryUser, UserDirectory } from "../../application/user-directory";
 
 export class CognitoUserDirectory implements UserDirectory {
 	constructor(

@@ -1,5 +1,5 @@
-import { Task, type TaskRecord } from "../domain/task";
-import type { TaskRepository } from "../domain/task-repository";
+import { Task, type TaskRecord } from "../../domain/task";
+import type { TaskRepository } from "../../domain/task-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoTaskRepository

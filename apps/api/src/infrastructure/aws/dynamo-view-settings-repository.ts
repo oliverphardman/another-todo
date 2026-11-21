@@ -1,5 +1,5 @@
-import { ViewSettings, type ViewSettingsRecord } from "../domain/view-settings";
-import type { ViewSettingsRepository } from "../domain/view-settings-repository";
+import { ViewSettings, type ViewSettingsRecord } from "../../domain/view-settings";
+import type { ViewSettingsRepository } from "../../domain/view-settings-repository";
 import { DynamoRepository } from "./dynamo-repository";
 
 export class DynamoViewSettingsRepository

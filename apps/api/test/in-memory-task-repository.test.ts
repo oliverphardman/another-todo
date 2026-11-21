@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InMemoryTaskRepository } from "../src/domain/in-memory-task-repository";
+import { InMemoryTaskRepository } from "../src/infrastructure/memory/in-memory-task-repository";
 import { Task } from "../src/domain/task";
 
 const now = new Date("2026-01-01T00:00:00Z");

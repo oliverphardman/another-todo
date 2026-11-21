@@ -3,7 +3,7 @@ import type { Request } from "express";
 import { describe, expect, it } from "vitest";
 import { UnauthorizedError } from "../src/domain/errors";
 import { BearerAuthenticator, type TokenVerifier } from "../src/http/authenticator";
-import { CognitoTokenVerifier } from "../src/infrastructure/cognito-token-verifier";
+import { CognitoTokenVerifier } from "../src/infrastructure/aws/cognito-token-verifier";
 
 const POOL = "eu-west-1_abc123";
 const CLIENT = "client-1";
