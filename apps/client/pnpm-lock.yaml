@@ -6,6 +6,10 @@ settings:
 
 overrides:
   '@xmldom/xmldom@0.7.13': 0.8.15
+  fast-xml-parser@<5.12.0: 5.12.1
+  glob@>=9.0.0 <14.0.2: 14.0.2
+  minimatch@>=7.0.0 <11.0.1: 11.0.9
+  zod@<4.6.6: 4.6.6
 
 importers:
 
@@ -2541,10 +2545,6 @@ packages:
   fast-xml-builder@1.3.2:
     resolution: {integrity: sha512-OX91VSlShLPDgRZV7tk/YQ4l8tT75QziF5Ixg8g4PFbCVPjuTWwN+yQfAxLJ0dufJpprdOd6HlM74Jhd39TcBQ==}
 
-  fast-xml-parser@4.5.7:
-    resolution: {integrity: sha512-a6Qh1RMCNbSrU1+sAyAAZH3rTe+OaWJbNZIq0S+ifZciUUOQtlVxBJwoTUE2bYhysmG/RYyI5WJFIKdBahJdrQ==}
-    hasBin: true
-
   fast-xml-parser@5.12.1:
     resolution: {integrity: sha512-wR8dO/fx+z8C5exuem1e7BKOWvjsuzvjS/tvA/Xu3Z1zQqJGcXrPzXbcAiaMgp2KjreEROcTkmnnisrcmJ2hYQ==}
     hasBin: true
@@ -2675,8 +2675,8 @@ packages:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
 
-  glob@13.0.7:
-    resolution: {integrity: sha512-wfsFgXQ8A3SEI9XGf7Nl3Y9l7ffSrGh7SUCT7vU/2CzYPep9kjxAn1S40F9OPKxAMGCVl7HtNlJhrCJUeUq83g==}
+  glob@14.0.2:
+    resolution: {integrity: sha512-vfMgTR2djMHPUchsJMLpZlYQvtjVL+mHpEr5wPpoCbQs2vr/FBNK+3Gnl9Ara1DSs4Aeg4eG9HiADb5/rkY/ZA==}
     engines: {node: 18 || 20 || >=22}
 
   glob@7.2.3:
@@ -3320,10 +3320,6 @@ packages:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
 
-  minimatch@10.2.6:
-    resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
-    engines: {node: 18 || 20 || >=22}
-
   minimatch@11.0.9:
     resolution: {integrity: sha512-KCFkfyjqerNlSstjlhIGNXIKZGA/6O4V4RlhZ+Dsr621SPPw0mzlypE9D9ZOoPiVefHID+j7/XuMMlqfD/F60Q==}
     engines: {node: 20 || >=22}
@@ -3592,8 +3588,8 @@ packages:
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
-  path-scurry@2.0.2:
-    resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
+  path-scurry@3.0.0:
+    resolution: {integrity: sha512-1pTbQqH1wIwMi/eleQ5leFTTCkzFsPcgXNjwOA8YGGW/W4/kHT3dssE7Z6NH+zuqNLOzOB0uaD61yl7cAcVhgg==}
     engines: {node: 18 || 20 || >=22}
 
   path-type@3.0.0:
@@ -4055,9 +4051,6 @@ packages:
   strip-final-newline@2.0.0:
     resolution: {integrity: sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==}
     engines: {node: '>=6'}
-
-  strnum@1.1.2:
-    resolution: {integrity: sha512-vrN+B7DBIoTTZjnPNewwhx6cBA/H+IS7rfW68n7XxC1y7uoiGQBxaKzqucGUgavX15dJgiGztLJ8vxuEzwqBdA==}
 
   strnum@2.5.1:
     resolution: {integrity: sha512-UM4nTLWzQiDBseVxUGxN0wJzIk0UU89Qi7pKXz9qISo+lhviJikTuikBsK/oFRlpvYHvSdz0TVoLyQ+sEpYwxA==}
@@ -4557,8 +4550,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
 snapshots:
 
@@ -5319,7 +5312,7 @@ snapshots:
       expo-server: 55.0.12
       fetch-nodeshim: 0.4.10
       getenv: 2.0.0
-      glob: 13.0.7
+      glob: 14.0.2
       lan-network: 0.2.1
       multitars: 1.0.2
       node-forge: 1.4.3
@@ -5340,7 +5333,7 @@ snapshots:
       toqr: 0.1.1
       wrap-ansi: 7.0.0
       ws: 8.23.0
-      zod: 3.25.76
+      zod: 4.6.6
     optionalDependencies:
       react-native: 0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2)
     transitivePeerDependencies:
@@ -5369,7 +5362,7 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3(supports-color@10.2.2)
       getenv: 2.0.0
-      glob: 13.0.7
+      glob: 14.0.2
       resolve-from: 5.0.0
       semver: 7.8.6
       slugify: 1.6.9
@@ -5388,7 +5381,7 @@ snapshots:
       '@expo/require-utils': 55.0.8(supports-color@10.2.2)(typescript@5.9.3)
       deepmerge: 4.3.1
       getenv: 2.0.0
-      glob: 13.0.7
+      glob: 14.0.2
       resolve-workspace-root: 2.0.1
       semver: 7.8.6
       slugify: 1.6.9
@@ -5439,9 +5432,9 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3(supports-color@10.2.2)
       getenv: 2.0.0
-      glob: 13.0.7
+      glob: 14.0.2
       ignore: 5.3.2
-      minimatch: 10.2.6
+      minimatch: 11.0.9
       resolve-from: 5.0.0
       semver: 7.8.6
     transitivePeerDependencies:
@@ -5506,7 +5499,7 @@ snapshots:
       chalk: 4.1.2
       debug: 4.4.3(supports-color@10.2.2)
       getenv: 2.0.0
-      glob: 13.0.7
+      glob: 14.0.2
       hermes-parser: 0.32.1
       jsc-safe-url: 0.2.4
       lightningcss: 1.33.0
@@ -5835,7 +5828,7 @@ snapshots:
       '@react-native-community/cli-tools': 20.0.0
       chalk: 4.1.2
       fast-glob: 3.3.3
-      fast-xml-parser: 4.5.7
+      fast-xml-parser: 5.12.1
 
   '@react-native-community/cli-config-android@21.0.0':
     dependencies:
@@ -5942,7 +5935,7 @@ snapshots:
       '@react-native-community/cli-tools': 20.0.0
       chalk: 4.1.2
       execa: 5.1.1
-      fast-xml-parser: 4.5.7
+      fast-xml-parser: 5.12.1
 
   '@react-native-community/cli-platform-apple@21.0.0':
     dependencies:
@@ -6133,7 +6126,7 @@ snapshots:
       '@react-native-windows/fs': 0.83.1
       chalk: 4.1.2
       globby: 11.1.0
-      minimatch: 10.2.6
+      minimatch: 11.0.9
       mustache: 4.2.0
       react-native: 0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2)
       source-map-support: 0.5.21
@@ -6147,12 +6140,12 @@ snapshots:
     dependencies:
       '@react-native-windows/fs': 0.83.1
       find-up: 4.1.0
-      minimatch: 10.2.6
+      minimatch: 11.0.9
 
   '@react-native-windows/fs@0.83.1':
     dependencies:
       graceful-fs: 4.2.12
-      minimatch: 10.2.6
+      minimatch: 11.0.9
 
   '@react-native-windows/package-utils@0.83.1':
     dependencies:
@@ -6160,7 +6153,7 @@ snapshots:
       '@react-native-windows/fs': 0.83.1
       get-monorepo-packages: 1.3.0
       lodash: 4.18.1
-      minimatch: 10.2.6
+      minimatch: 11.0.9
 
   '@react-native-windows/telemetry@0.83.1(tslib@2.9.1)':
     dependencies:
@@ -6171,7 +6164,7 @@ snapshots:
       ci-info: 3.9.0
       envinfo: 7.21.0
       lodash: 4.18.1
-      minimatch: 10.2.6
+      minimatch: 11.0.9
       os-locale: 5.0.0
       xpath: 0.0.27
     transitivePeerDependencies:
@@ -7727,10 +7720,6 @@ snapshots:
       path-expression-matcher: 1.6.2
       xml-naming: 0.3.0
 
-  fast-xml-parser@4.5.7:
-    dependencies:
-      strnum: 1.1.2
-
   fast-xml-parser@5.12.1:
     dependencies:
       '@nodable/entities': 3.1.0
@@ -7876,11 +7865,11 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
-  glob@13.0.7:
+  glob@14.0.2:
     dependencies:
-      minimatch: 10.2.6
+      minimatch: 11.0.9
       minipass: 7.1.3
-      path-scurry: 2.0.2
+      path-scurry: 3.0.0
 
   glob@7.2.3:
     dependencies:
@@ -8616,10 +8605,6 @@ snapshots:
 
   mimic-fn@2.1.0: {}
 
-  minimatch@10.2.6:
-    dependencies:
-      brace-expansion: 5.0.13
-
   minimatch@11.0.9:
     dependencies:
       '@isaacs/nonrecursive-glob-match': 1.1.0
@@ -8863,7 +8848,7 @@ snapshots:
 
   path-parse@1.0.7: {}
 
-  path-scurry@2.0.2:
+  path-scurry@3.0.0:
     dependencies:
       lru-cache: 11.5.3
       minipass: 7.1.3
@@ -9455,8 +9440,6 @@ snapshots:
 
   strip-final-newline@2.0.0: {}
 
-  strnum@1.1.2: {}
-
   strnum@2.5.1:
     dependencies:
       anynum: 1.0.1
@@ -9835,4 +9818,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.25.76: {}
+  zod@4.6.6: {}
