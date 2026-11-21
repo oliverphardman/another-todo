@@ -194,7 +194,7 @@ jobs:
           path: apps/client/macos/build/Build/Products/Release/macos.zip
 
   windows:
-    name: Windows (experimental)
+    name: Windows
     runs-on: windows-latest
     continue-on-error: true
     defaults:
