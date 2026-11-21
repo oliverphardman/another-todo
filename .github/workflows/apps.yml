@@ -196,6 +196,15 @@ jobs:
         run: |
           $rn = node --print "require('path').dirname(require.resolve('react-native/package.json'))"
           Copy-Item "$rn/ReactCommon/react/utils/Base64.h" "$rn/ReactCommon/jsinspector-modern/Base64.h"
+      - name: Add the template keyword the newest MSVC requires in react-native-windows
+        shell: pwsh
+        run: |
+          $rnw = node --print "require('path').dirname(require.resolve('react-native-windows/package.json'))"
+          $file = "$rnw/Microsoft.ReactNative/Fabric/Composition/CompositionContextHelper.cpp"
+          $text = Get-Content $file -Raw
+          $text = $text.Replace("innerBrush.as<TTypeRedirects::CompositionColorBrush>()", "innerBrush.template as<TTypeRedirects::CompositionColorBrush>()")
+          Set-Content $file $text -NoNewline
+          Select-String -Path $file -Pattern "innerBrush.template as"
       - name: Find the installed Windows SDK
         shell: pwsh
         run: |
