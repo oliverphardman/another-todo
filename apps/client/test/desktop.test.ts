@@ -189,8 +189,8 @@ describe("DesktopAuthorizationServer", () => {
 
 	it("passes the identity provider through", async () => {
 		const { server, opened } = setup((url) => callback(url));
-		await server.authorize("Google");
-		expect(new URL(opened[0]!).searchParams.get("identity_provider")).toBe("Google");
+		await server.authorize("Microsoft");
+		expect(new URL(opened[0]!).searchParams.get("identity_provider")).toBe("Microsoft");
 	});
 
 	it("returns null when sign-in times out, is denied or the state does not match", async () => {

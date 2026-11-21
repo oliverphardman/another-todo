@@ -656,7 +656,7 @@
 											"type": "array",
 											"items": {
 												"type": "string",
-												"enum": ["Microsoft", "Google"]
+												"enum": ["Microsoft"]
 											}
 										},
 										"notice": {

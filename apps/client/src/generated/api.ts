@@ -1140,7 +1140,7 @@ export interface operations {
                     "application/json": {
                         /** @enum {string} */
                         authentication: "none" | "password" | "external";
-                        providers: ("Microsoft" | "Google")[];
+                        providers: "Microsoft"[];
                         notice: string | null;
                         realtimeUrl: string | null;
                     };

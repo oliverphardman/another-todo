@@ -25,7 +25,7 @@ cloud "AWS" {
   database "S3 photos bucket\n(private, presigned URLs)" as Photos
 }
 
-Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Google, Microsoft)
+Client --> Cognito : OAuth 2.0 code + PKCE\n(Cognito, Microsoft)
 Client --> Cors : HTTPS + Bearer access token
 Cors --> Discovery
 Cors --> Auth

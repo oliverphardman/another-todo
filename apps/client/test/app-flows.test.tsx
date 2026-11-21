@@ -23,7 +23,7 @@ function addTask(title: string): void {
 
 describe("signed out", () => {
 	it("offers sign in and the configured providers", async () => {
-		const app = await start({ signedIn: false, providers: ["Microsoft", "Google"] });
+		const app = await start({ signedIn: false, providers: ["Microsoft"] });
 		expect(screen.getByRole("heading", { name: "Another To Do" })).toBeTruthy();
 		await act(async () => {
 			fireEvent.click(screen.getByLabelText("Sign in"));
@@ -32,11 +32,11 @@ describe("signed out", () => {
 	});
 
 	it("starts the provider specific flow", async () => {
-		const app = await start({ signedIn: false, providers: ["Microsoft", "Google"] });
+		const app = await start({ signedIn: false, providers: ["Microsoft"] });
 		await act(async () => {
-			fireEvent.click(screen.getByLabelText("Continue with Google"));
+			fireEvent.click(screen.getByLabelText("Continue with Microsoft"));
 		});
-		expect(app.authorizationServer.authorizeCalls).toEqual(["Google"]);
+		expect(app.authorizationServer.authorizeCalls).toEqual(["Microsoft"]);
 	});
 
 	it("shows a loading state until the session is restored", async () => {

@@ -29,9 +29,9 @@ describe("ServerInfoLoader", () => {
 
 	it("keeps only the identity providers it knows", async () => {
 		const loader = new ServerInfoLoader(async () =>
-			reply({ authentication: "password", providers: ["Microsoft", "Facebook", "Google"] }),
+			reply({ authentication: "password", providers: ["Microsoft", "Facebook"] }),
 		);
-		expect((await loader.load("https://x")).providers).toEqual(["Microsoft", "Google"]);
+		expect((await loader.load("https://x")).providers).toEqual(["Microsoft"]);
 	});
 
 	it("treats missing optional fields as absent", async () => {

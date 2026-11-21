@@ -1,6 +1,6 @@
 import type { TokenSet } from "./token-set";
 
-export type IdentityProvider = "Google" | "Microsoft";
+export type IdentityProvider = "Microsoft";
 
 export interface PasswordCredentials {
 	readonly username: string;

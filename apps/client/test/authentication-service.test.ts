@@ -65,8 +65,8 @@ describe("AuthenticationService", () => {
 
 	it("signs in, optionally with a provider, and ignores cancelled sign-ins", async () => {
 		const { service, server } = setup();
-		await service.signIn("Google");
-		expect(server.authorizeCalls).toEqual(["Google"]);
+		await service.signIn("Microsoft");
+		expect(server.authorizeCalls).toEqual(["Microsoft"]);
 		expect(service.get()).toBe("signedIn");
 		const cancelled = setup();
 		cancelled.server.authorizeResult = null;

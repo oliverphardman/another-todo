@@ -42,14 +42,12 @@ locals {
   callback_urls           = concat(var.callback_urls, ["${local.web_origin}/auth/callback"])
   logout_urls             = concat(var.logout_urls, [local.web_origin])
   cors_origins            = concat(var.cors_origins, [local.web_origin])
-  google_enabled          = var.google_client_id != "" && var.google_client_secret != ""
   microsoft_client_id     = var.manage_azure_app ? azuread_application.cognito[0].client_id : var.microsoft_client_id
   microsoft_client_secret = var.manage_azure_app ? azuread_application_password.cognito[0].value : var.microsoft_client_secret
   microsoft_issuer        = var.manage_azure_app ? local.azure_issuer : var.microsoft_issuer
   microsoft_enabled       = var.manage_azure_app || (var.microsoft_client_id != "" && var.microsoft_client_secret != "")
   supported_providers = concat(
     ["COGNITO"],
-    local.google_enabled ? ["Google"] : [],
     local.microsoft_enabled ? ["Microsoft"] : [],
   )
 }
@@ -235,24 +233,6 @@ resource "aws_cognito_user_pool_domain" "main" {
   depends_on = [aws_route53_record.web]
 }
 
-resource "aws_cognito_identity_provider" "google" {
-  count         = local.google_enabled ? 1 : 0
-  user_pool_id  = aws_cognito_user_pool.main.id
-  provider_name = "Google"
-  provider_type = "Google"
-
-  provider_details = {
-    client_id        = var.google_client_id
-    client_secret    = var.google_client_secret
-    authorize_scopes = "openid email profile"
-  }
-
-  attribute_mapping = {
-    email    = "email"
-    username = "sub"
-  }
-}
-
 resource "aws_cognito_identity_provider" "microsoft" {
   count         = local.microsoft_enabled ? 1 : 0
   user_pool_id  = aws_cognito_user_pool.main.id
@@ -288,7 +268,6 @@ resource "aws_cognito_user_pool_client" "app" {
   explicit_auth_flows                  = ["ALLOW_USER_SRP_AUTH", "ALLOW_USER_PASSWORD_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_ADMIN_USER_PASSWORD_AUTH"]
 
   depends_on = [
-    aws_cognito_identity_provider.google,
     aws_cognito_identity_provider.microsoft,
   ]
 }

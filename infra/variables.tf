@@ -23,17 +23,6 @@ variable "cors_origins" {
   default = ["http://localhost:8081"]
 }
 
-variable "google_client_id" {
-  type    = string
-  default = ""
-}
-
-variable "google_client_secret" {
-  type      = string
-  default   = ""
-  sensitive = true
-}
-
 variable "microsoft_client_id" {
   type    = string
   default = ""

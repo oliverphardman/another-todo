@@ -80,10 +80,10 @@ describe("every user-visible string comes from the message catalog", () => {
 	});
 
 	it("the sign-in screen", async () => {
-		await start({ signedIn: false, providers: ["Google"] });
+		await start({ signedIn: false, providers: ["Microsoft"] });
 		expect(screen.getByText("«Another To Do»")).toBeTruthy();
 		byText("app.tagline");
-		byLabel("signIn.provider", { provider: "Google" });
+		byLabel("signIn.provider", { provider: "Microsoft" });
 		expect(unlocalized()).toEqual([]);
 	});
 

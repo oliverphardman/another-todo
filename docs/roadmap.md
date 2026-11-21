@@ -57,7 +57,6 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Sign in with Microsoft on self-hosted servers when an app registration is configured (docs/azure-app-registration.md)
 - [x] The demo is an ordinary deployment (enforced server URL and user, plus a notice)
 - [ ] Publish the container image to a registry
-- [ ] Google sign-in on self-hosted servers
 - [ ] A generic OpenID Connect auth provider
 
 ## Dependencies

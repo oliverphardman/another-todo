@@ -37,7 +37,7 @@ Then open http://localhost:3000. See [docs/self-hosting.md](docs/self-hosting.md
 
 ## Features
 
-- Sign in with a custom login or using a social provider (Microsoft, Google)
+- Sign in with a custom login or using a Microsoft account
 - Works offline
 
 ## Migration assistant

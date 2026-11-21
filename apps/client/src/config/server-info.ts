@@ -23,8 +23,7 @@ export class ServerInfoLoader {
 			return {
 				authentication: body.authentication!,
 				providers: (Array.isArray(body.providers) ? body.providers : []).filter(
-					(provider): provider is IdentityProvider =>
-						provider === "Microsoft" || provider === "Google",
+					(provider): provider is IdentityProvider => provider === "Microsoft",
 				),
 				notice: typeof body.notice === "string" ? body.notice : null,
 				realtimeUrl: typeof body.realtimeUrl === "string" ? body.realtimeUrl : null,
