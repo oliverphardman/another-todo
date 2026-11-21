@@ -11,6 +11,7 @@ export default tseslint.config(
 			"src/generated",
 			"eslint.config.mjs",
 			"metro.config.js",
+			"react-native.config.js",
 			"vitest.config.mts",
 		],
 	},
