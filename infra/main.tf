@@ -2,9 +2,9 @@ terraform {
   required_version = ">= 1.10"
 
   backend "s3" {
-    bucket       = "another-todo-tfstate-469144745165-eu-west-1-an"
+    bucket       = "another-todo-tfstate-469144745165-us-east-1-an"
     key          = "another-todo/terraform.tfstate"
-    region       = "eu-west-1"
+    region       = "us-east-1"
     encrypt      = true
     use_lockfile = true
   }

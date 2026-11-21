@@ -38,7 +38,7 @@
 - Ensure it works offline, syncing to the server when its connection is restored
 
 ## Repo context
-- apps/api is the serverless API: a plain Express server that binds to AWS_LAMBDA_HTTP_ENDPOINT (src/main.ts) on an Amazon Lambda Web Function with ApplicationManaged auth. Web Functions are only in us-east-1, us-east-2, us-west-2, ap-northeast-1 and eu-west-1 (default region is eu-west-1)
+- apps/api is the serverless API: a plain Express server that binds to AWS_LAMBDA_HTTP_ENDPOINT (src/main.ts) on an Amazon Lambda Web Function with ApplicationManaged auth. Web Functions are only in us-east-1, us-east-2, us-west-2, ap-northeast-1 and eu-west-1 (default region is us-east-1)
 - apps/api/openapi.json is the source of truth. Run `pnpm run generate` after editing it to refresh src/generated/api.ts. express-openapi-validator validates requests and responses at runtime
 - Layers: domain (immutable Task and TodoList, repository interfaces), application (TaskService, TaskChanges), infrastructure (DynamoTaskRepository), http (controllers, Authenticator, ErrorHandler), mcp (McpServer JSON-RPC, tools)
 - /mcp and the discovery route are mounted before the validator; /mcp is documented in the spec but handled by McpController
@@ -49,7 +49,7 @@
 - Every package needs lint, test (100% coverage thresholds) and format scripts run by .githooks/pre-commit
 - pnpm 11 needs allowBuilds in pnpm-workspace.yaml for dependencies with install scripts
 - Diagrams are in docs/*.puml
-- Terraform state lives in the S3 bucket another-todo-tfstate-<account>-eu-west-1-an (account regional namespace, S3 native locking). The bucket is created by infra/bootstrap (local state, run once). Deploy with AWS_PROFILE=another-todo from infra/ after building apps/api
+- Terraform state lives in the S3 bucket another-todo-tfstate-<account>-us-east-1-an (account regional namespace, S3 native locking). The bucket is created by infra/bootstrap (local state, run once). Deploy with AWS_PROFILE=another-todo from infra/ after building apps/api
 - Web Function rate_limit must be a multiple of 100 (0, 100 ... 1000, then thousands)
 - DNS (infra/dns.tf): Route 53 zone itsanothertodo.app with DNSSEC (KMS key in us-east-1, DS record in the dnssec_ds_record output). api.* is CloudFront in front of the Web Function (Host header must not be forwarded), auth.* is the Cognito custom domain, and the apex is reserved for the web client (it holds a placeholder A record that Cognito requires until the client is deployed). One us-east-1 ACM certificate covers all three names
 - The app reads PUBLIC_API_URL for the MCP discovery metadata; the Web Function revision uses create_before_destroy because the endpoint pins the live revision
