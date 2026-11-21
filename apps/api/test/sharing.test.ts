@@ -106,6 +106,14 @@ describe("lists and tasks shared between people", () => {
 		return { ...services, list };
 	}
 
+	it("skips a membership whose list no longer exists", async () => {
+		const { lists, listRepository, list } = await shared();
+		await listRepository.delete("alice", list.id);
+		expect(await lists.list("bob")).toEqual([]);
+		await expect(lists.get("bob", list.id)).rejects.toThrow(NotFoundError);
+		await expect(lists.get("carol", list.id)).rejects.toThrow(NotFoundError);
+	});
+
 	it("shows a shared list and its tasks to the member and lets them add and edit tasks", async () => {
 		const { lists, tasks, list } = await shared();
 		await tasks.create("alice", { id: "t1", title: "Passports", listId: list.id });

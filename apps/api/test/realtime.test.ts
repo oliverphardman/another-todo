@@ -1,7 +1,8 @@
 import { GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ChangeNotifier, CHANGED_MESSAGE } from "../src/application/change-notifier";
 import { Connection } from "../src/domain/connection";
+import { ChangeBroadcast } from "../src/http/change-broadcast";
 import { ApiGatewayPusher } from "../src/infrastructure/api-gateway-pusher";
 import { DynamoConnectionRepository } from "../src/infrastructure/dynamo-connection-repository";
 import { WebSocketEntry, handle } from "../src/websocket/main";
@@ -115,6 +116,21 @@ describe("change broadcast over HTTP", () => {
 			event({ method: "POST", path: "/tasks", body: { title: "A" }, sub: "alice" }),
 		);
 		expect(created.status).toBe(201);
+	});
+});
+
+describe("ChangeBroadcast", () => {
+	it("ends the response even when the notifier rejects", async () => {
+		const notifier = { notify: vi.fn().mockRejectedValue(new Error("down")) };
+		const middleware = new ChangeBroadcast(notifier as never).middleware();
+		const end = vi.fn();
+		const response = { statusCode: 200, locals: { ownerId: "alice" }, end };
+		const next = vi.fn();
+		middleware({ method: "POST" } as never, response as never, next);
+		expect(next).toHaveBeenCalledOnce();
+		response.end("body");
+		await vi.waitFor(() => expect(end).toHaveBeenCalledWith("body"));
+		expect(notifier.notify).toHaveBeenCalledWith("alice");
 	});
 });
 

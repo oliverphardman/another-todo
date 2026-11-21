@@ -42,6 +42,9 @@ describe("API against DynamoDB Local", () => {
 		await createTable("lists");
 		await createTable("settings");
 		await createTable("photos");
+		await createTable("groups");
+		await createTable("shares");
+		await createTable("connections");
 	});
 
 	it("runs the full task and list lifecycle", async () => {

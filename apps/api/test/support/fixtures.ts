@@ -46,6 +46,7 @@ export interface TestServices {
 	readonly directory: FakeUserDirectory;
 	readonly storage: FakePhotoStorage;
 	readonly settingsRepository: InMemoryViewSettingsRepository;
+	readonly listRepository: InMemoryTodoListRepository;
 }
 
 export function createServices(clock = new FixedClock()): TestServices {
@@ -69,6 +70,7 @@ export function createServices(clock = new FixedClock()): TestServices {
 		photos: new PhotoService(photos, settings, storage, ids, clock),
 		storage,
 		settingsRepository: settings,
+		listRepository: lists,
 	};
 }
 

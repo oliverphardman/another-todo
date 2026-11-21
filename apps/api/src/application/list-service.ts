@@ -43,12 +43,13 @@ export class ListService {
 			return own;
 		}
 		const membership = await this.access.membershipFor(userId, id);
-		const shared =
-			membership === null ? null : await this.lists.findById(membership.listOwnerId, id);
-		if (shared === null) {
-			throw new NotFoundError(`List ${id} not found`);
+		if (membership !== null) {
+			const shared = await this.lists.findById(membership.listOwnerId, id);
+			if (shared !== null) {
+				return shared;
+			}
 		}
-		return shared;
+		throw new NotFoundError(`List ${id} not found`);
 	}
 
 	async list(userId: string): Promise<TodoList[]> {

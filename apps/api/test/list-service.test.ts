@@ -28,6 +28,7 @@ describe("ListService", () => {
 		const moved = await lists.update("u", second.id, { position: first.position - 1 });
 		expect(moved.position).toBe(first.position - 1);
 		expect((await lists.list("u")).map((list) => list.id)).toEqual([second.id, first.id]);
+		expect((await lists.update("u", first.id, { position: 3 })).name).toBe("First");
 		const both = await lists.update("u", first.id, { name: "Both", position: 5 });
 		expect([both.name, both.position]).toEqual(["Both", 5]);
 		await expect(lists.update("u", first.id, {})).rejects.toThrow(

@@ -42,6 +42,7 @@ describe("GroupService", () => {
 			"Renamed",
 		);
 		expect((await groups.get("u", first.id)).position).toBe(9);
+		expect((await groups.update("u", first.id, { name: "Only name" })).position).toBe(9);
 		await expect(groups.create("u", {})).rejects.toThrow("name must be a string");
 		await expect(groups.update("u", first.id, {})).rejects.toThrow("name or position is required");
 		await expect(groups.update("u", first.id, { position: "x" })).rejects.toThrow(
