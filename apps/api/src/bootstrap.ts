@@ -1,61 +1,42 @@
-import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import express, { type Express, type RequestHandler } from "express";
 import * as OpenApiValidator from "express-openapi-validator";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
 import spec from "../openapi.json";
-import { ChangeNotifier, type ConnectionPusher } from "./application/change-notifier";
-import { ChangeBroadcast } from "./http/change-broadcast";
-import { ApiGatewayPusher } from "./infrastructure/aws/api-gateway-pusher";
-import { DynamoConnectionRepository } from "./infrastructure/aws/dynamo-connection-repository";
+import type { ChangeChannel } from "./application/change-channel";
+import type { DataStore } from "./application/data-store";
+import type { MediaStorage } from "./application/media-storage";
+import { ChangeNotifier } from "./application/change-notifier";
+import { GroupService } from "./application/group-service";
+import { ListService } from "./application/list-service";
+import { PhotoService } from "./application/photo-service";
+import { SystemClock, UuidGenerator } from "./application/ports";
 import { SharedAccess } from "./application/shared-access";
 import { ShareService } from "./application/share-service";
 import type { UserDirectory } from "./application/user-directory";
-import { ShareController } from "./http/share-controller";
-import { CognitoUserDirectory } from "./infrastructure/aws/cognito-user-directory";
-import { DynamoShareRepository } from "./infrastructure/aws/dynamo-share-repository";
-import { GroupService } from "./application/group-service";
-import { GroupController } from "./http/group-controller";
-import { DynamoGroupRepository } from "./infrastructure/aws/dynamo-group-repository";
-import { ListService } from "./application/list-service";
-import { PhotoService } from "./application/photo-service";
-import type { MediaStorage } from "./application/media-storage";
-import { SystemClock, UuidGenerator } from "./application/ports";
 import { TaskService } from "./application/task-service";
 import { ViewSettingsService } from "./application/view-settings-service";
-import { BearerAuthenticator, type Authenticator } from "./http/authenticator";
+import { Settings } from "./composition/env";
+import type { Env, Identity, Media, Platform } from "./composition/platform";
+import { ChangeBroadcast } from "./http/change-broadcast";
+import { ConfigController } from "./http/config-controller";
 import { CorsPolicy } from "./http/cors-policy";
 import { DiscoveryController } from "./http/discovery-controller";
 import { ErrorHandler } from "./http/error-handler";
+import { GroupController } from "./http/group-controller";
 import { ListController } from "./http/list-controller";
-import { RouteSupport } from "./http/route-support";
-import { TaskController } from "./http/task-controller";
-import { CognitoTokenVerifier } from "./infrastructure/aws/cognito-token-verifier";
-import { S3Client } from "@aws-sdk/client-s3";
-import { DynamoPhotoRepository } from "./infrastructure/aws/dynamo-photo-repository";
-import { DynamoViewSettingsRepository } from "./infrastructure/aws/dynamo-view-settings-repository";
-import { S3MediaStorage } from "./infrastructure/aws/s3-media-storage";
 import { PhotoController } from "./http/photo-controller";
+import { RouteSupport } from "./http/route-support";
 import { SettingsController } from "./http/settings-controller";
-import { DynamoTaskRepository } from "./infrastructure/aws/dynamo-task-repository";
-import { DynamoTodoListRepository } from "./infrastructure/aws/dynamo-todo-list-repository";
+import { ShareController } from "./http/share-controller";
+import { TaskController } from "./http/task-controller";
 import { McpController } from "./mcp/mcp-controller";
 import { McpServer } from "./mcp/mcp-server";
 import { createTools } from "./mcp/tools";
 
 export interface ApiConfig {
-	readonly tableName: string;
-	readonly listsTableName: string;
-	readonly settingsTableName: string;
-	readonly photosTableName: string;
-	readonly groupsTableName: string;
-	readonly sharesTableName: string;
-	readonly photosBucket: string;
-	readonly connectionsTableName: string;
-	readonly websocketManagementUrl: string;
-	readonly userPoolId: string;
-	readonly clientId: string;
 	readonly publicUrl: string;
 	readonly corsOrigins: readonly string[];
+	readonly notice: string | null;
 }
 
 export interface Services {
@@ -68,74 +49,39 @@ export interface Services {
 	readonly notifier: ChangeNotifier;
 }
 
-export function readConfig(env: Record<string, string | undefined>): ApiConfig {
-	const {
-		TABLE_NAME: tableName,
-		LISTS_TABLE_NAME: listsTableName,
-		SETTINGS_TABLE_NAME: settingsTableName,
-		PHOTOS_TABLE_NAME: photosTableName,
-		GROUPS_TABLE_NAME: groupsTableName,
-		SHARES_TABLE_NAME: sharesTableName,
-		PHOTOS_BUCKET: photosBucket,
-		CONNECTIONS_TABLE_NAME: connectionsTableName,
-		WEBSOCKET_MANAGEMENT_URL: websocketManagementUrl,
-		COGNITO_USER_POOL_ID: userPoolId,
-		COGNITO_CLIENT_ID: clientId,
-		PUBLIC_API_URL: publicUrl,
-		CORS_ORIGINS: origins = "",
-	} = env;
-	if (
-		!tableName ||
-		!listsTableName ||
-		!settingsTableName ||
-		!photosTableName ||
-		!groupsTableName ||
-		!sharesTableName ||
-		!photosBucket ||
-		!connectionsTableName ||
-		!websocketManagementUrl ||
-		!userPoolId ||
-		!clientId ||
-		!publicUrl
-	) {
-		throw new Error(
-			"TABLE_NAME, LISTS_TABLE_NAME, SETTINGS_TABLE_NAME, PHOTOS_TABLE_NAME, GROUPS_TABLE_NAME, SHARES_TABLE_NAME, PHOTOS_BUCKET, CONNECTIONS_TABLE_NAME, WEBSOCKET_MANAGEMENT_URL, COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and PUBLIC_API_URL must be set",
-		);
+export function readConfig(env: Env, fallbackUrl?: string): ApiConfig {
+	const settings = new Settings(env);
+	const publicUrl = settings.optional("PUBLIC_API_URL") ?? fallbackUrl;
+	if (publicUrl === undefined) {
+		throw new Error("PUBLIC_API_URL must be set");
 	}
-	const corsOrigins = origins
-		.split(",")
-		.map((origin) => origin.trim())
-		.filter((origin) => origin.length > 0);
 	return {
-		tableName,
-		listsTableName,
-		settingsTableName,
-		photosTableName,
-		groupsTableName,
-		sharesTableName,
-		photosBucket,
-		connectionsTableName,
-		websocketManagementUrl,
-		userPoolId,
-		clientId,
 		publicUrl,
-		corsOrigins,
+		corsOrigins: settings.list("CORS_ORIGINS"),
+		notice: settings.optional("SERVER_NOTICE"),
 	};
 }
 
 export function createApp(
 	config: ApiConfig,
 	services: Services,
-	authenticator: Authenticator,
-	issuer: string,
+	platform: { readonly identity: Identity; readonly media: Pick<Media, "router"> },
 ): Express {
+	const { identity, media } = platform;
 	const app = express();
 	app.disable("x-powered-by");
 	app.use(new CorsPolicy(config.corsOrigins).middleware());
-	app.use(new DiscoveryController(issuer, config.publicUrl).router());
+	app.use(new DiscoveryController(identity.issuer ?? config.publicUrl, config.publicUrl).router());
+	app.use(new ConfigController({ authentication: identity.mode, notice: config.notice }).router());
+	if (identity.router !== null) {
+		app.use(identity.router);
+	}
+	if (media.router !== null) {
+		app.use(media.router);
+	}
 	app.use(
 		["/tasks", "/lists", "/groups", "/view-settings", "/photos", "/mcp"],
-		RouteSupport.authenticate(authenticator),
+		RouteSupport.authenticate(identity.authenticator),
 	);
 	app.use(
 		["/tasks", "/lists", "/view-settings", "/photos", "/mcp"],
@@ -165,45 +111,34 @@ export function createApp(
 }
 
 export function createServices(
-	config: ApiConfig,
-	client: DynamoDBDocumentClient,
+	data: DataStore,
 	storage: MediaStorage,
-	pusher: ConnectionPusher,
+	channel: ChangeChannel,
 	directory: UserDirectory,
 ): Services {
-	const tasks = new DynamoTaskRepository(client, config.tableName);
-	const lists = new DynamoTodoListRepository(client, config.listsTableName);
-	const settings = new DynamoViewSettingsRepository(client, config.settingsTableName);
-	const photos = new DynamoPhotoRepository(client, config.photosTableName);
-	const groups = new DynamoGroupRepository(client, config.groupsTableName);
-	const shareRepository = new DynamoShareRepository(client, config.sharesTableName);
-	const access = new SharedAccess(shareRepository);
-	const connections = new DynamoConnectionRepository(client, config.connectionsTableName);
+	const access = new SharedAccess(data.shares);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
 	return {
-		tasks: new TaskService(tasks, lists, access, ids, clock),
-		lists: new ListService(lists, tasks, settings, groups, access, ids, clock),
-		shares: new ShareService(shareRepository, lists, access, directory, clock),
-		groups: new GroupService(groups, lists, ids, clock),
-		settings: new ViewSettingsService(settings, photos, clock),
-		photos: new PhotoService(photos, settings, storage, ids, clock),
-		notifier: new ChangeNotifier(connections, pusher, access),
+		tasks: new TaskService(data.tasks, data.lists, access, ids, clock),
+		lists: new ListService(data.lists, data.tasks, data.settings, data.groups, access, ids, clock),
+		shares: new ShareService(data.shares, data.lists, access, directory, clock),
+		groups: new GroupService(data.groups, data.lists, ids, clock),
+		settings: new ViewSettingsService(data.settings, data.photos, clock),
+		photos: new PhotoService(data.photos, data.settings, storage, ids, clock),
+		notifier: new ChangeNotifier(channel, access),
 	};
 }
 
-export function createApplication(config: ApiConfig, client: DynamoDBDocumentClient): Express {
-	const verifier = new CognitoTokenVerifier(config.userPoolId, config.clientId);
+export function createApplication(config: ApiConfig, platform: Platform): Express {
 	return createApp(
 		config,
 		createServices(
-			config,
-			client,
-			new S3MediaStorage(new S3Client({}), config.photosBucket),
-			ApiGatewayPusher.forEndpoint(config.websocketManagementUrl),
-			CognitoUserDirectory.forPool(config.userPoolId),
+			platform.data,
+			platform.media.storage,
+			platform.realtime.channel,
+			platform.identity.directory,
 		),
-		new BearerAuthenticator(verifier),
-		verifier.issuer,
+		platform,
 	);
 }

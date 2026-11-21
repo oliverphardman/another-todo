@@ -18,4 +18,24 @@ export default tseslint.config(
 			"@typescript-eslint/no-non-null-assertion": "off",
 		},
 	},
+	{
+		files: ["src/domain/**", "src/application/**", "src/http/**", "src/mcp/**"],
+		rules: {
+			"no-restricted-imports": [
+				"error",
+				{
+					patterns: [
+						{
+							group: ["**/infrastructure/**"],
+							message: "Logic layers depend on ports, not providers.",
+						},
+						{
+							group: ["@aws-sdk/*", "aws-jwt-verify", "aws-jwt-verify/*", "node:sqlite", "ws"],
+							message: "Provider SDKs belong under src/infrastructure.",
+						},
+					],
+				},
+			],
+		},
+	},
 );

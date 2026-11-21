@@ -1,8 +1,11 @@
-import type { Request } from "express";
 import { UnauthorizedError } from "../domain/errors";
 
+export interface Credentials {
+	header(name: string): string | undefined;
+}
+
 export interface Authenticator {
-	authenticate(request: Request): Promise<string>;
+	authenticate(credentials: Credentials): Promise<string>;
 }
 
 export interface TokenVerifier {
@@ -14,8 +17,8 @@ const BEARER = /^Bearer (\S+)$/i;
 export class BearerAuthenticator implements Authenticator {
 	constructor(private readonly verifier: TokenVerifier) {}
 
-	async authenticate(request: Request): Promise<string> {
-		const token = BEARER.exec(request.header("authorization") ?? "")?.[1];
+	async authenticate(credentials: Credentials): Promise<string> {
+		const token = BEARER.exec(credentials.header("authorization") ?? "")?.[1];
 		if (token === undefined) {
 			throw new UnauthorizedError("Authentication required");
 		}

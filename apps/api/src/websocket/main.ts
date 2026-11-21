@@ -1,22 +1,18 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { SystemClock } from "../application/ports";
-import { CognitoTokenVerifier } from "../infrastructure/aws/cognito-token-verifier";
-import { DynamoConnectionRepository } from "../infrastructure/aws/dynamo-connection-repository";
+import { PlatformFactory, ProviderRegistries } from "../composition/provider-registry";
+import { AWS_DEFAULTS, AwsClients, awsProviders } from "../infrastructure/aws/aws-providers";
+import { sharedProviders } from "../infrastructure/shared/enforced-identity";
 import { WebSocketHandler, type WebSocketEvent } from "./websocket-handler";
 
 export class WebSocketEntry {
 	static create(env: Record<string, string | undefined>): WebSocketHandler {
-		const { COGNITO_USER_POOL_ID: userPoolId, COGNITO_CLIENT_ID: clientId } = env;
-		const table = env.CONNECTIONS_TABLE_NAME;
-		if (!userPoolId || !clientId || !table) {
-			throw new Error(
-				"COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID and CONNECTIONS_TABLE_NAME must be set",
-			);
-		}
+		const identity = new PlatformFactory(
+			ProviderRegistries.merge(awsProviders, sharedProviders),
+			AWS_DEFAULTS,
+		).identity(env);
 		return new WebSocketHandler(
-			new CognitoTokenVerifier(userPoolId, clientId),
-			new DynamoConnectionRepository(DynamoDBDocumentClient.from(new DynamoDBClient({})), table),
+			identity.authenticator,
+			AwsClients.connections(env),
 			new SystemClock(),
 		);
 	}

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SharedAccess } from "../src/application/shared-access";
 import { ChangeNotifier } from "../src/application/change-notifier";
+import { ApiGatewayChangeChannel } from "../src/infrastructure/aws/api-gateway-change-channel";
 import { Connection } from "../src/domain/connection";
 import { ForbiddenError, NotFoundError, ValidationError } from "../src/domain/errors";
 import { InMemoryShareRepository } from "../src/infrastructure/memory/in-memory-share-repository";
@@ -258,7 +259,9 @@ describe("ChangeNotifier with peers", () => {
 		await connections.save(Connection.open("a", "ca", NOW, 60));
 		await connections.save(Connection.open("b", "cb", NOW, 60));
 		const pusher = new RecordingPusher();
-		await new ChangeNotifier(connections, pusher, { peers: async () => ["b"] }).notify("a");
+		await new ChangeNotifier(new ApiGatewayChangeChannel(connections, pusher), {
+			peers: async () => ["b"],
+		}).notify("a");
 		expect(pusher.pushed.map((entry) => entry.connectionId).sort()).toEqual(["ca", "cb"]);
 	});
 });

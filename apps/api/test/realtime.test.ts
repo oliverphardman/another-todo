@@ -1,6 +1,8 @@
 import { GoneException } from "@aws-sdk/client-apigatewaymanagementapi";
 import { describe, expect, it, vi } from "vitest";
 import { ChangeNotifier, CHANGED_MESSAGE } from "../src/application/change-notifier";
+import { BearerAuthenticator } from "../src/http/authenticator";
+import { ApiGatewayChangeChannel } from "../src/infrastructure/aws/api-gateway-change-channel";
 import { Connection } from "../src/domain/connection";
 import { ChangeBroadcast } from "../src/http/change-broadcast";
 import { ApiGatewayPusher } from "../src/infrastructure/aws/api-gateway-pusher";
@@ -38,7 +40,9 @@ describe("ChangeNotifier", () => {
 		await connections.save(Connection.open("other", "elsewhere", NOW, 60));
 		const pusher = new RecordingPusher();
 		pusher.gone.add("dead");
-		await new ChangeNotifier(connections, pusher, { peers: async () => [] }).notify("u");
+		await new ChangeNotifier(new ApiGatewayChangeChannel(connections, pusher), {
+			peers: async () => [],
+		}).notify("u");
 		expect(pusher.pushed.map((entry) => entry.connectionId).sort()).toEqual(["dead", "live"]);
 		expect(pusher.pushed[0]!.message).toBe(CHANGED_MESSAGE);
 		expect((await connections.list("u")).map((connection) => connection.id)).toEqual(["live"]);
@@ -50,7 +54,9 @@ describe("ChangeNotifier", () => {
 		await connections.save(Connection.open("u", "c1", NOW, 60));
 		const pusher = new RecordingPusher();
 		pusher.failure = new Error("throttled");
-		await new ChangeNotifier(connections, pusher, { peers: async () => [] }).notify("u");
+		await new ChangeNotifier(new ApiGatewayChangeChannel(connections, pusher), {
+			peers: async () => [],
+		}).notify("u");
 		expect(await connections.list("u")).toHaveLength(1);
 	});
 });
@@ -144,7 +150,11 @@ describe("WebSocketHandler", () => {
 		const connections = repository();
 		return {
 			connections,
-			handler: new WebSocketHandler({ verify }, connections, new FixedClock(NOW)),
+			handler: new WebSocketHandler(
+				new BearerAuthenticator({ verify }),
+				connections,
+				new FixedClock(NOW),
+			),
 		};
 	}
 

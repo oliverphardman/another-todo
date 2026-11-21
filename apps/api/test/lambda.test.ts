@@ -25,7 +25,7 @@ describe("server entry point", () => {
 	});
 
 	it("listens on the Lambda HTTP endpoint and stops on SIGTERM", async () => {
-		const { server } = await import("../src/main");
+		const { server } = await import("../src/lambda");
 		await vi.waitFor(() => expect(server.listening).toBe(true));
 		const { port } = server.address() as AddressInfo;
 		const response = await fetch(`http://127.0.0.1:${port}/.well-known/oauth-protected-resource`);
@@ -41,11 +41,11 @@ describe("server entry point", () => {
 
 	it("fails fast without configuration", async () => {
 		vi.stubEnv("COGNITO_CLIENT_ID", "");
-		await expect(import("../src/main")).rejects.toThrow("must be set");
+		await expect(import("../src/lambda")).rejects.toThrow("must be set");
 	});
 
 	it("fails fast on an invalid listen address", async () => {
 		vi.stubEnv("AWS_LAMBDA_HTTP_ENDPOINT", "nonsense");
-		await expect(import("../src/main")).rejects.toThrow("Invalid listen address");
+		await expect(import("../src/lambda")).rejects.toThrow("Invalid listen address");
 	});
 });

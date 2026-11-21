@@ -1,12 +1,17 @@
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import type { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import type { Request } from "express";
 import { afterAll } from "vitest";
-import type { ConnectionPusher } from "../../src/application/change-notifier";
 import { createApp, createServices, type ApiConfig } from "../../src/bootstrap";
+import type { Identity } from "../../src/composition/platform";
+import {
+	ApiGatewayChangeChannel,
+	type ConnectionPusher,
+} from "../../src/infrastructure/aws/api-gateway-change-channel";
+import { DynamoConnectionRepository } from "../../src/infrastructure/aws/dynamo-connection-repository";
+import { DynamoDataStore } from "../../src/infrastructure/aws/dynamo-data-store";
 import { UnauthorizedError } from "../../src/domain/errors";
-import type { Authenticator } from "../../src/http/authenticator";
+import type { Authenticator, Credentials } from "../../src/http/authenticator";
 import { FakeUserDirectory } from "./fake-user-directory";
 import { FakeDocumentClient } from "./fake-document-client";
 import { FakeMediaStorage } from "./fake-media-storage";
@@ -23,23 +28,22 @@ export const TEST_ISSUER = "https://issuer.example.com";
 export const TEST_ORIGIN = "https://app.example.com";
 
 export const TEST_CONFIG: ApiConfig = {
-	tableName: "tasks",
-	listsTableName: "lists",
-	settingsTableName: "settings",
-	photosTableName: "photos",
-	groupsTableName: "groups",
-	sharesTableName: "shares",
-	photosBucket: "photos-bucket",
-	connectionsTableName: "connections",
-	websocketManagementUrl: "https://ws.example.com/prod",
-	userPoolId: "eu-west-1_test",
-	clientId: "client",
 	publicUrl: "https://api.example.com",
 	corsOrigins: [TEST_ORIGIN],
+	notice: null,
+};
+
+export const TEST_TABLES = {
+	tasks: "tasks",
+	lists: "lists",
+	settings: "settings",
+	photos: "photos",
+	groups: "groups",
+	shares: "shares",
 };
 
 export class TokenIsSubjectAuthenticator implements Authenticator {
-	async authenticate(request: Request): Promise<string> {
+	async authenticate(request: Credentials): Promise<string> {
 		const token = /^Bearer (\S+)$/.exec(request.header("authorization") ?? "")?.[1];
 		if (token === undefined) {
 			throw new UnauthorizedError("Authentication required");
@@ -78,11 +82,25 @@ export function createTestApi(
 	pusher: ConnectionPusher = new RecordingPusher(),
 	directory: FakeUserDirectory = testDirectory,
 ) {
+	const identity: Identity = {
+		mode: "external",
+		authenticator: new TokenIsSubjectAuthenticator(),
+		directory,
+		issuer: TEST_ISSUER,
+		router: null,
+	};
 	const app = createApp(
 		TEST_CONFIG,
-		createServices(TEST_CONFIG, client.asClient(), testStorage, pusher, directory),
-		new TokenIsSubjectAuthenticator(),
-		TEST_ISSUER,
+		createServices(
+			new DynamoDataStore(client.asClient(), TEST_TABLES),
+			testStorage,
+			new ApiGatewayChangeChannel(
+				new DynamoConnectionRepository(client.asClient(), "connections"),
+				pusher,
+			),
+			directory,
+		),
+		{ identity, media: { router: null } },
 	);
 	let started: Promise<string> | undefined;
 	const start = (): Promise<string> => {

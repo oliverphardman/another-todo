@@ -10,5 +10,5 @@ const shared = {
 	},
 };
 
-await build({ ...shared, entryPoints: ["src/main.ts"], outfile: "dist/index.mjs" });
+await build({ ...shared, entryPoints: ["src/lambda.ts"], outfile: "dist/index.mjs" });
 await build({ ...shared, entryPoints: ["src/websocket/main.ts"], outfile: "dist/websocket.mjs" });
