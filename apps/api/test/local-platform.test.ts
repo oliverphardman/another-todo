@@ -195,7 +195,12 @@ describe("enforced username", () => {
 			notice: "Shared demo",
 			realtimeUrl: null,
 		});
-		expect((await fetch(`${app.base}/auth/login`, { method: "POST" })).status).toBe(404);
+		const login = await fetch(`${app.base}/auth/login`, {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ username: "a", password: "b" }),
+		});
+		expect(login.status).toBe(404);
 	});
 });
 

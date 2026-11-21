@@ -1,0 +1,67 @@
+@startuml providers
+title Another To Do: logic and providers
+
+skinparam componentStyle rectangle
+
+package "Logic (no SDKs, no infrastructure imports)" {
+  component "http\ncontrollers, middleware" as Http
+  component "application\nservices" as App
+  component "domain\nTask, TodoList, ..." as Domain
+  interface "DataStore\n(one repository per aggregate)" as DataStore
+  interface "MediaStorage" as Media
+  interface "Authenticator\nUserDirectory" as Auth
+  interface "ChangeChannel" as Realtime
+}
+
+package "Provider: AWS (serverless)" {
+  component "DynamoDataStore" as Dynamo
+  component "S3MediaStorage" as S3
+  component "Cognito identity" as Cognito
+  component "ApiGatewayChangeChannel" as ApiGateway
+}
+
+package "Provider: local (Docker)" {
+  component "SqliteDataStore" as Sqlite
+  component "DiskMediaStorage" as Disk
+  component "Password identity\n(+ Microsoft)" as Password
+  component "WebSocketRealtime" as Sockets
+}
+
+package "Shared / tests" {
+  component "Enforced identity" as Enforced
+  component "InMemoryDataStore" as Memory
+}
+
+component "lambda.ts" as Lambda
+component "server.ts" as Server
+
+Http --> App
+App --> Domain
+App --> DataStore
+App --> Media
+App --> Realtime
+Http --> Auth
+
+DataStore <|.. Dynamo
+DataStore <|.. Sqlite
+DataStore <|.. Memory
+Media <|.. S3
+Media <|.. Disk
+Auth <|.. Cognito
+Auth <|.. Password
+Auth <|.. Enforced
+Realtime <|.. ApiGateway
+Realtime <|.. Sockets
+
+Lambda ..> Dynamo : DATA_PROVIDER
+Lambda ..> S3 : MEDIA_PROVIDER
+Lambda ..> Cognito : AUTH_PROVIDER
+Lambda ..> ApiGateway : REALTIME_PROVIDER
+Server ..> Sqlite : DATA_PROVIDER
+Server ..> Disk : MEDIA_PROVIDER
+Server ..> Password : AUTH_PROVIDER
+Server ..> Sockets : REALTIME_PROVIDER
+Lambda ..> Enforced : ENFORCED_USERNAME
+Server ..> Enforced : ENFORCED_USERNAME
+
+@enduml

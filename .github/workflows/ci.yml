@@ -110,3 +110,23 @@ jobs:
           terraform init -backend=false -input=false
           terraform validate
         working-directory: infra/bootstrap
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+
+      - name: Build
+        run: docker build --tag another-todo:ci .
+
+      - name: Start and check
+        run: |
+          docker run --detach --name another-todo --publish 3000:3000 \
+            --env ADMIN_PASSWORD=ci-password another-todo:ci
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://localhost:3000/config && exit 0
+            sleep 1
+          done
+          docker logs another-todo
+          exit 1

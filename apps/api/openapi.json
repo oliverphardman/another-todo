@@ -633,6 +633,155 @@
 					}
 				}
 			}
+		},
+		"/config": {
+			"get": {
+				"operationId": "getConfig",
+				"summary": "How clients should connect to this server",
+				"security": [],
+				"responses": {
+					"200": {
+						"description": "Server configuration",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"required": ["authentication", "providers", "notice", "realtimeUrl"],
+									"properties": {
+										"authentication": {
+											"type": "string",
+											"enum": ["none", "password", "external"]
+										},
+										"providers": {
+											"type": "array",
+											"items": {
+												"type": "string",
+												"enum": ["Microsoft", "Google"]
+											}
+										},
+										"notice": {
+											"type": "string",
+											"nullable": true
+										},
+										"realtimeUrl": {
+											"type": "string",
+											"nullable": true
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "login",
+				"summary": "Sign in with a username and password (servers with their own accounts)",
+				"security": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["username", "password"],
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Signed in",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"required": ["tokenType", "accessToken", "expiresIn"],
+									"properties": {
+										"tokenType": {
+											"type": "string",
+											"enum": ["Bearer"]
+										},
+										"accessToken": {
+											"type": "string"
+										},
+										"expiresIn": {
+											"type": "integer"
+										}
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Invalid username or password"
+					}
+				}
+			}
+		},
+		"/auth/users": {
+			"post": {
+				"operationId": "createUser",
+				"summary": "Create an account (administrators only)",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": ["username", "password"],
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string",
+										"minLength": 8
+									},
+									"email": {
+										"type": "string"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"required": ["username", "email"],
+									"properties": {
+										"username": {
+											"type": "string"
+										},
+										"email": {
+											"type": "string",
+											"nullable": true
+										}
+									}
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Not an administrator"
+					}
+				}
+			}
 		}
 	},
 	"components": {

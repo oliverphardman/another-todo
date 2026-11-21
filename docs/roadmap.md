@@ -48,6 +48,18 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 - [x] Completed tasks move while the circle fills, and the right pane slides in and out
 
+## 6. Self-hosting
+
+- [x] The logic is independent of the infrastructure: DataStore, MediaStorage, Authenticator and ChangeChannel ports with AWS (DynamoDB, S3, Cognito, API Gateway), local (SQLite, disk, passwords, WebSockets) and in-memory providers (docs/providers.puml)
+- [x] Dockerfile and docker-compose.yml: one container with the API, SQLite, photo storage, real time and the web app
+- [x] Enforced server URL, enforced username (no authentication) and a temporary admin password variable
+- [x] Clients ask for the server address, remember it and keep each server's data apart
+- [x] Sign in with Microsoft on self-hosted servers when an app registration is configured (docs/azure-app-registration.md)
+- [x] The demo is an ordinary deployment (enforced server URL and user, plus a notice)
+- [ ] Publish the container image to a registry
+- [ ] Google sign-in on self-hosted servers
+- [ ] A generic OpenID Connect auth provider
+
 ## Dependencies
 
 - Reordering lists needs an order field on lists
