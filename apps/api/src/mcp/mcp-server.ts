@@ -1,3 +1,4 @@
+import packageJson from "../../package.json";
 import { DomainError } from "../domain/errors";
 import type { McpTool, ToolArguments } from "./tools";
 
@@ -80,7 +81,7 @@ export class McpServer {
 				return {
 					protocolVersion: "2025-03-26",
 					capabilities: { tools: {} },
-					serverInfo: { name: "another-todo", version: "0.0.0" },
+					serverInfo: { name: "another-todo", version: packageJson.version },
 				};
 			case "notifications/initialized":
 			case "ping":

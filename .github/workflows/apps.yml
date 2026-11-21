@@ -3,11 +3,16 @@ name: Apps
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to build
+        type: string
+        default: ""
 
 concurrency:
-  group: apps-${{ github.ref }}
+  group: apps-${{ inputs.ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -22,6 +27,8 @@ jobs:
         working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115  # v6.1.1
         with:
           version: 11
@@ -47,6 +54,8 @@ jobs:
         working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115  # v6.1.1
         with:
           version: 11
@@ -91,6 +100,8 @@ jobs:
         working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90  # v1.7.0
         with:
           xcode-version: latest-stable
@@ -116,10 +127,13 @@ jobs:
           xcodebuild -workspace ./*.xcworkspace -scheme AnotherToDo -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Archive the app
+        working-directory: apps/client/ios/build/Build/Products/Release-iphoneos
+        run: ditto -c -k --keepParent ./*.app ios.zip
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: ios
-          path: apps/client/ios/build/Build/Products/Release-iphoneos/*.app
+          path: apps/client/ios/build/Build/Products/Release-iphoneos/ios.zip
 
   macos:
     name: macOS
@@ -129,6 +143,8 @@ jobs:
         working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90  # v1.7.0
         with:
           xcode-version: latest-stable
@@ -155,6 +171,8 @@ jobs:
           f=$(node --print "require('path').join(require('path').dirname(require.resolve('expo-modules-core/package.json', {paths: ['$f']})), 'ios/Platform/Platform.h')")
           sed -i '' '/^#ifndef UIApplication$/,/^#endif$/d' "$f"
           grep -c "alias UIApplication" "$f" || true
+      - name: Stamp the release version
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(node --print "require('./package.json').version")" macos/AnotherToDo-macOS/Info.plist
       - name: Install pods
         run: |
           for attempt in 1 2 3; do
@@ -167,10 +185,13 @@ jobs:
           xcodebuild -workspace macos/AnotherToDo.xcworkspace -scheme AnotherToDo-macOS \
             -configuration Release -derivedDataPath macos/build -quiet \
             ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO build
+      - name: Archive the app
+        working-directory: apps/client/macos/build/Build/Products/Release
+        run: ditto -c -k --keepParent ./*.app macos.zip
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
           name: macos
-          path: apps/client/macos/build/Build/Products/Release/*.app
+          path: apps/client/macos/build/Build/Products/Release/macos.zip
 
   windows:
     name: Windows (experimental)
@@ -181,6 +202,8 @@ jobs:
         working-directory: apps/client
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115  # v6.1.1
         with:
           version: 11
@@ -234,6 +257,15 @@ jobs:
           $arguments = @("modify", "--installPath", "`"$path`"", "--add", "Microsoft.VisualStudio.Workload.Universal", "--quiet", "--norestart", "--wait")
           $process = Start-Process -FilePath "$vs\setup.exe" -ArgumentList $arguments -Wait -PassThru
           "Installer exit code: $($process.ExitCode)"
+      - name: Stamp the release version
+        shell: pwsh
+        run: |
+          $version = node --print "require('./package.json').version"
+          $file = "windows/AnotherToDo.Package/Package.appxmanifest"
+          $text = Get-Content $file -Raw
+          $text = $text -replace '(<Identity[^>]*Version=")[^"]*"', "`${1}$version.0`""
+          Set-Content $file $text -NoNewline
+          Select-String -Path $file -Pattern 'Version='
       - name: Link native modules
         run: pnpm exec react-native autolink-windows --sln windows/AnotherToDo.sln --proj windows/AnotherToDo/AnotherToDo.vcxproj
       - name: Restore and build

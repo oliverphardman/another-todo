@@ -1,3 +1,4 @@
+import packageJson from "../package.json";
 import { describe, expect, it } from "vitest";
 import { McpServer } from "../src/mcp/mcp-server";
 import { createTools } from "../src/mcp/tools";
@@ -22,7 +23,7 @@ describe("McpServer", () => {
 	it("initializes, pings and lists tools", async () => {
 		const s = server();
 		const init = (await s.process("u", rpcText("initialize"))) as { result: any };
-		expect(init.result.serverInfo.name).toBe("another-todo");
+		expect(init.result.serverInfo).toEqual({ name: "another-todo", version: packageJson.version });
 		expect(await s.process("u", rpcText("ping"))).toEqual({ jsonrpc: "2.0", id: 1, result: {} });
 		const listed = (await s.process("u", rpcText("tools/list"))) as { result: any };
 		expect(listed.result.tools.map((tool: { name: string }) => tool.name)).toEqual([
