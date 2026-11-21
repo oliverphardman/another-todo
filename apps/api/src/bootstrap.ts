@@ -1,4 +1,4 @@
-import express, { type Express, type RequestHandler } from "express";
+import express, { type Express, type RequestHandler, type Router } from "express";
 import * as OpenApiValidator from "express-openapi-validator";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types";
 import spec from "../openapi.json";
@@ -66,6 +66,7 @@ export function createApp(
 	config: ApiConfig,
 	services: Services,
 	platform: { readonly identity: Identity; readonly media: Pick<Media, "router"> },
+	web: Router | null = null,
 ): Express {
 	const { identity, media } = platform;
 	const app = express();
@@ -78,6 +79,9 @@ export function createApp(
 	}
 	if (media.router !== null) {
 		app.use(media.router);
+	}
+	if (web !== null) {
+		app.use(web);
 	}
 	app.use(
 		["/tasks", "/lists", "/groups", "/view-settings", "/photos", "/mcp"],
@@ -130,7 +134,11 @@ export function createServices(
 	};
 }
 
-export function createApplication(config: ApiConfig, platform: Platform): Express {
+export function createApplication(
+	config: ApiConfig,
+	platform: Platform,
+	web: Router | null = null,
+): Express {
 	return createApp(
 		config,
 		createServices(
@@ -140,5 +148,6 @@ export function createApplication(config: ApiConfig, platform: Platform): Expres
 			platform.identity.directory,
 		),
 		platform,
+		web,
 	);
 }

@@ -16,3 +16,14 @@ describe("parseListenAddress", () => {
 		}
 	});
 });
+
+describe("readPort", () => {
+	it("defaults to 3000 and validates the value", async () => {
+		const { readPort } = await import("../src/listen-address");
+		expect(readPort(undefined)).toBe(3000);
+		expect(readPort(" ")).toBe(3000);
+		expect(readPort("8080")).toBe(8080);
+		expect(() => readPort("abc")).toThrow("Invalid PORT: abc");
+		expect(() => readPort("70000")).toThrow("Invalid PORT");
+	});
+});

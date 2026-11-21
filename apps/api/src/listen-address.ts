@@ -15,3 +15,16 @@ export function parseListenAddress(value: string | undefined): ListenAddress {
 	}
 	return { host, port };
 }
+
+export const DEFAULT_PORT = 3000;
+
+export function readPort(value: string | undefined): number {
+	if (value === undefined || value.trim() === "") {
+		return DEFAULT_PORT;
+	}
+	const port = Number(value);
+	if (!Number.isInteger(port) || port < 0 || port > 65535) {
+		throw new Error(`Invalid PORT: ${value}`);
+	}
+	return port;
+}
