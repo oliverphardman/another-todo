@@ -45,19 +45,15 @@ describe("sign-in with a username and password", () => {
 });
 
 describe("sign-in on other servers", () => {
-	it("offers the identity providers only for external sign-in", async () => {
+	it("offers the identity providers the server supports", async () => {
 		await renderApp({
 			signedIn: false,
 			providers: ["Microsoft"],
-			config: { authentication: "external" },
+			config: { authentication: "password" },
 		});
 		expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
 		cleanup();
-		await renderApp({
-			signedIn: false,
-			providers: ["Microsoft"],
-			config: { authentication: "none" },
-		});
+		await renderApp({ signedIn: false, config: { authentication: "password" } });
 		expect(screen.queryByLabelText("Continue with Microsoft")).toBeNull();
 	});
 });

@@ -1,3 +1,5 @@
+import type { IdentityProvider } from "../auth/authorization-server";
+
 export type Authentication = "none" | "password" | "external";
 
 export interface AppConfig {
@@ -9,6 +11,7 @@ export interface AppConfig {
 	readonly microsoftClientId: string;
 	readonly scheme: string;
 	readonly authentication: Authentication;
+	readonly providers: readonly IdentityProvider[];
 	readonly notice: string | null;
 }
 
@@ -22,6 +25,7 @@ export interface BuildConfig {
 
 export interface ServerInfo {
 	readonly authentication: Authentication;
+	readonly providers: readonly IdentityProvider[];
 	readonly notice: string | null;
 	readonly realtimeUrl: string | null;
 }
@@ -60,6 +64,7 @@ export class AppConfigReader {
 			microsoftClientId: build.microsoftClientId,
 			scheme: build.scheme,
 			authentication: info.authentication,
+			providers: info.authentication === "external" ? ["Microsoft"] : info.providers,
 			notice: info.notice,
 		};
 	}

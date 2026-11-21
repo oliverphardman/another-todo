@@ -20,16 +20,25 @@ describe("ServerInfoLoader", () => {
 		});
 		expect(await loader.load("https://todo.example.com")).toEqual({
 			authentication: "password",
+			providers: [],
 			notice: "Hi",
 			realtimeUrl: "wss://rt",
 		});
 		expect(urls).toEqual(["https://todo.example.com/config"]);
 	});
 
+	it("keeps only the identity providers it knows", async () => {
+		const loader = new ServerInfoLoader(async () =>
+			reply({ authentication: "password", providers: ["Microsoft", "Facebook", "Google"] }),
+		);
+		expect((await loader.load("https://x")).providers).toEqual(["Microsoft", "Google"]);
+	});
+
 	it("treats missing optional fields as absent", async () => {
 		const loader = new ServerInfoLoader(async () => reply({ authentication: "none" }));
 		expect(await loader.load("https://x")).toEqual({
 			authentication: "none",
+			providers: [],
 			notice: null,
 			realtimeUrl: null,
 		});

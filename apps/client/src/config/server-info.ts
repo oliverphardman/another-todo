@@ -1,4 +1,5 @@
 import type { Fetcher } from "../api/authorized-http";
+import type { IdentityProvider } from "../auth/authorization-server";
 import type { Authentication, ServerInfo } from "./app-config";
 
 const MODES: readonly Authentication[] = ["none", "password", "external"];
@@ -21,6 +22,10 @@ export class ServerInfoLoader {
 			}
 			return {
 				authentication: body.authentication!,
+				providers: (Array.isArray(body.providers) ? body.providers : []).filter(
+					(provider): provider is IdentityProvider =>
+						provider === "Microsoft" || provider === "Google",
+				),
 				notice: typeof body.notice === "string" ? body.notice : null,
 				realtimeUrl: typeof body.realtimeUrl === "string" ? body.realtimeUrl : null,
 			};

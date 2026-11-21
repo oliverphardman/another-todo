@@ -99,9 +99,28 @@ describe("AppConfigReader", () => {
 		vi.unstubAllGlobals();
 	});
 
+	it("offers Microsoft on an external server and what the server lists otherwise", () => {
+		const build = AppConfigReader.read({}, undefined, undefined);
+		const info = { notice: null, realtimeUrl: null } as const;
+		expect(
+			AppConfigReader.compose(build, "https://x", {
+				...info,
+				authentication: "external",
+				providers: [],
+			}).providers,
+		).toEqual(["Microsoft"]);
+		expect(
+			AppConfigReader.compose(build, "https://x", {
+				...info,
+				authentication: "password",
+				providers: ["Microsoft"],
+			}).providers,
+		).toEqual(["Microsoft"]);
+	});
+
 	it("combines the build and the server's answers", () => {
 		const build = AppConfigReader.read({ EXPO_PUBLIC_CLIENT_ID: "c" }, undefined, undefined);
-		const base = { authentication: "password", notice: "Hello" } as const;
+		const base = { authentication: "password", providers: [], notice: "Hello" } as const;
 		expect(
 			AppConfigReader.compose(build, "https://todo.example.com/", { ...base, realtimeUrl: null }),
 		).toMatchObject({

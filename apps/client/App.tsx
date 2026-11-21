@@ -47,7 +47,7 @@ function Application({ config, session }: { config: AppConfig; session: ServerSe
 	}, [container]);
 	return (
 		<ContainerProvider container={container}>
-			<AppShell providers={config.authentication === "external" ? ["Microsoft"] : []} />
+			<AppShell providers={config.providers} />
 		</ContainerProvider>
 	);
 }

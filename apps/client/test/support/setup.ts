@@ -9,6 +9,10 @@ vi.mock("expo-auth-session", () => ({
 	TokenTypeHint: { RefreshToken: "refresh_token" },
 	makeRedirectUri: () => "anothertodo://auth/callback",
 }));
+vi.mock("expo-web-browser", () => ({
+	maybeCompleteAuthSession: () => undefined,
+	openAuthSessionAsync: async () => ({ type: "cancel" }),
+}));
 vi.mock("@react-native-community/datetimepicker", () => ({
 	default: (props: { onChange: unknown; value: Date }) => {
 		(globalThis as { __datePicker?: unknown }).__datePicker = props;

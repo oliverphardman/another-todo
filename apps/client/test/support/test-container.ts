@@ -26,6 +26,7 @@ export const TEST_CONFIG: AppConfig = {
 	scheme: "anothertodo",
 	serverUrl: "https://api.test",
 	authentication: "external",
+	providers: [],
 	notice: null,
 };
 

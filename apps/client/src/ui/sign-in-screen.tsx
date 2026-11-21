@@ -83,19 +83,17 @@ export function SignInScreen({ providers }: SignInScreenProps) {
 					{t("signIn.button")}
 				</AppText>
 			</PressableSurface>
-			{config.authentication === "external"
-				? providers.map((provider) => (
-						<PressableSurface
-							key={provider}
-							accessibilityRole="button"
-							accessibilityLabel={t("signIn.provider", { provider })}
-							onPress={() => void auth.signIn(provider)}
-							style={{ ...button, backgroundColor: palette.surface }}
-						>
-							<AppText weight="600">{t("signIn.provider", { provider })}</AppText>
-						</PressableSurface>
-					))
-				: null}
+			{providers.map((provider) => (
+				<PressableSurface
+					key={provider}
+					accessibilityRole="button"
+					accessibilityLabel={t("signIn.provider", { provider })}
+					onPress={() => void auth.signIn(provider)}
+					style={{ ...button, backgroundColor: palette.surface }}
+				>
+					<AppText weight="600">{t("signIn.provider", { provider })}</AppText>
+				</PressableSurface>
+			))}
 			{server.enforced ? null : (
 				<PressableSurface
 					accessibilityRole="button"

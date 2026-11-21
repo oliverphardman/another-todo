@@ -19,6 +19,8 @@ import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
 import { AuthenticationService } from "./auth/authentication-service";
 import type { AuthorizationServer } from "./auth/authorization-server";
+import type { BrowserSession } from "./auth/browser-session";
+import { ExpoBrowserSession } from "./auth/expo-browser-session";
 import { NoAuthorizationServer } from "./auth/no-authorization-server";
 import { PasswordAuthorizationServer } from "./auth/password-authorization-server";
 import { ExpoAuthorizationServer } from "./auth/expo-authorization-server";
@@ -61,6 +63,7 @@ export interface ContainerOverrides {
 	readonly tokenStore?: KeyValueStore;
 	readonly connectivity?: Connectivity;
 	readonly authorizationServer?: AuthorizationServer;
+	readonly browserSession?: BrowserSession;
 	readonly fetcher?: Fetcher;
 	readonly authFetcher?: Fetcher;
 	readonly clock?: Clock;
@@ -82,7 +85,12 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 	const dataStore = overrides.dataStore ?? new AsyncStorageKeyValueStore();
 	const tokenStore = overrides.tokenStore ?? createTokenStore(overrides.platform);
 	const now = () => clock.now().getTime();
-	const authorizationServer = createAuthorizationServer(config, now, overrides.authFetcher);
+	const authorizationServer = createAuthorizationServer(
+		config,
+		now,
+		overrides.authFetcher,
+		overrides.browserSession,
+	);
 	const auth = new AuthenticationService(
 		overrides.authorizationServer ?? authorizationServer,
 		new TokenRepository(tokenStore),
@@ -161,12 +169,18 @@ function createAuthorizationServer(
 	config: AppConfig,
 	now: () => number,
 	fetcher: Fetcher | undefined,
+	browser: BrowserSession | undefined,
 ): AuthorizationServer {
 	switch (config.authentication) {
 		case "none":
 			return new NoAuthorizationServer();
 		case "password":
-			return new PasswordAuthorizationServer({ apiUrl: config.apiUrl, now, fetcher });
+			return new PasswordAuthorizationServer({
+				apiUrl: config.apiUrl,
+				now,
+				fetcher,
+				browser: browser ?? new ExpoBrowserSession(config.scheme),
+			});
 		case "external":
 			return new ExpoAuthorizationServer({
 				authUrl: config.authUrl,

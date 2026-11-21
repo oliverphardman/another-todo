@@ -345,6 +345,7 @@ describe("expanded layout", () => {
 
 	it("renames and prints from the sidebar right-click menu, and only for custom lists", async () => {
 		const app = await start();
+		app.container.sync.stop();
 		fireEvent.contextMenu(screen.getByLabelText("My Day"));
 		expect(screen.queryByRole("menu")).toBeNull();
 		expect(screen.queryByLabelText("Rename list")).toBeNull();
