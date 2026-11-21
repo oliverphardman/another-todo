@@ -38,8 +38,16 @@ jobs:
       - name: Format
         run: pnpm run format
 
+      - name: Generated types are current
+        run: |
+          pnpm run generate
+          git diff --exit-code -- src/generated
+
       - name: Test
         run: pnpm test
+
+      - name: Integration test
+        run: pnpm run test:integration
 
       - name: Build
         run: pnpm run build
