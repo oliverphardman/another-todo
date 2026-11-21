@@ -2,7 +2,11 @@ import { AuthRequiredError } from "../api/errors";
 import type { TokenProvider } from "../api/http-api-gateway";
 import type { Clock } from "../domain/ports";
 import { Observable } from "../state/observable";
-import type { AuthorizationServer, IdentityProvider } from "./authorization-server";
+import type {
+	AuthorizationServer,
+	IdentityProvider,
+	PasswordCredentials,
+} from "./authorization-server";
 import type { TokenRepository } from "./token-repository";
 import type { TokenSet } from "./token-set";
 
@@ -33,6 +37,13 @@ export class AuthenticationService extends Observable<AuthStatus> implements Tok
 
 	async signIn(provider?: IdentityProvider): Promise<void> {
 		const tokens = await this.server.authorize(provider);
+		if (tokens !== null) {
+			await this.adopt(tokens);
+		}
+	}
+
+	async signInWithPassword(credentials: PasswordCredentials): Promise<void> {
+		const tokens = await this.server.authorize(undefined, credentials);
 		if (tokens !== null) {
 			await this.adopt(tokens);
 		}

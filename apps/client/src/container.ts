@@ -19,10 +19,12 @@ import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
 import { AuthenticationService } from "./auth/authentication-service";
 import type { AuthorizationServer } from "./auth/authorization-server";
-import { DemoAuthorizationServer } from "./auth/demo-authorization-server";
+import { NoAuthorizationServer } from "./auth/no-authorization-server";
+import { PasswordAuthorizationServer } from "./auth/password-authorization-server";
 import { ExpoAuthorizationServer } from "./auth/expo-authorization-server";
 import { TokenRepository } from "./auth/token-repository";
 import type { AppConfig } from "./config/app-config";
+import type { ServerControls } from "./config/server-session";
 import { RandomIdGenerator, SystemClock, type Clock, type IdGenerator } from "./domain/ports";
 import { NetInfoConnectivity, type Connectivity } from "./state/connectivity";
 import { PaneWidths } from "./state/pane-widths";
@@ -31,12 +33,14 @@ import { TodoStore } from "./state/todo-store";
 import { AsyncStorageKeyValueStore } from "./storage/async-storage-key-value-store";
 import type { KeyValueStore } from "./storage/key-value-store";
 import { LocalDatabase } from "./storage/local-database";
-import { SecureStoreKeyValueStore } from "./storage/secure-store-key-value-store";
+import { createTokenStore } from "./storage/token-store";
 import { RealtimeClient, type SocketFactory, type SocketLike } from "./sync/realtime-client";
 import { SyncCoordinator } from "./sync/sync-coordinator";
 import { SyncEngine } from "./sync/sync-engine";
 
 export interface Container {
+	readonly config: AppConfig;
+	readonly server: ServerControls;
 	readonly auth: AuthenticationService;
 	readonly database: LocalDatabase;
 	readonly store: TodoStore;
@@ -52,6 +56,7 @@ export interface Container {
 
 export interface ContainerOverrides {
 	readonly platform: string;
+	readonly server?: ServerControls;
 	readonly dataStore?: KeyValueStore;
 	readonly tokenStore?: KeyValueStore;
 	readonly connectivity?: Connectivity;
@@ -75,31 +80,14 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 	const clock = overrides.clock ?? new SystemClock();
 	const ids = overrides.ids ?? new RandomIdGenerator();
 	const dataStore = overrides.dataStore ?? new AsyncStorageKeyValueStore();
-	const tokenStore =
-		overrides.tokenStore ??
-		(overrides.platform === "web"
-			? new AsyncStorageKeyValueStore()
-			: new SecureStoreKeyValueStore());
+	const tokenStore = overrides.tokenStore ?? createTokenStore(overrides.platform);
 	const now = () => clock.now().getTime();
-	const server =
-		config.demo === null
-			? new ExpoAuthorizationServer({
-					authUrl: config.authUrl,
-					clientId: config.clientId,
-					scheme: config.scheme,
-					now,
-				})
-			: new DemoAuthorizationServer({
-					...config.demo,
-					clientId: config.clientId,
-					now,
-					fetcher: overrides.authFetcher,
-				});
+	const authorizationServer = createAuthorizationServer(config, now, overrides.authFetcher);
 	const auth = new AuthenticationService(
-		overrides.authorizationServer ?? server,
+		overrides.authorizationServer ?? authorizationServer,
 		new TokenRepository(tokenStore),
 		clock,
-		config.demo !== null,
+		config.authentication === "none",
 	);
 	const database = new LocalDatabase(dataStore);
 	const gateway = new HttpApiGateway(config.apiUrl, auth, overrides.fetcher);
@@ -145,6 +133,8 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		connectivity,
 	);
 	return {
+		config,
+		server: overrides.server ?? { enforced: true, change: async () => undefined },
 		auth,
 		database,
 		store,
@@ -165,4 +155,24 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			overrides.sockets ?? ((url) => new WebSocket(url) as SocketLike),
 		),
 	};
+}
+
+function createAuthorizationServer(
+	config: AppConfig,
+	now: () => number,
+	fetcher: Fetcher | undefined,
+): AuthorizationServer {
+	switch (config.authentication) {
+		case "none":
+			return new NoAuthorizationServer();
+		case "password":
+			return new PasswordAuthorizationServer({ apiUrl: config.apiUrl, now, fetcher });
+		case "external":
+			return new ExpoAuthorizationServer({
+				authUrl: config.authUrl,
+				clientId: config.clientId,
+				scheme: config.scheme,
+				now,
+			});
+	}
 }

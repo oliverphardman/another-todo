@@ -1,7 +1,15 @@
-import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { EN_US, type MessageKey, type Messages } from "../src/i18n/en-us";
 import { CATALOGS } from "../src/i18n/locales";
+import { AppConfigReader } from "../src/config/app-config";
+import { ServerInfoLoader } from "../src/config/server-info";
+import { ServerSession } from "../src/config/server-session";
+import { ServerSettings } from "../src/config/server-settings";
+import { I18nProvider } from "../src/i18n/i18n-context";
+import { MemoryKeyValueStore } from "../src/storage/key-value-store";
+import { ServerGate } from "../src/ui/server-gate";
+import { ThemeProvider } from "../src/ui/theme-context";
 import { renderApp } from "./support/render-app";
 
 const PSEUDO = "pseudo";
@@ -76,6 +84,54 @@ describe("every user-visible string comes from the message catalog", () => {
 		expect(screen.getByText("«Another To Do»")).toBeTruthy();
 		byText("app.tagline");
 		byLabel("signIn.provider", { provider: "Google" });
+		expect(unlocalized()).toEqual([]);
+	});
+
+	it("the username and password sign-in, the notice and changing server", async () => {
+		await start({
+			signedIn: false,
+			config: { authentication: "password" },
+			server: { enforced: false, change: async () => undefined },
+		});
+		byLabel("signIn.username");
+		byLabel("signIn.password");
+		byLabel("server.change");
+		fireEvent.submit(byLabel("signIn.password"));
+		expect(unlocalized()).toEqual([]);
+	});
+
+	it("the notice banner", async () => {
+		await start({ config: { notice: "Public demo" } });
+		byLabel("notice.dismiss");
+		expect(unlocalized()).toEqual([]);
+	});
+
+	it("the server address prompt and its errors", async () => {
+		const session = new ServerSession(
+			AppConfigReader.read({}, undefined, undefined),
+			new ServerSettings(new MemoryKeyValueStore(), null, async () => undefined),
+			new ServerInfoLoader(async () => new Response("{}", { status: 500 })),
+		);
+		render(
+			<ThemeProvider scheme="light">
+				<I18nProvider locale={PSEUDO}>
+					<ServerGate session={session}>{() => null}</ServerGate>
+				</I18nProvider>
+			</ThemeProvider>,
+		);
+		await act(async () => session.start());
+		byText("server.title");
+		byText("server.body");
+		byLabel("server.connect");
+		fireEvent.change(byLabel("server.label"), { target: { value: "ftp://x" } });
+		await act(async () => {
+			fireEvent.click(byLabel("server.connect"));
+		});
+		byText("server.invalid");
+		expect(unlocalized()).toEqual([]);
+		await act(async () => session.connect("todo.example.com"));
+		byText("server.unreachable", { url: "https://todo.example.com" });
+		byLabel("server.retry");
 		expect(unlocalized()).toEqual([]);
 	});
 

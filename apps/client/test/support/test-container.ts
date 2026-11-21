@@ -3,6 +3,7 @@ import { FakeMicrosoftAuthorizer } from "./fake-microsoft";
 import { NO_MOTION, type Motion } from "../../src/ui/motion";
 import { MemoryKeyValueStore } from "../../src/storage/key-value-store";
 import type { AppConfig } from "../../src/config/app-config";
+import type { ServerControls } from "../../src/config/server-session";
 import {
 	FakeAuthorizationServer,
 	FakeShareGateway,
@@ -23,7 +24,9 @@ export const TEST_CONFIG: AppConfig = {
 	realtimeUrl: "wss://realtime.test/dev",
 	microsoftClientId: "ms-client",
 	scheme: "anothertodo",
-	demo: null,
+	serverUrl: "https://api.test",
+	authentication: "external",
+	notice: null,
 };
 
 export interface TestContainer {
@@ -51,7 +54,8 @@ export function createTestContainer(
 		}),
 	motion: Motion = NO_MOTION,
 	microsoftAvailable = true,
-	demo: AppConfig["demo"] = null,
+	overrides: Partial<AppConfig> = {},
+	server?: ServerControls,
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -69,9 +73,10 @@ export function createTestContainer(
 	microsoftAuthorizer.available = microsoftAvailable;
 	const graphRequests: string[] = [];
 	const container = createContainer(
-		{ ...TEST_CONFIG, demo },
+		{ ...TEST_CONFIG, ...overrides },
 		{
 			platform: "web",
+			server,
 			dataStore,
 			tokenStore,
 			connectivity,

@@ -6,7 +6,11 @@ import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
 import type { ListPrinter } from "../../src/print/list-print-document";
 import type { SoundPlayer } from "../../src/audio/sound-player";
 import type { ApiGateway } from "../../src/api/api-gateway";
-import type { AuthorizationServer, IdentityProvider } from "../../src/auth/authorization-server";
+import type {
+	AuthorizationServer,
+	IdentityProvider,
+	PasswordCredentials,
+} from "../../src/auth/authorization-server";
 import type { TokenSet } from "../../src/auth/token-set";
 import type { Clock, IdGenerator } from "../../src/domain/ports";
 import { Task, type TaskChanges, type TaskData } from "../../src/domain/task";
@@ -320,7 +324,10 @@ export class FakeAuthorizationServer implements AuthorizationServer {
 	refreshCalls = 0;
 	revoked: string[] = [];
 
-	async authorize(provider?: IdentityProvider): Promise<TokenSet | null> {
+	async authorize(
+		provider?: IdentityProvider,
+		_credentials?: PasswordCredentials,
+	): Promise<TokenSet | null> {
 		this.authorizeCalls.push(provider);
 		return this.authorizeResult;
 	}

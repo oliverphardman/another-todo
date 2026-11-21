@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { act } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -13,42 +13,70 @@ vi.mock("react-native-safe-area-context", () => ({
 vi.mock("expo-status-bar", () => ({ StatusBar: () => <div data-testid="status-bar" /> }));
 
 import App from "../App";
-import { AppConfigReader } from "../src/config/app-config";
 import { setViewport } from "./support/render-app";
+
+const serverAnswer = (authentication: string) =>
+	vi.fn(async (url: string) =>
+		url.endsWith("/config")
+			? new Response(JSON.stringify({ authentication, notice: null, realtimeUrl: null }), {
+					status: 200,
+				})
+			: new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
+					status: 200,
+				}),
+	);
+
+afterEach(() => {
+	vi.unstubAllEnvs();
+	vi.unstubAllGlobals();
+});
 
 describe("App", () => {
 	beforeEach(() => {
 		setViewport(1280);
 	});
 
-	it("composes the container and shows the sign-in screen for a new user unless demo mode signs in", async () => {
-		const demo = AppConfigReader.read(process.env).demo !== null;
+	it("asks for the server at first start, then shows the sign-in screen it offers", async () => {
+		vi.stubGlobal("fetch", serverAnswer("external"));
 		const { unmount } = render(<App />);
-		if (demo) {
-			await waitFor(() => expect(screen.queryByLabelText("Sign in")).toBeNull());
-		} else {
-			await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
-			expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
-		}
+		await waitFor(() => expect(screen.getByLabelText("Server address")).toBeTruthy());
+		fireEvent.change(screen.getByLabelText("Server address"), {
+			target: { value: "todo.example.com" },
+		});
+		fireEvent.click(screen.getByLabelText("Connect"));
+		await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
+		expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
+		expect(screen.getByLabelText("Change server")).toBeTruthy();
 		expect(screen.getByTestId("status-bar")).toBeTruthy();
+		unmount();
+	});
+
+	it("skips the prompt and sign-in on a server it is locked to with authentication disabled", async () => {
+		vi.stubEnv("EXPO_PUBLIC_ENFORCED_SERVER_URL", "https://demo.example.com");
+		vi.stubGlobal("fetch", serverAnswer("none"));
+		const { unmount } = render(<App />);
+		await waitFor(() => expect(screen.getByLabelText("Add a task")).toBeTruthy());
+		expect(screen.queryByLabelText("Server address")).toBeNull();
+		expect(screen.queryByLabelText("Sign in")).toBeNull();
 		unmount();
 	});
 });
 
 describe("day rollover", () => {
-	beforeEach(() => {
-		vi.useFakeTimers();
-	});
-
-	afterEach(() => {
-		vi.useRealTimers();
-	});
-
 	it("keeps checking whether the day has changed while the app is open", async () => {
+		vi.stubEnv("EXPO_PUBLIC_ENFORCED_SERVER_URL", "https://demo.example.com");
+		vi.stubGlobal("fetch", serverAnswer("none"));
+		const timers = vi.spyOn(globalThis, "setInterval");
 		const { unmount } = render(<App />);
-		await act(async () => {
-			await vi.advanceTimersByTimeAsync(120_000);
+		await waitFor(() => expect(screen.getByLabelText("Add a task")).toBeTruthy());
+		act(() => {
+			for (const [callback, delay] of timers.mock.calls) {
+				if (delay === 60_000) {
+					(callback as () => void)();
+				}
+			}
 		});
+		timers.mockRestore();
 		unmount();
 	});
 });

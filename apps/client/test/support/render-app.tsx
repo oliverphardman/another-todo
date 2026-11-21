@@ -5,6 +5,8 @@ import { AppShell } from "../../src/ui/app-shell";
 import { ContainerProvider } from "../../src/ui/container-context";
 import { ThemeProvider } from "../../src/ui/theme-context";
 import { createTestContainer, type TestContainer } from "./test-container";
+import type { AppConfig } from "../../src/config/app-config";
+import type { ServerControls } from "../../src/config/server-session";
 import type { IdentityProvider } from "../../src/auth/authorization-server";
 
 export function setViewport(width: number): void {
@@ -25,7 +27,8 @@ export interface RenderOptions {
 	readonly motion?: Motion;
 	readonly accessToken?: string;
 	readonly microsoftAvailable?: boolean;
-	readonly demo?: boolean;
+	readonly config?: Partial<AppConfig>;
+	readonly server?: ServerControls;
 	readonly saved?: Readonly<Record<string, string>>;
 	readonly providers?: readonly IdentityProvider[];
 	readonly respond?: (method: string, url: string, body: unknown) => Response | Promise<Response>;
@@ -37,7 +40,8 @@ export async function renderApp(options: RenderOptions = {}) {
 		options.respond,
 		options.motion,
 		options.microsoftAvailable,
-		options.demo === true ? { region: "eu-west-1", username: "u", password: "p" } : null,
+		options.config,
+		options.server,
 	);
 	for (const [key, value] of Object.entries(options.saved ?? {})) {
 		await test.dataStore.set(key, value);

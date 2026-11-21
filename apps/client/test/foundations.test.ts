@@ -50,40 +50,77 @@ describe("ports", () => {
 });
 
 describe("AppConfigReader", () => {
-	it("uses the production endpoints by default", () => {
-		expect(AppConfigReader.read({})).toEqual({
-			apiUrl: "https://api.itsanothertodo.app",
-			authUrl: "https://auth.itsanothertodo.app",
-			clientId: "2c2ushhiiv12b6g2u1aj66c5tb",
-			realtimeUrl: "wss://7kxcqc6eij.execute-api.us-east-1.amazonaws.com/dev",
+	it("starts with no enforced server and no external sign-in", () => {
+		expect(AppConfigReader.read({}, undefined, undefined)).toEqual({
+			authUrl: "",
+			clientId: "",
 			microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
 			scheme: "anothertodo",
-			demo: {
-				region: "us-east-1",
-				username: "default@itsanothertodo.app",
-				password: "DefaultDemoUser2026",
-			},
+			enforcedServerUrl: null,
 		});
 	});
 
-	it("turns demo sign-in off when asked", () => {
-		expect(AppConfigReader.read({ EXPO_PUBLIC_DEMO: "false" }).demo).toBeNull();
-	});
-
-	it("accepts overrides and trims trailing slashes", () => {
-		const config = AppConfigReader.read({
-			EXPO_PUBLIC_API_URL: "http://localhost:3000/",
-			EXPO_PUBLIC_AUTH_URL: "http://localhost:9000//",
-			EXPO_PUBLIC_CLIENT_ID: "dev-client",
-			EXPO_PUBLIC_REALTIME_URL: "ws://localhost:3001/",
-			EXPO_PUBLIC_MICROSOFT_CLIENT_ID: "dev-ms",
-		});
-		expect(config).toMatchObject({
-			apiUrl: "http://localhost:3000",
+	it("reads the build-time settings and trims trailing slashes", () => {
+		expect(
+			AppConfigReader.read({
+				EXPO_PUBLIC_ENFORCED_SERVER_URL: " https://todo.example.com// ",
+				EXPO_PUBLIC_AUTH_URL: "http://localhost:9000//",
+				EXPO_PUBLIC_CLIENT_ID: "dev-client",
+				EXPO_PUBLIC_MICROSOFT_CLIENT_ID: "dev-ms",
+			}),
+		).toEqual({
 			authUrl: "http://localhost:9000",
 			clientId: "dev-client",
-			realtimeUrl: "ws://localhost:3001",
 			microsoftClientId: "dev-ms",
+			scheme: "anothertodo",
+			enforcedServerUrl: "https://todo.example.com",
 		});
+	});
+
+	it("lets the runtime configuration of a hosted web app enforce its server", () => {
+		const env = { EXPO_PUBLIC_ENFORCED_SERVER_URL: "https://built.example.com" };
+		expect(
+			AppConfigReader.read(env, { serverUrl: "https://api.example.com/", enforced: true })
+				.enforcedServerUrl,
+		).toBe("https://api.example.com");
+		expect(
+			AppConfigReader.read(env, { serverUrl: "", enforced: true }, "https://todo.example.com")
+				.enforcedServerUrl,
+		).toBe("https://todo.example.com");
+		expect(
+			AppConfigReader.read(env, { serverUrl: "https://x.example.com", enforced: false })
+				.enforcedServerUrl,
+		).toBe("https://built.example.com");
+	});
+
+	it("reads the runtime configuration and origin from the page by default", () => {
+		vi.stubGlobal("__ATD_CONFIG__", { serverUrl: "", enforced: true });
+		expect(AppConfigReader.read({}).enforcedServerUrl).toBe(globalThis.location.origin);
+		vi.unstubAllGlobals();
+	});
+
+	it("combines the build and the server's answers", () => {
+		const build = AppConfigReader.read({ EXPO_PUBLIC_CLIENT_ID: "c" }, undefined, undefined);
+		const base = { authentication: "password", notice: "Hello" } as const;
+		expect(
+			AppConfigReader.compose(build, "https://todo.example.com/", { ...base, realtimeUrl: null }),
+		).toMatchObject({
+			serverUrl: "https://todo.example.com",
+			apiUrl: "https://todo.example.com",
+			realtimeUrl: "wss://todo.example.com/realtime",
+			authentication: "password",
+			notice: "Hello",
+			clientId: "c",
+		});
+		expect(
+			AppConfigReader.compose(build, "http://localhost:3000", { ...base, realtimeUrl: null })
+				.realtimeUrl,
+		).toBe("ws://localhost:3000/realtime");
+		expect(
+			AppConfigReader.compose(build, "https://x.example.com", {
+				...base,
+				realtimeUrl: "wss://rt.example.com/dev",
+			}).realtimeUrl,
+		).toBe("wss://rt.example.com/dev");
 	});
 });

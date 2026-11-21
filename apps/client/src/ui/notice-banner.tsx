@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { Linking, View } from "react-native";
-import { DemoHost } from "../config/demo-host";
+import { View } from "react-native";
 import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
+import { useContainer } from "./container-context";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
-export function DemoBanner() {
+export function NoticeBanner() {
 	const palette = useTheme();
 	const { t } = useI18n();
+	const { config } = useContainer();
 	const [dismissed, setDismissed] = useState(false);
-	if (dismissed || !DemoHost.isActive()) {
+	if (dismissed || config.notice === null) {
 		return null;
 	}
 	return (
@@ -27,19 +28,11 @@ export function DemoBanner() {
 			}}
 		>
 			<AppText size={13} style={{ flex: 1 }}>
-				{t("demo.message")}{" "}
-				<AppText
-					size={13}
-					accessibilityRole="link"
-					onPress={() => void Linking.openURL(DemoHost.SOURCE_URL)}
-					style={{ color: palette.accent, textDecorationLine: "underline" }}
-				>
-					{t("demo.source")}
-				</AppText>
+				{config.notice}
 			</AppText>
 			<PressableSurface
 				accessibilityRole="button"
-				accessibilityLabel={t("demo.dismiss")}
+				accessibilityLabel={t("notice.dismiss")}
 				onPress={() => setDismissed(true)}
 				style={{ padding: 6 }}
 			>

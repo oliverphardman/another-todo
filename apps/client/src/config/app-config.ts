@@ -1,47 +1,82 @@
-export interface DemoUser {
-	readonly region: string;
-	readonly username: string;
-	readonly password: string;
-}
+export type Authentication = "none" | "password" | "external";
 
 export interface AppConfig {
+	readonly serverUrl: string;
 	readonly apiUrl: string;
 	readonly authUrl: string;
 	readonly clientId: string;
 	readonly realtimeUrl: string;
 	readonly microsoftClientId: string;
 	readonly scheme: string;
-	readonly demo: DemoUser | null;
+	readonly authentication: Authentication;
+	readonly notice: string | null;
 }
 
-const DEFAULTS = {
-	apiUrl: "https://api.itsanothertodo.app",
-	authUrl: "https://auth.itsanothertodo.app",
-	clientId: "2c2ushhiiv12b6g2u1aj66c5tb",
-	realtimeUrl: "wss://7kxcqc6eij.execute-api.us-east-1.amazonaws.com/dev",
-	microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
-	scheme: "anothertodo",
-	demo: {
-		region: "us-east-1",
-		username: "default@itsanothertodo.app",
-		password: "DefaultDemoUser2026",
-	},
-};
+export interface BuildConfig {
+	readonly authUrl: string;
+	readonly clientId: string;
+	readonly microsoftClientId: string;
+	readonly scheme: string;
+	readonly enforcedServerUrl: string | null;
+}
+
+export interface ServerInfo {
+	readonly authentication: Authentication;
+	readonly notice: string | null;
+	readonly realtimeUrl: string | null;
+}
+
+export interface RuntimeConfig {
+	readonly serverUrl: string;
+	readonly enforced: boolean;
+}
+
+const MICROSOFT_CLIENT_ID = "dbb91251-9be4-4765-8e99-f20806a78f1a";
 
 export class AppConfigReader {
-	static read(env: Record<string, string | undefined>): AppConfig {
+	static read(
+		env: Record<string, string | undefined>,
+		runtime: RuntimeConfig | undefined = (globalThis as { __ATD_CONFIG__?: RuntimeConfig })
+			.__ATD_CONFIG__,
+		origin: string | undefined = globalThis.location?.origin,
+	): BuildConfig {
 		return {
-			apiUrl: AppConfigReader.trimmed(env.EXPO_PUBLIC_API_URL, DEFAULTS.apiUrl),
-			authUrl: AppConfigReader.trimmed(env.EXPO_PUBLIC_AUTH_URL, DEFAULTS.authUrl),
-			clientId: env.EXPO_PUBLIC_CLIENT_ID || DEFAULTS.clientId,
-			microsoftClientId: env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID || DEFAULTS.microsoftClientId,
-			realtimeUrl: AppConfigReader.trimmed(env.EXPO_PUBLIC_REALTIME_URL, DEFAULTS.realtimeUrl),
-			scheme: DEFAULTS.scheme,
-			demo: env.EXPO_PUBLIC_DEMO === "false" ? null : DEFAULTS.demo,
+			authUrl: AppConfigReader.trimmed(env.EXPO_PUBLIC_AUTH_URL),
+			clientId: env.EXPO_PUBLIC_CLIENT_ID ?? "",
+			microsoftClientId: env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID || MICROSOFT_CLIENT_ID,
+			scheme: "anothertodo",
+			enforcedServerUrl: AppConfigReader.enforced(env, runtime, origin),
 		};
 	}
 
-	private static trimmed(value: string | undefined, fallback: string): string {
-		return (value || fallback).replace(/\/+$/, "");
+	static compose(build: BuildConfig, serverUrl: string, info: ServerInfo): AppConfig {
+		const url = AppConfigReader.trimmed(serverUrl);
+		return {
+			serverUrl: url,
+			apiUrl: url,
+			authUrl: build.authUrl,
+			clientId: build.clientId,
+			realtimeUrl: info.realtimeUrl ?? `${url.replace(/^http/, "ws")}/realtime`,
+			microsoftClientId: build.microsoftClientId,
+			scheme: build.scheme,
+			authentication: info.authentication,
+			notice: info.notice,
+		};
+	}
+
+	private static enforced(
+		env: Record<string, string | undefined>,
+		runtime: RuntimeConfig | undefined,
+		origin: string | undefined,
+	): string | null {
+		if (runtime?.enforced === true) {
+			return AppConfigReader.trimmed(runtime.serverUrl || origin);
+		}
+		const built = AppConfigReader.trimmed(env.EXPO_PUBLIC_ENFORCED_SERVER_URL);
+		return built === "" ? null : built;
+	}
+
+	private static trimmed(value: string | undefined): string {
+		return (value ?? "").trim().replace(/\/+$/, "");
 	}
 }

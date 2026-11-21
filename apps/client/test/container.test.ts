@@ -43,26 +43,36 @@ describe("createContainer", () => {
 		expect(await container.auth.getAccessToken()).toBe("a");
 	});
 
-	it("signs in as the default user in demo mode", async () => {
-		const urls: string[] = [];
+	it("signs in without credentials when the server has authentication disabled", async () => {
 		const container = createContainer(
-			{ ...TEST_CONFIG, demo: { region: "eu-west-1", username: "u", password: "p" } },
-			{
-				platform: "web",
-				authFetcher: async (url) => {
-					urls.push(url);
-					return new Response(
-						JSON.stringify({ AuthenticationResult: { AccessToken: "demo", ExpiresIn: 3600 } }),
-						{ status: 200 },
-					);
-				},
-			},
+			{ ...TEST_CONFIG, authentication: "none" },
+			{ platform: "web" },
 		);
 		await container.auth.restore();
 		expect(container.auth.automatic).toBe(true);
 		expect(container.auth.get()).toBe("signedIn");
-		expect(await container.auth.getAccessToken()).toBe("demo");
-		expect(urls).toEqual(["https://cognito-idp.eu-west-1.amazonaws.com/"]);
+		expect(await container.auth.getAccessToken()).toBe("");
+	});
+
+	it("signs in with a username and password when the server has its own accounts", async () => {
+		const urls: string[] = [];
+		const container = createContainer(
+			{ ...TEST_CONFIG, authentication: "password" },
+			{
+				platform: "web",
+				authFetcher: async (url) => {
+					urls.push(url);
+					return new Response(JSON.stringify({ accessToken: "token", expiresIn: 3600 }), {
+						status: 200,
+					});
+				},
+			},
+		);
+		await container.auth.restore();
+		expect(container.auth.get()).toBe("signedOut");
+		await container.auth.signInWithPassword({ username: "admin", password: "secret" });
+		expect(await container.auth.getAccessToken()).toBe("token");
+		expect(urls).toEqual(["https://api.test/auth/login"]);
 	});
 
 	it("opens a real WebSocket by default once signed in", async () => {

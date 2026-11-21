@@ -4,21 +4,29 @@ import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { DeviceLocale } from "./src/i18n/device-locale";
 import { I18nProvider } from "./src/i18n/i18n-context";
-import { AppConfigReader } from "./src/config/app-config";
+import { AppConfigReader, type AppConfig } from "./src/config/app-config";
+import { ServerSession, ServerSessions } from "./src/config/server-session";
 import { createContainer } from "./src/container";
+import { AsyncStorageKeyValueStore } from "./src/storage/async-storage-key-value-store";
+import { createTokenStore } from "./src/storage/token-store";
 import { ContainerProvider } from "./src/ui/container-context";
 import { AppShell } from "./src/ui/app-shell";
+import { ServerGate } from "./src/ui/server-gate";
 import { ThemeProvider } from "./src/ui/theme-context";
 
-export default function App() {
-	const container = useMemo(
-		() =>
-			createContainer(AppConfigReader.read(process.env), {
-				platform: Platform.OS,
-			}),
-		[],
+function createSession(): ServerSession {
+	return ServerSessions.create(
+		AppConfigReader.read(process.env),
+		new AsyncStorageKeyValueStore(),
+		createTokenStore(Platform.OS),
 	);
-	const locale = useMemo(() => DeviceLocale.resolved(), []);
+}
+
+function Application({ config, session }: { config: AppConfig; session: ServerSession }) {
+	const container = useMemo(
+		() => createContainer(config, { platform: Platform.OS, server: session }),
+		[config, session],
+	);
 	useEffect(() => {
 		void Promise.all([container.database.load(), container.paneWidths.load()]).then(() =>
 			container.auth.restore(),
@@ -38,12 +46,25 @@ export default function App() {
 		};
 	}, [container]);
 	return (
+		<ContainerProvider container={container}>
+			<AppShell providers={config.authentication === "external" ? ["Microsoft"] : []} />
+		</ContainerProvider>
+	);
+}
+
+export default function App() {
+	const session = useMemo(createSession, []);
+	const locale = useMemo(() => DeviceLocale.resolved(), []);
+	useEffect(() => {
+		void session.start();
+	}, [session]);
+	return (
 		<SafeAreaProvider>
 			<ThemeProvider>
 				<I18nProvider locale={locale}>
-					<ContainerProvider container={container}>
-						<AppShell providers={["Microsoft"]} />
-					</ContainerProvider>
+					<ServerGate session={session}>
+						{(config) => <Application config={config} session={session} />}
+					</ServerGate>
 				</I18nProvider>
 				<StatusBar style="auto" />
 			</ThemeProvider>
