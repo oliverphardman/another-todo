@@ -191,6 +191,11 @@ jobs:
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - uses: microsoft/setup-msbuild@v2
       - run: pnpm install --frozen-lockfile
+      - name: Provide Base64.h where the react-native-windows patch expects it
+        shell: pwsh
+        run: |
+          $rn = node --print "require('path').dirname(require.resolve('react-native/package.json'))"
+          Copy-Item "$rn/ReactCommon/react/utils/Base64.h" "$rn/ReactCommon/jsinspector-modern/Base64.h"
       - name: Find the installed Windows SDK
         shell: pwsh
         run: |
