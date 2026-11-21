@@ -20,6 +20,9 @@ jobs:
   deploy:
     name: Terraform and web
     runs-on: ubuntu-latest
+    environment:
+      name: Demo
+      url: https://itsanothertodo.app
     env:
       TF_VAR_google_client_id: ${{ vars.GOOGLE_CLIENT_ID }}
       TF_VAR_google_client_secret: ${{ secrets.GOOGLE_CLIENT_SECRET }}

@@ -99,6 +99,12 @@ variable "github_oidc_subject_prefix" {
   description = "Subject prefix GitHub puts in its OIDC tokens (this repository uses immutable subjects)"
 }
 
+variable "github_environment" {
+  type        = string
+  default     = "Demo"
+  description = "Name of the GitHub environment the deploy workflow runs in; the deploy credentials trust only that environment"
+}
+
 variable "demo_password" {
   type        = string
   default     = "DefaultDemoUser2026"

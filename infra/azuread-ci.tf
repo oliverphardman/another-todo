@@ -60,9 +60,9 @@ resource "azuread_app_role_assignment" "ci_read_directory" {
 resource "azuread_application_federated_identity_credential" "github_main" {
   count          = var.manage_azure_app ? 1 : 0
   application_id = azuread_application.ci[0].id
-  display_name   = "github-main"
-  description    = "GitHub Actions on the main branch of ${var.github_repository}"
+  display_name   = "github-${lower(var.github_environment)}"
+  description    = "GitHub Actions in the ${var.github_environment} environment of ${var.github_repository}"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://token.actions.githubusercontent.com"
-  subject        = "${var.github_oidc_subject_prefix}:ref:refs/heads/main"
+  subject        = "${var.github_oidc_subject_prefix}:environment:${var.github_environment}"
 }
