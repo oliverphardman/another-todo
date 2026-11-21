@@ -293,18 +293,6 @@ resource "aws_cognito_user_pool_client" "app" {
   ]
 }
 
-resource "aws_cognito_user" "demo" {
-  user_pool_id   = aws_cognito_user_pool.main.id
-  username       = "default@${var.domain_name}"
-  password       = var.demo_password
-  message_action = "SUPPRESS"
-
-  attributes = {
-    email          = "default@${var.domain_name}"
-    email_verified = "true"
-  }
-}
-
 resource "aws_iam_role" "lambda" {
   name = "${local.name}-api"
 
@@ -461,6 +449,8 @@ resource "aws_lambdaweb_function_revision" "api" {
       COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
       CORS_ORIGINS                 = join(",", local.cors_origins)
       PUBLIC_API_URL               = "https://${local.api_domain}"
+      ENFORCED_USERNAME            = var.enforced_username
+      SERVER_NOTICE                = var.server_notice
     }
   }
 

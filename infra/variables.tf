@@ -105,8 +105,14 @@ variable "github_environment" {
   description = "Name of the GitHub environment the deploy workflow runs in; the deploy credentials trust only that environment"
 }
 
-variable "demo_password" {
+variable "enforced_username" {
   type        = string
-  default     = "DefaultDemoUser2026"
-  description = "Password of the shared default user the demo signs in as; it is published in the client bundle by design"
+  default     = "demo"
+  description = "When set, the API bypasses authentication and serves every request as this one user (the demo); set it to an empty string to use Cognito sign-in"
+}
+
+variable "server_notice" {
+  type        = string
+  default     = "This is a public demo. Anything you create here will be viewable by others. Check out the source and host this yourself: https://github.com/oliverphardman/another-todo"
+  description = "Notice the clients show to everyone using this server"
 }
