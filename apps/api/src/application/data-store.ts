@@ -1,3 +1,4 @@
+import type { AttachmentRepository } from "../domain/attachment-repository";
 import type { GroupRepository } from "../domain/group-repository";
 import type { PhotoRepository } from "../domain/photo-repository";
 import type { ShareRepository } from "../domain/share-repository";
@@ -11,5 +12,6 @@ export interface DataStore {
 	readonly groups: GroupRepository;
 	readonly shares: ShareRepository;
 	readonly photos: PhotoRepository;
+	readonly attachments: AttachmentRepository;
 	readonly settings: ViewSettingsRepository;
 }

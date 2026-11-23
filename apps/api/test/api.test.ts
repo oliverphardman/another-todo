@@ -490,4 +490,35 @@ describe("Photos API", () => {
 		const after = await api(event({ path: "/view-settings" }));
 		expect(after.body.settings[0].theme).toBeNull();
 	});
+
+	it("uploads, lists and deletes a task's attachments", async () => {
+		const api = createTestApi();
+		const task = await api(event({ method: "POST", path: "/tasks", body: { title: "Task" } }));
+		const base = `/tasks/${task.body.id}/attachments`;
+		const created = await api(
+			event({
+				method: "POST",
+				path: base,
+				body: { name: "Report.pdf", contentType: "application/pdf", size: 2048 },
+			}),
+		);
+		expect(created.status).toBe(201);
+		expect(created.body.attachment).toMatchObject({ name: "Report.pdf", taskId: task.body.id });
+		expect(created.body.upload.url).toBe("https://upload.test/photos");
+		const listed = await api(event({ path: base }));
+		expect(listed.body.attachments).toHaveLength(1);
+		const removed = await api(
+			event({ method: "DELETE", path: `${base}/${created.body.attachment.id}` }),
+		);
+		expect(removed.status).toBe(204);
+		expect((await api(event({ path: base }))).body.attachments).toEqual([]);
+		expect((await api(event({ path: base, sub: "someone-else" }))).status).toBe(404);
+		expect(
+			(
+				await api(
+					event({ method: "POST", path: base, body: { name: "", contentType: "x", size: 1 } }),
+				)
+			).status,
+		).toBe(400);
+	});
 });

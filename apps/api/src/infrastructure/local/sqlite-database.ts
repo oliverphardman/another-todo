@@ -8,6 +8,7 @@ export const AGGREGATE_TABLES = [
 	"groups",
 	"shares",
 	"photos",
+	"attachments",
 	"settings",
 ] as const;
 

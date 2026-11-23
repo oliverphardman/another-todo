@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterAll } from "vitest";
 import type { DataStore } from "../src/application/data-store";
 import { Group } from "../src/domain/group";
+import { Attachment } from "../src/domain/attachment";
 import { Photo } from "../src/domain/photo";
 import { Share } from "../src/domain/share";
 import { Task } from "../src/domain/task";
@@ -63,6 +64,17 @@ for (const [provider, create] of Object.entries(stores)) {
 		() => create().photos,
 		(owner, id) =>
 			Photo.create(owner, id, { name: "a.png", contentType: "image/png", size: 5 }, NOW),
+	);
+	describeRepositoryContract(
+		`${provider} attachments`,
+		() => create().attachments,
+		(owner, id) =>
+			Attachment.create(
+				owner,
+				id,
+				{ taskId: "t", name: "a.pdf", contentType: "application/pdf", size: 5 },
+				NOW,
+			),
 	);
 	describeRepositoryContract(
 		`${provider} settings`,

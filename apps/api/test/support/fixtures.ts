@@ -1,3 +1,5 @@
+import { AttachmentService } from "../../src/application/attachment-service";
+import { InMemoryAttachmentRepository } from "../../src/infrastructure/memory/in-memory-attachment-repository";
 import { PhotoService } from "../../src/application/photo-service";
 import { ViewSettingsService } from "../../src/application/view-settings-service";
 import { InMemoryPhotoRepository } from "../../src/infrastructure/memory/in-memory-photo-repository";
@@ -41,6 +43,7 @@ export interface TestServices {
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
+	readonly attachments: AttachmentService;
 	readonly groups: GroupService;
 	readonly shares: ShareService;
 	readonly directory: FakeUserDirectory;
@@ -60,14 +63,31 @@ export function createServices(clock = new FixedClock()): TestServices {
 	const directory = new FakeUserDirectory();
 	const storage = new FakeMediaStorage();
 	const ids = new SequenceIds();
+	const attachments = new AttachmentService(
+		new InMemoryAttachmentRepository(),
+		tasks,
+		storage,
+		ids,
+		clock,
+	);
 	return {
-		tasks: new TaskService(tasks, lists, access, ids, clock),
-		lists: new ListService(lists, tasks, settings, groupRepository, access, ids, clock),
+		tasks: new TaskService(tasks, lists, access, ids, clock, attachments),
+		lists: new ListService(
+			lists,
+			tasks,
+			settings,
+			groupRepository,
+			access,
+			ids,
+			clock,
+			attachments,
+		),
 		shares: new ShareService(shareRepository, lists, access, directory, clock),
 		directory,
 		groups: new GroupService(groupRepository, lists, ids, clock),
 		settings: new ViewSettingsService(settings, photos, clock),
 		photos: new PhotoService(photos, settings, storage, ids, clock),
+		attachments,
 		storage,
 		settingsRepository: settings,
 		listRepository: lists,

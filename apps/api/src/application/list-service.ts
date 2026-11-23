@@ -1,3 +1,4 @@
+import type { AttachmentPurger } from "./attachment-service";
 import { EntityId } from "../domain/entity-id";
 import { ForbiddenError, NotFoundError, ValidationError } from "../domain/errors";
 import type { GroupRepository } from "../domain/group-repository";
@@ -24,6 +25,7 @@ export class ListService {
 		private readonly access: SharedAccess,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
+		private readonly attachments: AttachmentPurger,
 	) {}
 
 	async create(ownerId: string, input: ListInput): Promise<TodoList> {
@@ -108,6 +110,7 @@ export class ListService {
 		}
 		const tasks = await this.tasks.list(userId);
 		for (const task of tasks.filter((candidate) => candidate.listId === id)) {
+			await this.attachments.purgeTask(userId, task.id);
 			await this.tasks.delete(userId, task.id);
 		}
 		await this.access.revokeAll(userId, id);

@@ -8,6 +8,7 @@ import type { MediaStorage } from "./application/media-storage";
 import { ChangeNotifier } from "./application/change-notifier";
 import { GroupService } from "./application/group-service";
 import { ListService } from "./application/list-service";
+import { AttachmentService } from "./application/attachment-service";
 import { PhotoService } from "./application/photo-service";
 import { SystemClock, UuidGenerator } from "./application/ports";
 import { SharedAccess } from "./application/shared-access";
@@ -24,6 +25,7 @@ import { DiscoveryController } from "./http/discovery-controller";
 import { ErrorHandler } from "./http/error-handler";
 import { GroupController } from "./http/group-controller";
 import { ListController } from "./http/list-controller";
+import { AttachmentController } from "./http/attachment-controller";
 import { PhotoController } from "./http/photo-controller";
 import { RouteSupport } from "./http/route-support";
 import { SettingsController } from "./http/settings-controller";
@@ -44,6 +46,7 @@ export interface Services {
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
+	readonly attachments: AttachmentService;
 	readonly groups: GroupService;
 	readonly shares: ShareService;
 	readonly notifier: ChangeNotifier;
@@ -115,6 +118,7 @@ export function createApp(
 			validateSecurity: false,
 		}) as unknown as RequestHandler[]),
 	);
+	app.use("/tasks", new AttachmentController(services.attachments).router());
 	app.use("/tasks", new TaskController(services.tasks).router());
 	app.use("/lists", new ShareController(services.shares).router());
 	app.use("/lists", new ListController(services.lists, services.shares).router());
@@ -134,9 +138,20 @@ export function createServices(
 	const access = new SharedAccess(data.shares);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
+	const attachments = new AttachmentService(data.attachments, data.tasks, storage, ids, clock);
 	return {
-		tasks: new TaskService(data.tasks, data.lists, access, ids, clock),
-		lists: new ListService(data.lists, data.tasks, data.settings, data.groups, access, ids, clock),
+		tasks: new TaskService(data.tasks, data.lists, access, ids, clock, attachments),
+		lists: new ListService(
+			data.lists,
+			data.tasks,
+			data.settings,
+			data.groups,
+			access,
+			ids,
+			clock,
+			attachments,
+		),
+		attachments,
 		shares: new ShareService(data.shares, data.lists, access, directory, clock),
 		groups: new GroupService(data.groups, data.lists, ids, clock),
 		settings: new ViewSettingsService(data.settings, data.photos, clock),

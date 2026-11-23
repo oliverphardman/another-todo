@@ -38,6 +38,7 @@ export const TEST_TABLES = {
 	lists: "lists",
 	settings: "settings",
 	photos: "photos",
+	attachments: "attachments",
 	groups: "groups",
 	shares: "shares",
 };

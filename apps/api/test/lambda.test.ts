@@ -8,6 +8,7 @@ describe("server entry point", () => {
 		vi.stubEnv("LISTS_TABLE_NAME", "lists");
 		vi.stubEnv("SETTINGS_TABLE_NAME", "settings");
 		vi.stubEnv("PHOTOS_TABLE_NAME", "photos");
+		vi.stubEnv("ATTACHMENTS_TABLE_NAME", "attachments");
 		vi.stubEnv("PHOTOS_BUCKET", "photos-bucket");
 		vi.stubEnv("GROUPS_TABLE_NAME", "groups");
 		vi.stubEnv("SHARES_TABLE_NAME", "shares");

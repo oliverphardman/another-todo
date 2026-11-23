@@ -319,6 +319,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/tasks/{id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        /** List a task's attachments with short lived download links */
+        get: operations["listAttachments"];
+        put?: never;
+        /** Register an attachment and get a signed form to upload it to storage */
+        post: operations["createAttachment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/{id}/attachments/{attachmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["TaskId"];
+                attachmentId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Permanently delete an attachment */
+        delete: operations["deleteAttachment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -507,6 +547,28 @@ export interface components {
         };
         CreateShare: {
             email: string;
+        };
+        Attachment: {
+            id: string;
+            taskId: string;
+            name: string;
+            contentType: string;
+            size: number;
+            /** Format: date-time */
+            createdAt: string;
+            url: string;
+        };
+        CreateAttachment: {
+            name: string;
+            contentType: string;
+            size: number;
+        };
+        AttachmentCollection: {
+            attachments: components["schemas"]["Attachment"][];
+        };
+        CreatedAttachment: {
+            attachment: components["schemas"]["Attachment"];
+            upload: components["schemas"]["PhotoUpload"];
         };
     };
     responses: {
@@ -1223,6 +1285,78 @@ export interface operations {
                 };
                 content?: never;
             };
+        };
+    };
+    listAttachments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attachments */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttachmentCollection"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    createAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["TaskId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAttachment"];
+            };
+        };
+        responses: {
+            /** @description The attachment and the upload form */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatedAttachment"];
+                };
+            };
+            default: components["responses"]["Error"];
+        };
+    };
+    deleteAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["TaskId"];
+                attachmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            default: components["responses"]["Error"];
         };
     };
 }

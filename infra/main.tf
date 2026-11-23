@@ -152,6 +152,31 @@ resource "aws_dynamodb_table" "photos" {
   }
 }
 
+resource "aws_dynamodb_table" "attachments" {
+  name         = "${local.name}-attachments"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "ownerId"
+  range_key    = "id"
+
+  attribute {
+    name = "ownerId"
+    type = "S"
+  }
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}
+
 resource "aws_dynamodb_table" "groups" {
   name         = "${local.name}-groups"
   billing_mode = "PAY_PER_REQUEST"
@@ -309,6 +334,7 @@ resource "aws_iam_role_policy" "lambda_tasks" {
         aws_dynamodb_table.lists.arn,
         aws_dynamodb_table.settings.arn,
         aws_dynamodb_table.photos.arn,
+        aws_dynamodb_table.attachments.arn,
         aws_dynamodb_table.groups.arn,
         aws_dynamodb_table.shares.arn,
         aws_dynamodb_table.connections.arn,
@@ -419,6 +445,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
       SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
       PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
+      ATTACHMENTS_TABLE_NAME       = aws_dynamodb_table.attachments.name
       GROUPS_TABLE_NAME            = aws_dynamodb_table.groups.name
       SHARES_TABLE_NAME            = aws_dynamodb_table.shares.name
       PHOTOS_BUCKET                = aws_s3_bucket.photos.id

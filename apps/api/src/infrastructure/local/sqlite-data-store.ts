@@ -1,4 +1,5 @@
 import type { DataStore } from "../../application/data-store";
+import { Attachment } from "../../domain/attachment";
 import { Group } from "../../domain/group";
 import { Photo } from "../../domain/photo";
 import { Share } from "../../domain/share";
@@ -14,6 +15,7 @@ export class SqliteDataStore implements DataStore {
 	readonly groups;
 	readonly shares;
 	readonly photos;
+	readonly attachments;
 	readonly settings;
 
 	constructor(database: SqliteDatabase) {
@@ -37,6 +39,10 @@ export class SqliteDataStore implements DataStore {
 		this.photos = new SqliteRepository(connection, "photos", {
 			toRecord: (photo: Photo) => photo.toRecord(),
 			restore: Photo.restore,
+		});
+		this.attachments = new SqliteRepository(connection, "attachments", {
+			toRecord: (attachment: Attachment) => attachment.toRecord(),
+			restore: Attachment.restore,
 		});
 		this.settings = new SqliteRepository(connection, "settings", {
 			toRecord: (settings: ViewSettings) => settings.toRecord(),

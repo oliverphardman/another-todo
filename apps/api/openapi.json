@@ -808,6 +808,89 @@
 					}
 				}
 			}
+		},
+		"/tasks/{id}/attachments": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/TaskId"
+				}
+			],
+			"get": {
+				"operationId": "listAttachments",
+				"summary": "List a task's attachments with short lived download links",
+				"responses": {
+					"200": {
+						"description": "Attachments",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AttachmentCollection"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			},
+			"post": {
+				"operationId": "createAttachment",
+				"summary": "Register an attachment and get a signed form to upload it to storage",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateAttachment"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "The attachment and the upload form",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreatedAttachment"
+								}
+							}
+						}
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
+		},
+		"/tasks/{id}/attachments/{attachmentId}": {
+			"parameters": [
+				{
+					"$ref": "#/components/parameters/TaskId"
+				},
+				{
+					"name": "attachmentId",
+					"in": "path",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			],
+			"delete": {
+				"operationId": "deleteAttachment",
+				"summary": "Permanently delete an attachment",
+				"responses": {
+					"204": {
+						"description": "Deleted"
+					},
+					"default": {
+						"$ref": "#/components/responses/Error"
+					}
+				}
+			}
 		}
 	},
 	"components": {
@@ -1560,6 +1643,97 @@
 					"email": {
 						"type": "string",
 						"minLength": 3
+					}
+				}
+			},
+			"Attachment": {
+				"type": "object",
+				"required": [
+					"id",
+					"taskId",
+					"name",
+					"contentType",
+					"size",
+					"createdAt",
+					"url"
+				],
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"taskId": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"contentType": {
+						"type": "string"
+					},
+					"size": {
+						"type": "integer"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"url": {
+						"type": "string"
+					}
+				}
+			},
+			"CreateAttachment": {
+				"type": "object",
+				"required": [
+					"name",
+					"contentType",
+					"size"
+				],
+				"additionalProperties": false,
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 255
+					},
+					"contentType": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 127
+					},
+					"size": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 26214400
+					}
+				}
+			},
+			"AttachmentCollection": {
+				"type": "object",
+				"required": [
+					"attachments"
+				],
+				"properties": {
+					"attachments": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Attachment"
+						}
+					}
+				}
+			},
+			"CreatedAttachment": {
+				"type": "object",
+				"required": [
+					"attachment",
+					"upload"
+				],
+				"properties": {
+					"attachment": {
+						"$ref": "#/components/schemas/Attachment"
+					},
+					"upload": {
+						"$ref": "#/components/schemas/PhotoUpload"
 					}
 				}
 			}

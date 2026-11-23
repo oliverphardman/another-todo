@@ -48,6 +48,7 @@ function dynamodb(env: Env): DynamoDataStore {
 		"LISTS_TABLE_NAME",
 		"SETTINGS_TABLE_NAME",
 		"PHOTOS_TABLE_NAME",
+		"ATTACHMENTS_TABLE_NAME",
 		"GROUPS_TABLE_NAME",
 		"SHARES_TABLE_NAME",
 	);
@@ -56,6 +57,7 @@ function dynamodb(env: Env): DynamoDataStore {
 		lists: names.LISTS_TABLE_NAME,
 		settings: names.SETTINGS_TABLE_NAME,
 		photos: names.PHOTOS_TABLE_NAME,
+		attachments: names.ATTACHMENTS_TABLE_NAME,
 		groups: names.GROUPS_TABLE_NAME,
 		shares: names.SHARES_TABLE_NAME,
 	});

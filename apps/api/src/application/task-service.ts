@@ -1,3 +1,4 @@
+import type { AttachmentPurger } from "./attachment-service";
 import { EntityId } from "../domain/entity-id";
 import { NotFoundError, ValidationError } from "../domain/errors";
 import { Task } from "../domain/task";
@@ -14,6 +15,7 @@ export class TaskService {
 		private readonly access: SharedAccess,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
+		private readonly attachments: AttachmentPurger,
 	) {}
 
 	async create(userId: string, input: TaskInput): Promise<Task> {
@@ -70,6 +72,7 @@ export class TaskService {
 
 	async delete(userId: string, id: string): Promise<void> {
 		const task = await this.get(userId, id);
+		await this.attachments.purgeTask(task.ownerId, id);
 		await this.repository.delete(task.ownerId, id);
 	}
 
