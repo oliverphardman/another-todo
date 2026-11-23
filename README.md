@@ -75,7 +75,7 @@ Runs the API on an Amazon Lambda Web Function with DynamoDB, S3, Cognito and an 
    infra/deploy-web.sh
    ```
 
-By default Terraform serves everyone as the single `enforced_username` user. Set `enforced_username` to an empty string to require Cognito sign-in instead. To deploy on every push to `main`, see `.github/workflows/deploy.yml`.
+By default Terraform serves everyone as the single `enforced_username` user. Set `enforced_username` to an empty string to require Cognito sign-in instead. To deploy automatically when a release is made, see `.github/workflows/deploy.yml`.
 
 ## Features
 

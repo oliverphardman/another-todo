@@ -1,9 +1,12 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: The release commit to deploy
+        type: string
+        required: true
 
 concurrency:
   group: deploy
@@ -34,6 +37,8 @@ jobs:
       ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
 
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115  # v6.1.1
         with:
