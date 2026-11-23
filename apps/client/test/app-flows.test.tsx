@@ -1302,6 +1302,30 @@ describe("deleting tasks", () => {
 		expect(app.container.store.get().tasks).toEqual([]);
 	});
 
+	it("confirms a dialog when Enter is pressed and ignores other keys", async () => {
+		const app = await start();
+		addTask("One");
+		fireEvent.click(screen.getByLabelText("Open One"));
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		fireEvent.keyDown(window, { key: "a" });
+		expect(screen.getByRole("alert")).toBeTruthy();
+		fireEvent.keyDown(window, { key: "Enter" });
+		await act(async () => undefined);
+		expect(screen.queryByRole("alert")).toBeNull();
+		expect(app.container.store.get().tasks).toEqual([]);
+	});
+
+	it("still shows a dialog where the window cannot listen for keys", async () => {
+		await start();
+		addTask("One");
+		const original = window.addEventListener;
+		Object.defineProperty(window, "addEventListener", { value: undefined, configurable: true });
+		fireEvent.click(screen.getByLabelText("Open One"));
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		expect(screen.getByRole("alert")).toBeTruthy();
+		Object.defineProperty(window, "addEventListener", { value: original, configurable: true });
+	});
+
 	it("counts the tasks when several are deleted at once", async () => {
 		const app = await start();
 		addTask("One");

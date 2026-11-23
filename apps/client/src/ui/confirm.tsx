@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Observable } from "../state/observable";
 import { AppText } from "./app-text";
@@ -50,6 +50,20 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 	const pending = useObservable(controller);
 	const palette = useTheme();
 	const { t } = useI18n();
+	const open = pending !== null;
+	useEffect(() => {
+		if (!open || typeof window.addEventListener !== "function") {
+			return undefined;
+		}
+		const press = (event: KeyboardEvent) => {
+			if (event.key === "Enter") {
+				event.preventDefault();
+				controller.answer(true);
+			}
+		};
+		window.addEventListener("keydown", press);
+		return () => window.removeEventListener("keydown", press);
+	}, [open, controller]);
 	return (
 		<ConfirmContext.Provider value={controller}>
 			<View style={{ flex: 1 }}>
