@@ -1,5 +1,10 @@
 resource "aws_s3_bucket" "photos" {
-  bucket_prefix = "${local.name}-photos-"
+  bucket           = "${local.name}-photos-${local.bucket_suffix}"
+  bucket_namespace = "account-regional"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_public_access_block" "photos" {

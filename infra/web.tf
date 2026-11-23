@@ -1,5 +1,7 @@
 resource "aws_s3_bucket" "web" {
-  bucket_prefix = "${local.name}-web-"
+  bucket           = "${local.name}-web-${local.bucket_suffix}"
+  bucket_namespace = "account-regional"
+  force_destroy    = true
 }
 
 resource "aws_s3_bucket_public_access_block" "web" {

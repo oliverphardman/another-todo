@@ -36,6 +36,7 @@ provider "aws" {
 
 locals {
   name                    = "another-todo-${var.environment}"
+  bucket_suffix           = "${data.aws_caller_identity.current.account_id}-${var.region}-an"
   auth_domain             = "auth.${var.domain_name}"
   api_domain              = "api.${var.domain_name}"
   web_origin              = "https://${var.domain_name}"
@@ -366,7 +367,9 @@ data "archive_file" "api" {
 }
 
 resource "aws_s3_bucket" "code" {
-  bucket_prefix = "${local.name}-code-"
+  bucket           = "${local.name}-code-${local.bucket_suffix}"
+  bucket_namespace = "account-regional"
+  force_destroy    = true
 }
 
 resource "aws_s3_bucket_versioning" "code" {
