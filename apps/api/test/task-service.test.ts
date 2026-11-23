@@ -38,6 +38,17 @@ describe("TaskService", () => {
 		await expect(service.update("u", task.id, { dueDate: 5 })).rejects.toThrow(ValidationError);
 	});
 
+	it("sets, validates and clears a reminder", async () => {
+		const service = createService();
+		const task = await service.create("u", { title: "A", remindAt: "2026-03-01T09:30:00Z" });
+		expect(task.remindAt?.toISOString()).toBe("2026-03-01T09:30:00.000Z");
+		expect(task.toJSON().remindAt).toBe("2026-03-01T09:30:00.000Z");
+		await expect(service.update("u", task.id, { remindAt: "nope" })).rejects.toThrow(
+			"remindAt must be an ISO 8601 date string or null",
+		);
+		expect((await service.update("u", task.id, { remindAt: null })).remindAt).toBeNull();
+	});
+
 	it("gets, updates and clears fields", async () => {
 		const service = createService();
 		const task = await service.create("u", { title: "A", dueDate: "2026-03-01T00:00:00Z" });

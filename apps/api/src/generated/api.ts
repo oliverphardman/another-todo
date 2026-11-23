@@ -383,6 +383,11 @@ export interface components {
             note: string;
             /** @description Manual order within a list; lower comes first */
             position: number | null;
+            /**
+             * Format: date-time
+             * @description When the client should remind the user about the task
+             */
+            remindAt: string | null;
         };
         TaskList: {
             tasks: components["schemas"]["Task"][];
@@ -404,6 +409,11 @@ export interface components {
             note?: string;
             /** @description Manual order within a list; lower comes first */
             position?: number | null;
+            /**
+             * Format: date-time
+             * @description When the client should remind the user about the task
+             */
+            remindAt?: string | null;
         };
         UpdateTask: {
             title?: string;
@@ -420,6 +430,11 @@ export interface components {
             note?: string;
             /** @description Manual order within a list; lower comes first */
             position?: number | null;
+            /**
+             * Format: date-time
+             * @description When the client should remind the user about the task
+             */
+            remindAt?: string | null;
         };
         Error: {
             error: string;

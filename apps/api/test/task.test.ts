@@ -44,6 +44,12 @@ describe("Task", () => {
 		const restored = Task.restore(due.toRecord());
 		expect(restored.dueDate?.toISOString()).toBe("2026-02-01T00:00:00.000Z");
 		expect(restored.toRecord()).toEqual(due.toRecord());
+		const reminded = plain.setRemindAt(new Date("2026-02-01T08:00:00Z"));
+		expect(Task.restore(reminded.toRecord()).remindAt?.toISOString()).toBe(
+			"2026-02-01T08:00:00.000Z",
+		);
+		const { remindAt: _remindAt, ...legacy } = plain.toRecord();
+		expect(Task.restore(legacy).remindAt).toBeNull();
 	});
 
 	it("moves between lists and restores legacy records without a list", () => {
@@ -105,6 +111,7 @@ describe("Task", () => {
 			note: "",
 			position: null,
 			dueDate: null,
+			remindAt: null,
 			createdAt: "2026-01-01T00:00:00.000Z",
 		});
 	});

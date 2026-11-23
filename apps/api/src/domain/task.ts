@@ -16,6 +16,7 @@ export interface TaskProps {
 	readonly note: string;
 	readonly position: number | null;
 	readonly dueDate: Date | null;
+	readonly remindAt: Date | null;
 	readonly createdAt: Date;
 }
 
@@ -32,6 +33,7 @@ export interface TaskRecord {
 	readonly note?: string;
 	readonly position?: number | null;
 	readonly dueDate: string | null;
+	readonly remindAt?: string | null;
 	readonly createdAt: string;
 }
 
@@ -52,6 +54,7 @@ export class Task {
 			note: "",
 			position: null,
 			dueDate: null,
+			remindAt: null,
 			createdAt,
 		});
 	}
@@ -70,6 +73,7 @@ export class Task {
 			note: record.note ?? "",
 			position: record.position ?? null,
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
+			remindAt: record.remindAt == null ? null : new Date(record.remindAt),
 			createdAt: new Date(record.createdAt),
 		});
 	}
@@ -120,6 +124,10 @@ export class Task {
 
 	get note(): string {
 		return this.props.note;
+	}
+
+	get remindAt(): Date | null {
+		return this.props.remindAt;
 	}
 
 	get dueDate(): Date | null {
@@ -178,6 +186,10 @@ export class Task {
 		return new Task({ ...this.props, dueDate });
 	}
 
+	setRemindAt(remindAt: Date | null): Task {
+		return new Task({ ...this.props, remindAt });
+	}
+
 	toRecord(): TaskRecord {
 		return {
 			ownerId: this.props.ownerId,
@@ -192,6 +204,7 @@ export class Task {
 			note: this.props.note,
 			position: this.props.position,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
+			remindAt: this.props.remindAt?.toISOString() ?? null,
 			createdAt: this.props.createdAt.toISOString(),
 		};
 	}

@@ -15,6 +15,7 @@ export interface TaskInput {
 	readonly steps?: unknown;
 	readonly note?: unknown;
 	readonly dueDate?: unknown;
+	readonly remindAt?: unknown;
 }
 
 export class TaskChanges {
@@ -48,7 +49,10 @@ export class TaskChanges {
 			result = result.setNote(TaskChanges.note(input.note));
 		}
 		if (input.dueDate !== undefined) {
-			result = result.setDueDate(TaskChanges.dueDate(input.dueDate));
+			result = result.setDueDate(TaskChanges.instant(input.dueDate, "dueDate"));
+		}
+		if (input.remindAt !== undefined) {
+			result = result.setRemindAt(TaskChanges.instant(input.remindAt, "remindAt"));
 		}
 		return result;
 	}
@@ -131,13 +135,13 @@ export class TaskChanges {
 		return value;
 	}
 
-	private static dueDate(value: unknown): Date | null {
+	private static instant(value: unknown, name: string): Date | null {
 		if (value === null) {
 			return null;
 		}
 		const parsed = typeof value === "string" ? new Date(value) : new Date(Number.NaN);
 		if (Number.isNaN(parsed.getTime())) {
-			throw new ValidationError("dueDate must be an ISO 8601 date string or null");
+			throw new ValidationError(`${name} must be an ISO 8601 date string or null`);
 		}
 		return parsed;
 	}

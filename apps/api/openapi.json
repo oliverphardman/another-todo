@@ -955,7 +955,8 @@
 					"myDayDismissed",
 					"steps",
 					"note",
-					"position"
+					"position",
+					"remindAt"
 				],
 				"properties": {
 					"id": {
@@ -1010,6 +1011,12 @@
 						"type": "number",
 						"nullable": true,
 						"description": "Manual order within a list; lower comes first"
+					},
+					"remindAt": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true,
+						"description": "When the client should remind the user about the task"
 					}
 				}
 			},
@@ -1086,6 +1093,12 @@
 						"type": "number",
 						"nullable": true,
 						"description": "Manual order within a list; lower comes first"
+					},
+					"remindAt": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true,
+						"description": "When the client should remind the user about the task"
 					}
 				}
 			},
@@ -1140,6 +1153,12 @@
 						"type": "number",
 						"nullable": true,
 						"description": "Manual order within a list; lower comes first"
+					},
+					"remindAt": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true,
+						"description": "When the client should remind the user about the task"
 					}
 				}
 			},
