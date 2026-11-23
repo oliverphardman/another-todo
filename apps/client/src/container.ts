@@ -1,4 +1,8 @@
 import { AuthorizedHttp, type Fetcher } from "./api/authorized-http";
+import type { AttachmentGateway, FilePicker } from "./attachments/attachment-gateway";
+import { ExpoFilePicker } from "./attachments/expo-file-picker";
+import { HttpAttachmentGateway } from "./attachments/http-attachment-gateway";
+import { TaskAttachments } from "./attachments/task-attachments";
 import { ExpoPhotoPicker } from "./photos/expo-photo-picker";
 import { HttpPhotoGateway } from "./photos/http-photo-gateway";
 import { HttpShareGateway } from "./shares/http-share-gateway";
@@ -48,6 +52,7 @@ export interface Container {
 	readonly store: TodoStore;
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
+	readonly attachments: TaskAttachments;
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
 	readonly shares: ShareGateway;
@@ -71,6 +76,8 @@ export interface ContainerOverrides {
 	readonly sounds?: SoundPlayer;
 	readonly photoGateway?: PhotoGateway;
 	readonly photoPicker?: PhotoPicker;
+	readonly attachmentGateway?: AttachmentGateway;
+	readonly filePicker?: FilePicker;
 	readonly printer?: ListPrinter;
 	readonly shareGateway?: ShareGateway;
 	readonly microsoftAuthorizer?: MicrosoftAuthorizer;
@@ -109,6 +116,14 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			),
 		overrides.photoPicker ?? new ExpoPhotoPicker(),
 		auth,
+	);
+	const attachments = new TaskAttachments(
+		overrides.attachmentGateway ??
+			new HttpAttachmentGateway(
+				new AuthorizedHttp(config.apiUrl, auth, overrides.fetcher),
+				overrides.fetcher,
+			),
+		overrides.filePicker ?? new ExpoFilePicker(),
 	);
 	const store = new TodoStore(
 		database,
@@ -149,6 +164,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		microsoft,
 		sync,
 		photos,
+		attachments,
 		printer: overrides.printer ?? new ExpoListPrinter(),
 		paneWidths: new PaneWidths(dataStore),
 		shares:

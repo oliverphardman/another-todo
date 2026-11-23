@@ -11,6 +11,8 @@ import {
 	FixedClock,
 	ManualConnectivity,
 	FakePhotoGateway,
+	FakeAttachmentGateway,
+	FakeFilePicker,
 	FakePhotoPicker,
 	RecordingPrinter,
 	RecordingSoundPlayer,
@@ -39,6 +41,8 @@ export interface TestContainer {
 	readonly printer: RecordingPrinter;
 	readonly photoGateway: FakePhotoGateway;
 	readonly photoPicker: FakePhotoPicker;
+	readonly attachmentGateway: FakeAttachmentGateway;
+	readonly filePicker: FakeFilePicker;
 	readonly shareGateway: FakeShareGateway;
 	readonly microsoftAuthorizer: FakeMicrosoftAuthorizer;
 	readonly graphRequests: string[];
@@ -65,6 +69,8 @@ export function createTestContainer(
 	const printer = new RecordingPrinter();
 	const photoGateway = new FakePhotoGateway();
 	const photoPicker = new FakePhotoPicker();
+	const attachmentGateway = new FakeAttachmentGateway();
+	const filePicker = new FakeFilePicker();
 	const tokenStore = new MemoryKeyValueStore();
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
@@ -86,6 +92,8 @@ export function createTestContainer(
 			printer,
 			photoGateway,
 			photoPicker,
+			attachmentGateway,
+			filePicker,
 			clock,
 			motion,
 			shareGateway,
@@ -121,6 +129,8 @@ export function createTestContainer(
 		printer,
 		photoGateway,
 		photoPicker,
+		attachmentGateway,
+		filePicker,
 		requests,
 		tokenStore,
 		dataStore,

@@ -95,7 +95,11 @@ describe("local media storage", () => {
 				body: form(photo.upload.fields, PNG),
 			});
 			const link = photo.url.replace("http://localhost:3000", app.base);
-			expect((await fetch(link)).status).toBe(200);
+			const served = await fetch(link);
+			expect(served.status).toBe(200);
+			expect(served.headers.get("content-disposition")).toBe("attachment");
+			expect(served.headers.get("x-content-type-options")).toBe("nosniff");
+			expect(served.headers.get("content-security-policy")).toBe("sandbox");
 			expect((await fetch(`${app.base}/media/files/forged`)).status).toBe(404);
 			vi.setSystemTime(Date.now() + 2 * 3600 * 1000);
 			expect((await fetch(link)).status).toBe(404);

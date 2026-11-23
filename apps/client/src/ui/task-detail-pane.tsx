@@ -1,14 +1,16 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
+import { Linking, ScrollView, TextInput, View } from "react-native";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
+import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
+import { useObservable } from "./hooks";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { AddStepRow, StepRow } from "./step-list";
 import { FONT_FAMILY } from "./theme";
@@ -20,7 +22,9 @@ export interface TaskDetailPaneProps {
 }
 
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
-	const { store } = useContainer();
+	const { store, attachments } = useContainer();
+	const confirm = useConfirm();
+	const files = useObservable(attachments);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
 	const i18n = useI18n();
@@ -33,6 +37,9 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		setTitle(task.title);
 		setPicking(false);
 	}, [task.id, task.title]);
+	useEffect(() => {
+		void attachments.show(task.id);
+	}, [attachments, task.id]);
 	useEffect(() => {
 		setNote(task.note);
 	}, [task.id, task.note]);
@@ -145,7 +152,48 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					<ActionRow glyph="repeat" label={t("detail.repeat")} />
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="paperclip" label={t("detail.file")} />
+					{files.items.map((file) => (
+						<View key={file.id} style={{ flexDirection: "row", alignItems: "center" }}>
+							<View style={{ flex: 1, minWidth: 0 }}>
+								<ActionRow
+									glyph="paperclip"
+									label={t("attachment.open", { name: file.name })}
+									onPress={() => void Linking.openURL(file.url)}
+								/>
+							</View>
+							<PressableSurface
+								accessibilityRole="button"
+								accessibilityLabel={t("attachment.remove", { name: file.name })}
+								onPress={async () => {
+									const confirmed = await confirm({
+										title: t("attachment.removeTitle", { name: file.name }),
+										body: t("attachment.removeBody"),
+										confirmLabel: t("attachment.removeConfirm"),
+									});
+									if (confirmed) {
+										void attachments.remove(file.id);
+									}
+								}}
+								style={{ padding: 14 }}
+							>
+								<Icon glyph="trash" size={18} color={palette.textSecondary} />
+							</PressableSurface>
+						</View>
+					))}
+					<ActionRow
+						glyph="paperclip"
+						label={files.busy === "uploading" ? t("attachment.uploading") : t("detail.file")}
+						onPress={files.busy === "uploading" ? undefined : () => void attachments.add()}
+					/>
+					{files.error === null ? null : (
+						<AppText
+							tone="secondary"
+							size={12}
+							style={{ paddingHorizontal: 14, paddingBottom: 10 }}
+						>
+							{i18n.text(files.error)}
+						</AppText>
+					)}
 				</DetailCard>
 				<DetailCard>
 					<TextInput

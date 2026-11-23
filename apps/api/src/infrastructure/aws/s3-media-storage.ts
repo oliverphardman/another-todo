@@ -27,9 +27,17 @@ export class S3MediaStorage implements MediaStorage {
 	}
 
 	downloadUrl(key: string): Promise<string> {
-		return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
-			expiresIn: DOWNLOAD_SECONDS,
-		});
+		return getSignedUrl(
+			this.client,
+			new GetObjectCommand({
+				Bucket: this.bucket,
+				Key: key,
+				ResponseContentDisposition: "attachment",
+			}),
+			{
+				expiresIn: DOWNLOAD_SECONDS,
+			},
+		);
 	}
 
 	async remove(key: string): Promise<void> {

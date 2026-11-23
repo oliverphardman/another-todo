@@ -1,4 +1,5 @@
 import type { AuthorizedHttp, Fetcher } from "../api/authorized-http";
+import { FormUpload } from "../api/form-upload";
 import type { components } from "../generated/api";
 import type { PhotoData, PickedPhoto } from "./photo";
 import type { PhotoGateway } from "./photo-gateway";
@@ -11,10 +12,14 @@ export class PhotoUploadError extends Error {
 }
 
 export class HttpPhotoGateway implements PhotoGateway {
+	private readonly uploads: FormUpload;
+
 	constructor(
 		private readonly http: AuthorizedHttp,
-		private readonly fetcher: Fetcher = (input, init) => fetch(input, init),
-	) {}
+		fetcher: Fetcher = (input, init) => fetch(input, init),
+	) {
+		this.uploads = new FormUpload(fetcher);
+	}
 
 	async list(): Promise<PhotoData[]> {
 		const body = await this.http.request<components["schemas"]["PhotoCollection"]>(
@@ -34,7 +39,7 @@ export class HttpPhotoGateway implements PhotoGateway {
 				size: picked.size,
 			},
 		);
-		if (!(await this.upload(created.upload, picked))) {
+		if (!(await this.uploads.send(created.upload, picked))) {
 			await this.http
 				.request("DELETE", `/photos/${encodeURIComponent(created.photo.id)}`)
 				.catch(() => undefined);
@@ -45,25 +50,5 @@ export class HttpPhotoGateway implements PhotoGateway {
 
 	async remove(id: string): Promise<void> {
 		await this.http.request("DELETE", `/photos/${encodeURIComponent(id)}`);
-	}
-
-	private async upload(
-		upload: components["schemas"]["PhotoUpload"],
-		picked: PickedPhoto,
-	): Promise<boolean> {
-		const form = new FormData();
-		for (const [name, value] of Object.entries(upload.fields)) {
-			form.append(name, value);
-		}
-		if (picked.body instanceof Blob) {
-			form.append("file", picked.body, picked.name);
-		} else {
-			form.append("file", picked.body as never);
-		}
-		try {
-			return (await this.fetcher(upload.url, { method: "POST", body: form })).ok;
-		} catch {
-			return false;
-		}
 	}
 }

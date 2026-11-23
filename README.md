@@ -81,4 +81,5 @@ By default Terraform serves everyone as the single `enforced_username` user. Set
 
 - Sign in with a custom login or using a Microsoft account
 - Signing in with Microsoft offers to import your Microsoft To Do lists and tasks, and keeps them in sync while the app is open
+- Attach files to tasks
 - Works offline

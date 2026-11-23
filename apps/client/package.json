@@ -27,6 +27,7 @@
 		"expo-auth-session": "~55.0.19",
 		"expo-constants": "~55.0.17",
 		"expo-crypto": "55.0.19",
+		"expo-document-picker": "~55.0.17",
 		"expo-image-picker": "^55.0.24",
 		"expo-localization": "^55.0.19",
 		"expo-print": "^55.0.19",

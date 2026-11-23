@@ -44,6 +44,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Removed the "No tasks here yet" text
 - [x] Search bar in the left sidebar above My Day
 - [x] The due date menu uses the platform's date input (a date field on the web, the system picker on native)
+- [x] Add file attaches files of up to 25 MB to a task; they can be opened and removed from the details pane
 - [x] Each step has a menu: Mark as completed, Promote to task, Delete step
 
 - [x] Completed tasks move while the circle fills, and the right pane slides in and out

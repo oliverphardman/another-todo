@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { Linking } from "react-native";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderApp } from "./support/render-app";
 
 let stop: (() => void) | undefined;
@@ -197,9 +198,50 @@ describe("expanded layout", () => {
 			return Array.from(document.querySelectorAll("*")).indexOf(element);
 		});
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		for (const label of ["Remind me", "Repeat", "Add file"]) {
+		for (const label of ["Remind me", "Repeat"]) {
 			expect(details.getByLabelText(label).getAttribute("aria-disabled")).toBe("true");
 		}
+	});
+
+	it("attaches, opens and removes files on a task", async () => {
+		const app = await start();
+		const open = vi.spyOn(Linking, "openURL").mockResolvedValue(undefined);
+		addTask("With file");
+		fireEvent.click(screen.getByLabelText("Open With file"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Add file"));
+		});
+		expect(await screen.findByLabelText("Open report.pdf")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Open report.pdf"));
+		expect(open).toHaveBeenCalledWith("https://files.test/file-1");
+		app.filePicker.next = new Error("picker");
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Add file"));
+		});
+		expect(await screen.findByText(/Attachments are unavailable/)).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Remove report.pdf"));
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Cancel"));
+		await act(async () => undefined);
+		expect(screen.getByLabelText("Open report.pdf")).toBeTruthy();
+		fireEvent.click(screen.getByLabelText("Remove report.pdf"));
+		fireEvent.keyDown(window, { key: "Enter" });
+		await act(async () => undefined);
+		expect(screen.queryByLabelText("Open report.pdf")).toBeNull();
+		open.mockRestore();
+	});
+
+	it("shows the file row as busy while an upload is in progress", async () => {
+		const app = await start();
+		addTask("Slow");
+		fireEvent.click(screen.getByLabelText("Open Slow"));
+		let finish: (value: null) => void = () => undefined;
+		app.filePicker.pick = () => new Promise((resolve) => (finish = resolve));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Add file"));
+		});
+		expect(screen.getByLabelText("Uploading…").getAttribute("aria-disabled")).toBe("true");
+		await act(async () => finish(null));
+		expect(screen.getByLabelText("Add file")).toBeTruthy();
 	});
 
 	it("adds, completes, renames and deletes steps", async () => {

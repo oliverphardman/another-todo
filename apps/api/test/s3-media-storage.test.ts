@@ -48,7 +48,11 @@ describe("S3MediaStorage", () => {
 		expect(await storage.downloadUrl("u/1")).toBe("https://signed.example.com/u/1");
 		const [, command, options] = presign.getSignedUrl.mock.calls[0]!;
 		expect(command).toBeInstanceOf(GetObjectCommand);
-		expect(command.input).toEqual({ Bucket: "bucket", Key: "u/1" });
+		expect(command.input).toEqual({
+			Bucket: "bucket",
+			Key: "u/1",
+			ResponseContentDisposition: "attachment",
+		});
 		expect(options).toEqual({ expiresIn: 3600 });
 	});
 

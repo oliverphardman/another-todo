@@ -128,6 +128,9 @@ export class DiskMediaRoutes {
 			response
 				.set("Content-Type", stored.contentType)
 				.set("Cache-Control", "private, max-age=3600")
+				.set("Content-Disposition", "attachment")
+				.set("X-Content-Type-Options", "nosniff")
+				.set("Content-Security-Policy", "sandbox")
 				.send(stored.bytes);
 			return;
 		}

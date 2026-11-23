@@ -2,6 +2,8 @@ import type { ShareGateway, ShareMember } from "../../src/shares/share-gateway";
 import type { GroupData } from "../../src/domain/group";
 import type { SocketLike } from "../../src/sync/realtime-client";
 import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
+import type { AttachmentData, PickedFile } from "../../src/attachments/attachment";
+import type { AttachmentGateway, FilePicker } from "../../src/attachments/attachment-gateway";
 import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
 import type { ListPrinter } from "../../src/print/list-print-document";
 import type { SoundPlayer } from "../../src/audio/sound-player";
@@ -97,6 +99,64 @@ export class FakePhotoGateway implements PhotoGateway {
 			throw this.failure;
 		}
 		this.photos = this.photos.filter((photo) => photo.id !== id);
+	}
+}
+
+export class FakeAttachmentGateway implements AttachmentGateway {
+	attachments: AttachmentData[] = [];
+	failure: Error | null = null;
+	calls: string[] = [];
+	private counter = 0;
+
+	async list(taskId: string): Promise<AttachmentData[]> {
+		this.calls.push(`list:${taskId}`);
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		return this.attachments.filter((item) => item.taskId === taskId).map((item) => ({ ...item }));
+	}
+
+	async create(taskId: string, picked: PickedFile): Promise<AttachmentData> {
+		this.calls.push(`create:${taskId}`);
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		this.counter += 1;
+		const attachment: AttachmentData = {
+			id: `file-${this.counter}`,
+			taskId,
+			name: picked.name,
+			contentType: picked.contentType,
+			size: picked.size,
+			createdAt: "2026-11-19T10:00:00.000Z",
+			url: `https://files.test/file-${this.counter}`,
+		};
+		this.attachments = [...this.attachments, attachment];
+		return attachment;
+	}
+
+	async remove(taskId: string, id: string): Promise<void> {
+		this.calls.push(`remove:${taskId}:${id}`);
+		if (this.failure !== null) {
+			throw this.failure;
+		}
+		this.attachments = this.attachments.filter((item) => item.id !== id);
+	}
+}
+
+export class FakeFilePicker implements FilePicker {
+	next: PickedFile | null | Error = {
+		name: "report.pdf",
+		contentType: "application/pdf",
+		size: 2000,
+		body: new Blob(["x"]),
+	};
+
+	async pick(): Promise<PickedFile | null> {
+		if (this.next instanceof Error) {
+			throw this.next;
+		}
+		return this.next;
 	}
 }
 

@@ -25,6 +25,9 @@ vi.mock("expo-audio", () => ({
 vi.mock("expo-image-picker", () => ({
 	launchImageLibraryAsync: async () => ({ canceled: true, assets: null }),
 }));
+vi.mock("expo-document-picker", () => ({
+	getDocumentAsync: async () => ({ canceled: true, assets: null }),
+}));
 vi.mock("expo-print", () => ({ printAsync: async () => undefined }));
 vi.mock("expo-localization", () => ({
 	getLocales: vi.fn(() => [{ languageTag: "en-US" }]),
