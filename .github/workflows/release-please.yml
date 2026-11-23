@@ -115,7 +115,7 @@ jobs:
 
   deploy:
     name: Deploy ${{ needs.release-please.outputs.tag_name }}
-    needs: [release-please, publish]
+    needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
     uses: ./.github/workflows/deploy.yml
     permissions:
