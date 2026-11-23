@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.1.0](https://github.com/oliverphardman/another-todo/compare/v1.0.0...v1.1.0) (2026-11-23)
+
+
+### Features
+
+* **api:** add a reminder time to tasks ([a0a2fe7](https://github.com/oliverphardman/another-todo/commit/a0a2fe7fd7799427c5065d7a7fa8c0009f713f2b))
+* **api:** attach files to tasks ([ba666f3](https://github.com/oliverphardman/another-todo/commit/ba666f389386f41a9c9f75a088a5da598b5df3da))
+* **client:** attach files to tasks with the Add file button ([4420d45](https://github.com/oliverphardman/another-todo/commit/4420d45d1a55bac5485794a5777c3d7e925e6a08))
+* **client:** confirm dialogs with the Enter key ([a785445](https://github.com/oliverphardman/another-todo/commit/a785445166575a3c81d30ce433b679691bcb4743))
+* **client:** reminder notifications on macOS (Swift) and Windows ([1668323](https://github.com/oliverphardman/another-todo/commit/1668323f706a25e3ccef75521ecc6240c4e1aa63))
+* **client:** set reminders that notify through the browser or the device ([3133fd1](https://github.com/oliverphardman/another-todo/commit/3133fd1a092346e6794bb913ead6db4b69a7a8c2))
+* **infra:** add an api_logging_enabled variable for API CloudFront logs and enable it for the demo ([6fa7bbb](https://github.com/oliverphardman/another-todo/commit/6fa7bbb4f41c7fdb7051d130b13a97b90867086e))
+* **infra:** put the API logs bucket in the account-regional namespace ([e8b6a5a](https://github.com/oliverphardman/another-todo/commit/e8b6a5a563650c6c75192c4d97b9d0730c359f63))
+* **infra:** use the account-regional namespace for every bucket ([0454e4e](https://github.com/oliverphardman/another-todo/commit/0454e4ea1c0e36f41bc6b053d42019e58267e32e))
+
 ## 1.0.0 (2026-11-23)
 
 
