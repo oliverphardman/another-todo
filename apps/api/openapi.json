@@ -2,7 +2,7 @@
 	"openapi": "3.0.3",
 	"info": {
 		"title": "Another To Do API",
-		"version": "0.0.0",
+		"version": "1.0.0",
 		"description": "REST and MCP API for Another To Do. All endpoints except discovery require a Cognito access token."
 	},
 	"security": [
@@ -646,17 +646,28 @@
 							"application/json": {
 								"schema": {
 									"type": "object",
-									"required": ["authentication", "providers", "notice", "realtimeUrl"],
+									"required": [
+										"authentication",
+										"providers",
+										"notice",
+										"realtimeUrl"
+									],
 									"properties": {
 										"authentication": {
 											"type": "string",
-											"enum": ["none", "password", "external"]
+											"enum": [
+												"none",
+												"password",
+												"external"
+											]
 										},
 										"providers": {
 											"type": "array",
 											"items": {
 												"type": "string",
-												"enum": ["Microsoft"]
+												"enum": [
+													"Microsoft"
+												]
 											}
 										},
 										"notice": {
@@ -686,7 +697,10 @@
 						"application/json": {
 							"schema": {
 								"type": "object",
-								"required": ["username", "password"],
+								"required": [
+									"username",
+									"password"
+								],
 								"properties": {
 									"username": {
 										"type": "string"
@@ -706,11 +720,17 @@
 							"application/json": {
 								"schema": {
 									"type": "object",
-									"required": ["tokenType", "accessToken", "expiresIn"],
+									"required": [
+										"tokenType",
+										"accessToken",
+										"expiresIn"
+									],
 									"properties": {
 										"tokenType": {
 											"type": "string",
-											"enum": ["Bearer"]
+											"enum": [
+												"Bearer"
+											]
 										},
 										"accessToken": {
 											"type": "string"
@@ -739,7 +759,10 @@
 						"application/json": {
 							"schema": {
 								"type": "object",
-								"required": ["username", "password"],
+								"required": [
+									"username",
+									"password"
+								],
 								"properties": {
 									"username": {
 										"type": "string"
@@ -763,7 +786,10 @@
 							"application/json": {
 								"schema": {
 									"type": "object",
-									"required": ["username", "email"],
+									"required": [
+										"username",
+										"email"
+									],
 									"properties": {
 										"username": {
 											"type": "string"
@@ -827,7 +853,10 @@
 		"schemas": {
 			"Importance": {
 				"type": "string",
-				"enum": ["normal", "high"]
+				"enum": [
+					"normal",
+					"high"
+				]
 			},
 			"Task": {
 				"type": "object",
@@ -903,7 +932,9 @@
 			},
 			"TaskList": {
 				"type": "object",
-				"required": ["tasks"],
+				"required": [
+					"tasks"
+				],
 				"properties": {
 					"tasks": {
 						"type": "array",
@@ -915,7 +946,9 @@
 			},
 			"CreateTask": {
 				"type": "object",
-				"required": ["title"],
+				"required": [
+					"title"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"id": {
@@ -1029,7 +1062,9 @@
 			},
 			"Error": {
 				"type": "object",
-				"required": ["error"],
+				"required": [
+					"error"
+				],
 				"properties": {
 					"error": {
 						"type": "string"
@@ -1038,7 +1073,10 @@
 			},
 			"ProtectedResourceMetadata": {
 				"type": "object",
-				"required": ["resource", "authorization_servers"],
+				"required": [
+					"resource",
+					"authorization_servers"
+				],
 				"properties": {
 					"resource": {
 						"type": "string"
@@ -1059,7 +1097,15 @@
 			},
 			"TodoList": {
 				"type": "object",
-				"required": ["id", "name", "createdAt", "position", "groupId", "owned", "shared"],
+				"required": [
+					"id",
+					"name",
+					"createdAt",
+					"position",
+					"groupId",
+					"owned",
+					"shared"
+				],
 				"properties": {
 					"position": {
 						"type": "number",
@@ -1091,7 +1137,9 @@
 			},
 			"TodoListCollection": {
 				"type": "object",
-				"required": ["lists"],
+				"required": [
+					"lists"
+				],
 				"properties": {
 					"lists": {
 						"type": "array",
@@ -1103,7 +1151,9 @@
 			},
 			"CreateList": {
 				"type": "object",
-				"required": ["name"],
+				"required": [
+					"name"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"id": {
@@ -1137,7 +1187,11 @@
 			},
 			"TaskStep": {
 				"type": "object",
-				"required": ["id", "title", "completed"],
+				"required": [
+					"id",
+					"title",
+					"completed"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"id": {
@@ -1156,7 +1210,14 @@
 			},
 			"ViewSettings": {
 				"type": "object",
-				"required": ["id", "sort", "sortDescending", "hideCompleted", "theme", "updatedAt"],
+				"required": [
+					"id",
+					"sort",
+					"sortDescending",
+					"hideCompleted",
+					"theme",
+					"updatedAt"
+				],
 				"properties": {
 					"id": {
 						"type": "string"
@@ -1164,7 +1225,14 @@
 					"sort": {
 						"type": "string",
 						"nullable": true,
-						"enum": ["importance", "alphabetical", "due", "created", "myDay", null]
+						"enum": [
+							"importance",
+							"alphabetical",
+							"due",
+							"created",
+							"myDay",
+							null
+						]
 					},
 					"hideCompleted": {
 						"type": "boolean"
@@ -1172,12 +1240,17 @@
 					"theme": {
 						"type": "object",
 						"nullable": true,
-						"required": ["type"],
+						"required": [
+							"type"
+						],
 						"additionalProperties": false,
 						"properties": {
 							"type": {
 								"type": "string",
-								"enum": ["color", "photo"]
+								"enum": [
+									"color",
+									"photo"
+								]
 							},
 							"color": {
 								"type": "string",
@@ -1200,7 +1273,9 @@
 			},
 			"ViewSettingsCollection": {
 				"type": "object",
-				"required": ["settings"],
+				"required": [
+					"settings"
+				],
 				"properties": {
 					"settings": {
 						"type": "array",
@@ -1212,13 +1287,24 @@
 			},
 			"PutViewSettings": {
 				"type": "object",
-				"required": ["sort", "hideCompleted", "theme"],
+				"required": [
+					"sort",
+					"hideCompleted",
+					"theme"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"sort": {
 						"type": "string",
 						"nullable": true,
-						"enum": ["importance", "alphabetical", "due", "created", "myDay", null]
+						"enum": [
+							"importance",
+							"alphabetical",
+							"due",
+							"created",
+							"myDay",
+							null
+						]
 					},
 					"hideCompleted": {
 						"type": "boolean"
@@ -1226,12 +1312,17 @@
 					"theme": {
 						"type": "object",
 						"nullable": true,
-						"required": ["type"],
+						"required": [
+							"type"
+						],
 						"additionalProperties": false,
 						"properties": {
 							"type": {
 								"type": "string",
-								"enum": ["color", "photo"]
+								"enum": [
+									"color",
+									"photo"
+								]
 							},
 							"color": {
 								"type": "string",
@@ -1250,7 +1341,14 @@
 			},
 			"Photo": {
 				"type": "object",
-				"required": ["id", "name", "contentType", "size", "createdAt", "url"],
+				"required": [
+					"id",
+					"name",
+					"contentType",
+					"size",
+					"createdAt",
+					"url"
+				],
 				"properties": {
 					"id": {
 						"type": "string"
@@ -1275,7 +1373,9 @@
 			},
 			"PhotoCollection": {
 				"type": "object",
-				"required": ["photos"],
+				"required": [
+					"photos"
+				],
 				"properties": {
 					"photos": {
 						"type": "array",
@@ -1287,7 +1387,11 @@
 			},
 			"CreatePhoto": {
 				"type": "object",
-				"required": ["name", "contentType", "size"],
+				"required": [
+					"name",
+					"contentType",
+					"size"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"name": {
@@ -1297,7 +1401,11 @@
 					},
 					"contentType": {
 						"type": "string",
-						"enum": ["image/jpeg", "image/png", "image/webp"]
+						"enum": [
+							"image/jpeg",
+							"image/png",
+							"image/webp"
+						]
 					},
 					"size": {
 						"type": "integer",
@@ -1308,7 +1416,10 @@
 			},
 			"PhotoUpload": {
 				"type": "object",
-				"required": ["url", "fields"],
+				"required": [
+					"url",
+					"fields"
+				],
 				"properties": {
 					"url": {
 						"type": "string"
@@ -1323,7 +1434,10 @@
 			},
 			"CreatedPhoto": {
 				"type": "object",
-				"required": ["photo", "upload"],
+				"required": [
+					"photo",
+					"upload"
+				],
 				"properties": {
 					"photo": {
 						"$ref": "#/components/schemas/Photo"
@@ -1335,7 +1449,12 @@
 			},
 			"Group": {
 				"type": "object",
-				"required": ["id", "name", "createdAt", "position"],
+				"required": [
+					"id",
+					"name",
+					"createdAt",
+					"position"
+				],
 				"properties": {
 					"id": {
 						"type": "string"
@@ -1354,7 +1473,9 @@
 			},
 			"GroupCollection": {
 				"type": "object",
-				"required": ["groups"],
+				"required": [
+					"groups"
+				],
 				"properties": {
 					"groups": {
 						"type": "array",
@@ -1366,7 +1487,9 @@
 			},
 			"CreateGroup": {
 				"type": "object",
-				"required": ["name"],
+				"required": [
+					"name"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"id": {
@@ -1395,7 +1518,11 @@
 			},
 			"Share": {
 				"type": "object",
-				"required": ["id", "email", "createdAt"],
+				"required": [
+					"id",
+					"email",
+					"createdAt"
+				],
 				"properties": {
 					"id": {
 						"type": "string"
@@ -1411,7 +1538,9 @@
 			},
 			"ShareCollection": {
 				"type": "object",
-				"required": ["shares"],
+				"required": [
+					"shares"
+				],
 				"properties": {
 					"shares": {
 						"type": "array",
@@ -1423,7 +1552,9 @@
 			},
 			"CreateShare": {
 				"type": "object",
-				"required": ["email"],
+				"required": [
+					"email"
+				],
 				"additionalProperties": false,
 				"properties": {
 					"email": {
