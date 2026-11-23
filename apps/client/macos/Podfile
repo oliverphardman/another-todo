@@ -14,6 +14,8 @@ target 'AnotherToDo-macOS' do
   config = use_native_modules!(['npx', 'expo-modules-autolinking', 'react-native-config', '--json', '--platform', 'ios'])
   use_expo_modules!
   pod 'AnotherToDoMenu', :path => './AnotherToDoMenu'
+  pod 'AnotherToDoReminderCore', :path => './AnotherToDoReminderCore'
+  pod 'AnotherToDoReminders', :path => './AnotherToDoReminders'
 
   flags = get_default_flags()
 

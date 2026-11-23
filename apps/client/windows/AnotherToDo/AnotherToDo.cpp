@@ -8,6 +8,7 @@
 
 #include "NativeModules.h"
 #include "NativeMenu.h"
+#include "NativeReminders.h"
 
 // A PackageProvider containing any turbo modules you define within this app project
 struct CompReactPackageProvider

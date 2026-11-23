@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Platform } from "react-native";
 import { Task } from "../src/domain/task";
 import { ReminderService, type TaskSource } from "../src/reminders/reminder-service";
-import { UnavailableReminderNotifier } from "../src/reminders/unavailable-reminder-notifier";
+import {
+	DesktopReminderNotifier,
+	type DesktopReminderModule,
+} from "../src/reminders/desktop-reminder-notifier";
 import {
 	WebReminderNotifier,
 	WindowNotifications,
@@ -85,6 +88,21 @@ describe("ReminderService", () => {
 		expect(notifier.scheduled.has("z")).toBe(false);
 	});
 
+	it("tries again after a scheduling failure", async () => {
+		const { notifier, tasks, service } = setup();
+		const schedule = notifier.schedule.bind(notifier);
+		notifier.schedule = async () => {
+			throw new Error("refused");
+		};
+		tasks.replace([task("a", FUTURE)]);
+		await service.start();
+		expect(notifier.scheduled.size).toBe(0);
+		notifier.schedule = schedule;
+		await service.sync();
+		expect(notifier.scheduled.size).toBe(1);
+		service.stop();
+	});
+
 	it("restarting clears what was scheduled before", async () => {
 		const { notifier, tasks, service } = setup();
 		tasks.replace([task("a", FUTURE)]);
@@ -109,7 +127,7 @@ describe("ReminderService", () => {
 
 	it("reports an unavailable notifier", () => {
 		const service = new ReminderService(
-			new UnavailableReminderNotifier(),
+			new DesktopReminderNotifier(undefined),
 			new Tasks(),
 			new FixedClock(),
 		);
@@ -117,15 +135,36 @@ describe("ReminderService", () => {
 	});
 });
 
-describe("UnavailableReminderNotifier", () => {
-	it("does nothing and denies permission", async () => {
-		const notifier = new UnavailableReminderNotifier();
-		expect(notifier.available).toBe(false);
-		expect(await notifier.permission()).toBe("denied");
+describe("DesktopReminderNotifier", () => {
+	it("passes everything to the native module with the time in milliseconds", async () => {
+		const calls: unknown[][] = [];
+		const module: DesktopReminderModule = {
+			permission: async () => "granted",
+			requestPermission: async () => "denied",
+			schedule: async (...args) => void calls.push(["schedule", ...args]),
+			cancel: async (...args) => void calls.push(["cancel", ...args]),
+			clear: async () => void calls.push(["clear"]),
+		};
+		const notifier = new DesktopReminderNotifier(module);
+		expect(notifier.available).toBe(true);
+		expect(await notifier.permission()).toBe("granted");
 		expect(await notifier.requestPermission()).toBe("denied");
-		await notifier.schedule();
-		await notifier.cancel();
+		await notifier.schedule("a", "Task", new Date(5000));
+		await notifier.cancel("a");
 		await notifier.clear();
+		expect(calls).toEqual([["schedule", "a", "Task", 5000], ["cancel", "a"], ["clear"]]);
+	});
+
+	it("is unavailable and inert without the native module", async () => {
+		for (const missing of [undefined, null]) {
+			const notifier = new DesktopReminderNotifier(missing);
+			expect(notifier.available).toBe(false);
+			expect(await notifier.permission()).toBe("denied");
+			expect(await notifier.requestPermission()).toBe("denied");
+			await notifier.schedule("a", "A", new Date());
+			await notifier.cancel("a");
+			await notifier.clear();
+		}
 	});
 });
 
@@ -280,7 +319,8 @@ describe("createReminderNotifier", () => {
 		expect(createReminderNotifier()).toBeInstanceOf(WebReminderNotifier);
 		Platform.OS = "ios";
 		expect(createReminderNotifier()).toBeInstanceOf(ExpoReminderNotifier);
+		expect(createMacNotifier()).toBeInstanceOf(DesktopReminderNotifier);
+		expect(createWindowsNotifier()).toBeInstanceOf(DesktopReminderNotifier);
 		expect(createMacNotifier().available).toBe(false);
-		expect(createWindowsNotifier().available).toBe(false);
 	});
 });

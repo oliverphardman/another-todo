@@ -70,7 +70,9 @@ export class ReminderService extends Observable<ReminderState> {
 			const key = `${at}|${title}`;
 			if (this.scheduled.get(id) !== key) {
 				this.scheduled.set(id, key);
-				await this.notifier.schedule(id, title, new Date(at));
+				await this.notifier.schedule(id, title, new Date(at)).catch(() => {
+					this.scheduled.delete(id);
+				});
 			}
 		}
 	}
