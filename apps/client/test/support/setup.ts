@@ -28,6 +28,17 @@ vi.mock("expo-image-picker", () => ({
 vi.mock("expo-document-picker", () => ({
 	getDocumentAsync: async () => ({ canceled: true, assets: null }),
 }));
+vi.mock("expo-notifications", () => ({
+	getPermissionsAsync: async () => ({ granted: false, canAskAgain: true }),
+	requestPermissionsAsync: async () => ({ granted: false, canAskAgain: false }),
+	scheduleNotificationAsync: async () => "id",
+	cancelScheduledNotificationAsync: async () => undefined,
+	cancelAllScheduledNotificationsAsync: async () => undefined,
+	setNotificationHandler: () => undefined,
+	setNotificationChannelAsync: async () => undefined,
+	SchedulableTriggerInputTypes: { DATE: "date" },
+	AndroidImportance: { HIGH: 4 },
+}));
 vi.mock("expo-print", () => ({ printAsync: async () => undefined }));
 vi.mock("expo-localization", () => ({
 	getLocales: vi.fn(() => [{ languageTag: "en-US" }]),

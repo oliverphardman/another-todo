@@ -212,6 +212,24 @@ describe("TaskAttachments", () => {
 		expect(attachments.get().error).toBeNull();
 	});
 
+	it("keeps a file added while the list was still loading", async () => {
+		const { gateway, attachments } = setup();
+		const list = gateway.list.bind(gateway);
+		let release: () => void = () => undefined;
+		gateway.list = async (taskId) => {
+			const stale = await list(taskId);
+			await new Promise<void>((resolve) => (release = resolve));
+			return stale;
+		};
+		await gateway.create("t", { ...file, name: "old.pdf" });
+		const loading = attachments.show("t");
+		await vi.waitFor(() => expect(gateway.calls).toEqual(["create:t", "list:t"]));
+		await attachments.add();
+		release();
+		await loading;
+		expect(attachments.get().items.map((item) => item.name)).toEqual(["old.pdf", "report.pdf"]);
+	});
+
 	it("uploads a picked file", async () => {
 		const { attachments } = setup();
 		await attachments.show("t");

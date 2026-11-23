@@ -575,6 +575,10 @@ export class TodoStore extends Observable<TodoState> {
 		});
 	}
 
+	setReminder(taskId: string, at: Date | null): void {
+		this.updateTask(taskId, { remindAt: at === null ? null : at.toISOString() });
+	}
+
 	moveTask(taskId: string, listId: string | null): void {
 		this.updateTask(taskId, { listId });
 	}

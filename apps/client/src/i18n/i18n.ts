@@ -20,6 +20,7 @@ export class I18n {
 	private readonly shortDayFormat: Intl.DateTimeFormat;
 	private readonly shortDayWithYear: Intl.DateTimeFormat;
 	private readonly longDayFormat: Intl.DateTimeFormat;
+	private readonly reminderFormat: Intl.DateTimeFormat;
 
 	readonly locale: string;
 
@@ -31,6 +32,13 @@ export class I18n {
 		const base = { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" } as const;
 		this.shortDayFormat = new Intl.DateTimeFormat(locale, base);
 		this.shortDayWithYear = new Intl.DateTimeFormat(locale, { ...base, year: "numeric" });
+		this.reminderFormat = new Intl.DateTimeFormat(locale, {
+			weekday: "short",
+			month: "short",
+			day: "numeric",
+			hour: "numeric",
+			minute: "2-digit",
+		});
 		this.longDayFormat = new Intl.DateTimeFormat(locale, {
 			weekday: "long",
 			month: "long",
@@ -72,6 +80,10 @@ export class I18n {
 		return (sameYear ? this.shortDayFormat : this.shortDayWithYear).format(
 			new Date(`${day}T00:00:00.000Z`),
 		);
+	}
+
+	reminderLabel(iso: string): string {
+		return this.reminderFormat.format(new Date(iso));
 	}
 
 	shortDay(day: string): string {

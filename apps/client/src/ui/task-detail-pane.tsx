@@ -8,6 +8,7 @@ import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
+import { ReminderPicker } from "./reminder-picker";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
@@ -22,7 +23,8 @@ export interface TaskDetailPaneProps {
 }
 
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
-	const { store, attachments } = useContainer();
+	const { store, attachments, reminders } = useContainer();
+	const reminderState = useObservable(reminders);
 	const confirm = useConfirm();
 	const files = useObservable(attachments);
 	const deleteTasks = useDeleteTasks();
@@ -33,9 +35,11 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const [note, setNote] = useState(task.note);
 	const [noteFocused, setNoteFocused] = useState(false);
 	const [picking, setPicking] = useState(false);
+	const [pickingReminder, setPickingReminder] = useState(false);
 	useEffect(() => {
 		setTitle(task.title);
 		setPicking(false);
+		setPickingReminder(false);
 	}, [task.id, task.title]);
 	useEffect(() => {
 		void attachments.show(task.id);
@@ -129,7 +133,42 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					/>
 				</DetailCard>
 				<DetailCard>
-					<ActionRow glyph="bell" label={t("detail.remind")} />
+					<ActionRow
+						glyph="bell"
+						label={
+							!reminderState.available
+								? t("detail.remindUnavailable")
+								: task.remindAt === null
+									? t("detail.remind")
+									: t("detail.remindAt", { when: i18n.reminderLabel(task.remindAt) })
+						}
+						active={task.remindAt !== null}
+						onPress={
+							reminderState.available ? () => setPickingReminder((value) => !value) : undefined
+						}
+					/>
+					{pickingReminder ? (
+						<ReminderPicker
+							at={task.remindAt}
+							now={store.now}
+							onChange={(at) => {
+								store.setReminder(task.id, at);
+								setPickingReminder(false);
+								if (at !== null) {
+									void reminders.ensurePermission();
+								}
+							}}
+						/>
+					) : null}
+					{reminderState.permission === "denied" && task.remindAt !== null ? (
+						<AppText
+							tone="secondary"
+							size={12}
+							style={{ paddingHorizontal: 14, paddingBottom: 10 }}
+						>
+							{t("remind.blocked")}
+						</AppText>
+					) : null}
 					<DetailSeparator />
 					<ActionRow
 						glyph="calendarDots"

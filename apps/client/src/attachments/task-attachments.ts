@@ -30,7 +30,10 @@ export class TaskAttachments extends Observable<TaskAttachmentsState> {
 		try {
 			const items = await this.gateway.list(taskId);
 			if (this.get().taskId === taskId) {
-				this.set({ taskId, items, busy: this.settled(), error: null });
+				const added = this.get().items.filter(
+					(item) => !items.some((other) => other.id === item.id),
+				);
+				this.set({ taskId, items: [...items, ...added], busy: this.settled(), error: null });
 			}
 		} catch (error) {
 			if (this.get().taskId === taskId) {

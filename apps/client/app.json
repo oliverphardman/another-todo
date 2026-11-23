@@ -31,6 +31,7 @@
 		},
 		"plugins": [
 			"expo-audio",
+			"expo-notifications",
 			"expo-localization",
 			"expo-secure-store",
 			"expo-web-browser",

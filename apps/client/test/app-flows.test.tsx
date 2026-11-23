@@ -198,9 +198,59 @@ describe("expanded layout", () => {
 			return Array.from(document.querySelectorAll("*")).indexOf(element);
 		});
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		for (const label of ["Remind me", "Repeat"]) {
+		for (const label of ["Repeat"]) {
 			expect(details.getByLabelText(label).getAttribute("aria-disabled")).toBe("true");
 		}
+	});
+
+	it("sets a reminder, asks for permission, schedules it and clears it", async () => {
+		const app = await start();
+		await act(async () => {
+			await app.container.reminders.start();
+		});
+		addTask("Water plants");
+		fireEvent.click(screen.getByLabelText("Open Water plants"));
+		fireEvent.click(screen.getByLabelText("Remind me"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Remind me Tomorrow"));
+		});
+		expect(app.reminderNotifier.requests).toBe(1);
+		expect(app.container.store.get().tasks[0]!.remindAt).toBe(
+			new Date(2026, 10, 20, 9, 0).toISOString(),
+		);
+		expect(screen.getByLabelText(/^Remind me Fri, Nov 20/)).toBeTruthy();
+		await vi.waitFor(() => expect(app.reminderNotifier.scheduled.size).toBe(1));
+		fireEvent.click(screen.getByLabelText(/^Remind me Fri, Nov 20/));
+		fireEvent.click(screen.getByLabelText("Remove reminder"));
+		expect(app.container.store.get().tasks[0]!.remindAt).toBeNull();
+		await vi.waitFor(() => expect(app.reminderNotifier.scheduled.size).toBe(0));
+	});
+
+	it("explains when notifications are blocked", async () => {
+		const app = await start();
+		app.reminderNotifier.grantOnRequest = "denied";
+		addTask("Blocked");
+		fireEvent.click(screen.getByLabelText("Open Blocked"));
+		fireEvent.click(screen.getByLabelText("Remind me"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Remind me Tomorrow"));
+		});
+		expect(await screen.findByText(/Notifications are blocked/)).toBeTruthy();
+	});
+
+	it("disables the reminder row where notifications are unavailable", async () => {
+		const app = await start();
+		app.reminderNotifier.available = false;
+		await act(async () => {
+			await app.container.reminders.start();
+		});
+		addTask("Desktop");
+		fireEvent.click(screen.getByLabelText("Open Desktop"));
+		expect(
+			screen
+				.getByLabelText("Reminders are not available on this device")
+				.getAttribute("aria-disabled"),
+		).toBe("true");
 	});
 
 	it("attaches, opens and removes files on a task", async () => {

@@ -13,6 +13,7 @@ import {
 	FakePhotoGateway,
 	FakeAttachmentGateway,
 	FakeFilePicker,
+	FakeReminderNotifier,
 	FakePhotoPicker,
 	RecordingPrinter,
 	RecordingSoundPlayer,
@@ -43,6 +44,7 @@ export interface TestContainer {
 	readonly photoPicker: FakePhotoPicker;
 	readonly attachmentGateway: FakeAttachmentGateway;
 	readonly filePicker: FakeFilePicker;
+	readonly reminderNotifier: FakeReminderNotifier;
 	readonly shareGateway: FakeShareGateway;
 	readonly microsoftAuthorizer: FakeMicrosoftAuthorizer;
 	readonly graphRequests: string[];
@@ -71,6 +73,7 @@ export function createTestContainer(
 	const photoPicker = new FakePhotoPicker();
 	const attachmentGateway = new FakeAttachmentGateway();
 	const filePicker = new FakeFilePicker();
+	const reminderNotifier = new FakeReminderNotifier();
 	const tokenStore = new MemoryKeyValueStore();
 	const dataStore = new MemoryKeyValueStore();
 	const requests: TestContainer["requests"] = [];
@@ -94,6 +97,7 @@ export function createTestContainer(
 			photoPicker,
 			attachmentGateway,
 			filePicker,
+			reminderNotifier,
 			clock,
 			motion,
 			shareGateway,
@@ -131,6 +135,7 @@ export function createTestContainer(
 		photoPicker,
 		attachmentGateway,
 		filePicker,
+		reminderNotifier,
 		requests,
 		tokenStore,
 		dataStore,

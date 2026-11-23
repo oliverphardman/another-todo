@@ -4,6 +4,10 @@ import type { SocketLike } from "../../src/sync/realtime-client";
 import type { PhotoData, PickedPhoto } from "../../src/photos/photo";
 import type { AttachmentData, PickedFile } from "../../src/attachments/attachment";
 import type { AttachmentGateway, FilePicker } from "../../src/attachments/attachment-gateway";
+import type {
+	NotificationPermission,
+	ReminderNotifier,
+} from "../../src/reminders/reminder-notifier";
 import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
 import type { ListPrinter } from "../../src/print/list-print-document";
 import type { SoundPlayer } from "../../src/audio/sound-player";
@@ -141,6 +145,40 @@ export class FakeAttachmentGateway implements AttachmentGateway {
 			throw this.failure;
 		}
 		this.attachments = this.attachments.filter((item) => item.id !== id);
+	}
+}
+
+export class FakeReminderNotifier implements ReminderNotifier {
+	available = true;
+	current: NotificationPermission = "undetermined";
+	grantOnRequest: NotificationPermission = "granted";
+	scheduled = new Map<string, { title: string; at: Date }>();
+	cancelled: string[] = [];
+	clears = 0;
+	requests = 0;
+
+	async permission(): Promise<NotificationPermission> {
+		return this.current;
+	}
+
+	async requestPermission(): Promise<NotificationPermission> {
+		this.requests += 1;
+		this.current = this.grantOnRequest;
+		return this.current;
+	}
+
+	async schedule(id: string, title: string, at: Date): Promise<void> {
+		this.scheduled.set(id, { title, at });
+	}
+
+	async cancel(id: string): Promise<void> {
+		this.cancelled.push(id);
+		this.scheduled.delete(id);
+	}
+
+	async clear(): Promise<void> {
+		this.clears += 1;
+		this.scheduled.clear();
 	}
 }
 

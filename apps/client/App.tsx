@@ -34,6 +34,7 @@ function Application({ config, session }: { config: AppConfig; session: ServerSe
 		container.sync.start();
 		container.photos.start();
 		container.realtime.start();
+		void container.reminders.start();
 		const unwatchMicrosoft = container.microsoft.watch();
 		const rollover = setInterval(() => container.store.refreshToday(), 60_000);
 		return () => {
@@ -41,6 +42,7 @@ function Application({ config, session }: { config: AppConfig; session: ServerSe
 			container.sync.stop();
 			container.photos.stop();
 			container.realtime.stop();
+			container.reminders.stop();
 			unwatchMicrosoft();
 			container.microsoft.stop();
 		};

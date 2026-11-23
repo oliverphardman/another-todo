@@ -105,6 +105,7 @@ describe("HttpApiGateway", () => {
 			steps: [],
 			note: "",
 			dueDate: null,
+			remindAt: null,
 		});
 	});
 

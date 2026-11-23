@@ -18,6 +18,9 @@ import { PhotoLibrary } from "./photos/photo-library";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { ExpoListPrinter } from "./print/expo-list-printer";
 import type { ListPrinter } from "./print/list-print-document";
+import { createReminderNotifier } from "./reminders/reminder-notifier-factory";
+import type { ReminderNotifier } from "./reminders/reminder-notifier";
+import { ReminderService } from "./reminders/reminder-service";
 import { ExpoSoundPlayer } from "./audio/expo-sound-player";
 import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
@@ -53,6 +56,7 @@ export interface Container {
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
 	readonly attachments: TaskAttachments;
+	readonly reminders: ReminderService;
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
 	readonly shares: ShareGateway;
@@ -78,6 +82,7 @@ export interface ContainerOverrides {
 	readonly photoPicker?: PhotoPicker;
 	readonly attachmentGateway?: AttachmentGateway;
 	readonly filePicker?: FilePicker;
+	readonly reminderNotifier?: ReminderNotifier;
 	readonly printer?: ListPrinter;
 	readonly shareGateway?: ShareGateway;
 	readonly microsoftAuthorizer?: MicrosoftAuthorizer;
@@ -132,6 +137,11 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		sync,
 		overrides.sounds ?? new ExpoSoundPlayer(),
 	);
+	const reminders = new ReminderService(
+		overrides.reminderNotifier ?? createReminderNotifier(),
+		store,
+		clock,
+	);
 	const authorizer =
 		overrides.microsoftAuthorizer ??
 		new ExpoMicrosoftAuthorizer(
@@ -165,6 +175,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		sync,
 		photos,
 		attachments,
+		reminders,
 		printer: overrides.printer ?? new ExpoListPrinter(),
 		paneWidths: new PaneWidths(dataStore),
 		shares:

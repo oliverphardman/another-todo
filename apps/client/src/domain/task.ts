@@ -14,6 +14,7 @@ export interface TaskData {
 	readonly note: string;
 	readonly position?: number | null;
 	readonly dueDate: string | null;
+	readonly remindAt?: string | null;
 	readonly createdAt: string;
 }
 
@@ -28,6 +29,7 @@ export interface TaskChanges {
 	readonly note?: string;
 	readonly position?: number | null;
 	readonly dueDate?: string | null;
+	readonly remindAt?: string | null;
 }
 
 export class Task {
@@ -87,6 +89,10 @@ export class Task {
 		);
 	}
 
+	get remindAt(): string | null {
+		return this.data.remindAt ?? null;
+	}
+
 	get dueDay(): string | null {
 		return this.data.dueDate === null ? null : this.data.dueDate.slice(0, 10);
 	}
@@ -122,6 +128,7 @@ export class Task {
 			...(changes.note !== undefined && { note: changes.note }),
 			...(changes.position !== undefined && { position: changes.position }),
 			...(changes.dueDate !== undefined && { dueDate: changes.dueDate }),
+			...(changes.remindAt !== undefined && { remindAt: changes.remindAt }),
 		});
 	}
 }
