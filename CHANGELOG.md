@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/oliverphardman/another-todo/compare/v1.1.0...v1.1.1) (2026-11-23)
+
+
+### Fixes
+
+* **client:** import the Swift reminder header the way static pods expose it ([f87a078](https://github.com/oliverphardman/another-todo/commit/f87a0786c432e2aa31c5241e97a421394d557bb0))
+
 ## [1.1.0](https://github.com/oliverphardman/another-todo/compare/v1.0.0...v1.1.0) (2026-11-23)
 
 
