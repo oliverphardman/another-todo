@@ -136,6 +136,16 @@ resource "aws_cloudfront_distribution" "api" {
     compress                 = true
   }
 
+  dynamic "logging_config" {
+    for_each = var.api_logging_enabled ? [1] : []
+
+    content {
+      bucket          = aws_s3_bucket.api_logs[0].bucket_domain_name
+      prefix          = "api/"
+      include_cookies = false
+    }
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -147,6 +157,11 @@ resource "aws_cloudfront_distribution" "api" {
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
+
+  depends_on = [
+    aws_s3_bucket_ownership_controls.api_logs,
+    aws_s3_bucket_public_access_block.api_logs,
+  ]
 }
 
 resource "aws_route53_record" "api" {

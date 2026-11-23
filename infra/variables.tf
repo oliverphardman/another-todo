@@ -105,3 +105,9 @@ variable "server_notice" {
   default     = "This is a public demo. Anything you create here will be viewable by others. Check out the source and host this yourself: https://github.com/oliverphardman/another-todo"
   description = "Notice the clients show to everyone using this server"
 }
+
+variable "api_logging_enabled" {
+  type        = bool
+  default     = false
+  description = "Write the API CloudFront access logs to a private S3 bucket (kept for 90 days)"
+}
