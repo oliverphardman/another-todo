@@ -1,7 +1,8 @@
 resource "aws_s3_bucket" "api_logs" {
   count = var.api_logging_enabled ? 1 : 0
 
-  bucket_prefix = "${local.name}-api-logs-"
+  bucket           = "${local.name}-api-logs-${data.aws_caller_identity.current.account_id}-${var.region}-an"
+  bucket_namespace = "account-regional"
 }
 
 resource "aws_s3_bucket_public_access_block" "api_logs" {
