@@ -1,5 +1,9 @@
 #import <React/RCTBridgeModule.h>
+#if __has_include(<AnotherToDoReminderCore/AnotherToDoReminderCore-Swift.h>)
 #import <AnotherToDoReminderCore/AnotherToDoReminderCore-Swift.h>
+#else
+#import "AnotherToDoReminderCore-Swift.h"
+#endif
 
 @interface AnotherToDoReminders : NSObject <RCTBridgeModule>
 @end
