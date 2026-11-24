@@ -1,6 +1,7 @@
 import { DueDay } from "../domain/due-day";
 import type { MessageKey } from "./en-us";
 import { CATALOGS, DEFAULT_LOCALE } from "./locales";
+import { PluralRule } from "./plural-rule";
 
 export type LocalizedText = { readonly key: MessageKey } | { readonly message: string };
 
@@ -16,7 +17,7 @@ const DAY_MS = 86_400_000;
 
 export class I18n {
 	readonly messages: Readonly<Record<MessageKey, string>>;
-	private readonly plurals: Intl.PluralRules;
+	private readonly plurals: PluralRule;
 	private readonly shortDayFormat: Intl.DateTimeFormat;
 	private readonly shortDayWithYear: Intl.DateTimeFormat;
 	private readonly longDayFormat: Intl.DateTimeFormat;
@@ -28,7 +29,7 @@ export class I18n {
 		this.locale = requested in CATALOGS ? requested : DEFAULT_LOCALE;
 		const locale = this.locale;
 		this.messages = CATALOGS[locale]!;
-		this.plurals = new Intl.PluralRules(locale);
+		this.plurals = PluralRule.for(locale);
 		const base = { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" } as const;
 		this.shortDayFormat = new Intl.DateTimeFormat(locale, base);
 		this.shortDayWithYear = new Intl.DateTimeFormat(locale, { ...base, year: "numeric" });
@@ -53,7 +54,7 @@ export class I18n {
 		);
 
 	count = (base: PluralBase, count: number, params: MessageParams = {}): string => {
-		const category = this.plurals.select(count) === "one" ? "one" : "other";
+		const category = this.plurals.isSingular(count) ? "one" : "other";
 		return this.t(`${base}_${category}` as MessageKey, { ...params, count });
 	};
 
