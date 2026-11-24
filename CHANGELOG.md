@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/oliverphardman/another-todo/compare/v1.1.2...v1.1.3) (2026-11-24)
+
+
+### Fixes
+
+* **client:** import UserNotifications before the Swift reminder header ([ec55083](https://github.com/oliverphardman/another-todo/commit/ec5508314e9bb59956ef82768c228ed9c9431af3))
+
 ## [1.1.2](https://github.com/oliverphardman/another-todo/compare/v1.1.1...v1.1.2) (2026-11-24)
 
 
