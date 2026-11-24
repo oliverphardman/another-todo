@@ -1,4 +1,5 @@
 #import <React/RCTBridgeModule.h>
+#import <UserNotifications/UserNotifications.h>
 #if __has_include(<AnotherToDoReminderCore/AnotherToDoReminderCore-Swift.h>)
 #import <AnotherToDoReminderCore/AnotherToDoReminderCore-Swift.h>
 #else
