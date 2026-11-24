@@ -27,5 +27,17 @@ target 'AnotherToDo-macOS' do
 
   post_install do |installer|
     react_native_post_install(installer)
+
+    root = Pod::Config.instance.installation_root.to_s
+    Dir.glob("#{root}/build/generated/ios/**/RCTThirdPartyComponentsProvider.mm").each do |path|
+      source = File.read(path)
+      entries = source.scan(/@"([^"]+)": NSClassFromString\(@"([^"]+)"\)/)
+      next if entries.empty?
+      guarded = source.sub(/thirdPartyComponents = @\{.*?\n    \};/m,
+        "NSMutableDictionary<NSString *, Class<RCTComponentViewProtocol>> *registered = [NSMutableDictionary new];\n" +
+        entries.map { |name, klass| "    { Class c = NSClassFromString(@\"#{klass}\"); if (c) { registered[@\"#{name}\"] = c; } }" }.join("\n") +
+        "\n    thirdPartyComponents = registered;")
+      File.write(path, guarded)
+    end
   end
 end
