@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/oliverphardman/another-todo/compare/v1.1.1...v1.1.2) (2026-11-24)
+
+
+### Fixes
+
+* **client:** add the Swift compatibility header to the reminders pod search path ([18abc8f](https://github.com/oliverphardman/another-todo/commit/18abc8f38593d72547f9dcbbef42bac66f661597))
+
 ## [1.1.1](https://github.com/oliverphardman/another-todo/compare/v1.1.0...v1.1.1) (2026-11-23)
 
 
