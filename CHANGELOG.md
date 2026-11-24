@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/oliverphardman/another-todo/compare/v1.1.4...v1.1.5) (2026-11-24)
+
+
+### Fixes
+
+* **client:** skip native component classes that are missing on macOS so launch does not abort ([2492760](https://github.com/oliverphardman/another-todo/commit/2492760759ca10ec7ebf3b7c63f37a38c8f52662))
+
 ## [1.1.4](https://github.com/oliverphardman/another-todo/compare/v1.1.3...v1.1.4) (2026-11-24)
 
 
