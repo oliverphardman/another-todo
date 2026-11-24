@@ -9,6 +9,7 @@ Pod::Spec.new do |s|
   s.source = { :path => "." }
   s.source_files = "*.{h,m,mm}"
   s.requires_arc = true
+  s.pod_target_xcconfig = { "HEADER_SEARCH_PATHS" => "\"${PODS_CONFIGURATION_BUILD_DIR}/AnotherToDoReminderCore/Swift Compatibility Header\"" }
   s.dependency "React-Core"
   s.dependency "AnotherToDoReminderCore"
 end
