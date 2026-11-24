@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.4](https://github.com/oliverphardman/another-todo/compare/v1.1.3...v1.1.4) (2026-11-24)
+
+
+### Fixes
+
+* **client:** fall back when Hermes has no Intl.PluralRules so the macOS app starts ([6163cd5](https://github.com/oliverphardman/another-todo/commit/6163cd5fde90fc63368c39e608c9a7cc0b9f4413))
+* **client:** sign the macOS app ad hoc so Gatekeeper does not call it damaged ([7ed8b2e](https://github.com/oliverphardman/another-todo/commit/7ed8b2ecbd556da456d97233c433102f49621d88))
+
 ## [1.1.3](https://github.com/oliverphardman/another-todo/compare/v1.1.2...v1.1.3) (2026-11-24)
 
 
