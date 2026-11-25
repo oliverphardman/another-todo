@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
-import { Linking, ScrollView, TextInput, View } from "react-native";
+import { Linking, ScrollView, View } from "react-native";
+import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -77,7 +78,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 								<Icon glyph="circle" size={22} color={palette.accent} strokeWidth={1.3} />
 							)}
 						</PressableSurface>
-						<TextInput
+						<TextField
 							accessibilityLabel={t("task.title")}
 							value={title}
 							onChangeText={setTitle}
@@ -235,7 +236,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					)}
 				</DetailCard>
 				<DetailCard>
-					<TextInput
+					<TextField
 						multiline
 						spellCheck={noteFocused}
 						onFocus={() => setNoteFocused(true)}

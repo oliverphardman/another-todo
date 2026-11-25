@@ -1,3 +1,36 @@
+diff --git a/Libraries/Text/TextInput/Singleline/RCTUITextField.mm b/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
+index 0f988c19d5c2a3993d58639ca5991da5b1377e6a..c99fd8ae4092808ce2d22f0480dec755cfc510fc 100644
+--- a/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
++++ b/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
+@@ -323,6 +323,15 @@ - (void)setEnableFocusRing:(BOOL)enableFocusRing {
+   }
+ }
+ 
++- (void)layout
++{
++  [super layout];
++  NSText *editor = self.currentEditor;
++  if (editor != nil) {
++    editor.superview.frame = [self.cell titleRectForBounds:self.bounds];
++  }
++}
++
+ #endif // macOS]
+ 
+ - (void)setPlaceholder:(NSString *)placeholder
+diff --git a/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm b/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
+index 4d3f18bffb370f4469f9be101ce0b82feab0204a..6e09c7972d73f40c80c1c8a0233e8647ec832a4e 100644
+--- a/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
++++ b/React/Fabric/Mounting/ComponentViews/View/RCTViewComponentView.mm
+@@ -1124,7 +1124,7 @@ - (RCTUIView *)currentContainerView // [macOS]
+ 
+   if (_useCustomContainerView) {
+     if (!_containerView) {
+-      _containerView = [[RCTPlatformView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height)]; // [macOS]
++      _containerView = [[RCTUIView alloc] initWithFrame:CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height)]; // [macOS]
+       for (RCTPlatformView *subview = nullptr in effectiveContentView.subviews) { // [macOS]
+         [_containerView addSubview:subview];
+       }
 diff --git a/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js b/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js
 index d54bd708c7b72d00391b0357eef91a7dda3b22e5..333e67534d1a904d914dec3f3f395ed9612f3864 100644
 --- a/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js

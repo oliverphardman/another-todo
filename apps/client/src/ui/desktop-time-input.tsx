@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextInput } from "react-native";
+import { TextField } from "./text-field";
 import { TimeOfDay } from "../domain/time-of-day";
 import type { NativeTimeInputProps } from "./native-time-input";
 import { FONT_FAMILY } from "./theme";
@@ -20,7 +20,7 @@ function TimeField({ label, value, onChange }: NativeTimeInputProps) {
 		}
 	};
 	return (
-		<TextInput
+		<TextField
 			accessibilityLabel={label}
 			value={text}
 			onChangeText={setText}
@@ -28,7 +28,7 @@ function TimeField({ label, value, onChange }: NativeTimeInputProps) {
 			onSubmitEditing={commit}
 			maxLength={5}
 			style={{
-				width: 64,
+				width: 80,
 				fontFamily: FONT_FAMILY,
 				fontSize: 14,
 				textAlign: "center",

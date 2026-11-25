@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, TextInput, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
+import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AddTaskBar } from "./add-task-bar";
@@ -277,7 +278,7 @@ function RenameField({ initial, onDone }: { initial: string; onDone: (name: stri
 	const [text, setText] = useState(initial);
 	const finish = () => onDone(text);
 	return (
-		<TextInput
+		<TextField
 			accessibilityLabel={t("list.name")}
 			autoFocus
 			selectTextOnFocus

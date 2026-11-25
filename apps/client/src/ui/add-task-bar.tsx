@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import { TextField } from "./text-field";
 import { AppText } from "./app-text";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
@@ -35,7 +36,7 @@ export function AddTaskBar({ placeholder, onSubmit }: AddTaskBarProps) {
 			}}
 		>
 			<Icon glyph="plus" size={22} color={palette.accent} />
-			<TextInput
+			<TextField
 				accessibilityLabel={placeholder}
 				placeholder={placeholder}
 				placeholderTextColor={palette.accent}

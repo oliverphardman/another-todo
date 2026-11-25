@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import { TextField } from "./text-field";
 import type { TaskStepData } from "../domain/task-step";
 import { CheckedCircle, Icon } from "./icon";
 import { useContextMenuTrigger } from "./context-menu";
@@ -85,7 +86,7 @@ export function StepRow({ step, onToggle, onRename, onPromote, onDelete }: StepR
 						<Icon glyph="circle" size={20} color={palette.accent} strokeWidth={1.3} />
 					)}
 				</PressableSurface>
-				<TextInput
+				<TextField
 					accessibilityLabel={t("step.named", { title: step.title })}
 					value={title}
 					onChangeText={setTitle}
@@ -159,7 +160,7 @@ export function AddStepRow({ onAdd }: AddStepRowProps) {
 	return (
 		<View style={row}>
 			<Icon glyph="plus" size={20} color={palette.accent} strokeWidth={1.3} />
-			<TextInput
+			<TextField
 				autoFocus
 				blurOnSubmit={false}
 				accessibilityLabel={t("step.new")}

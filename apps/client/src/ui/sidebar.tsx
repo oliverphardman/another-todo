@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
+import { ScrollView, View } from "react-native";
+import { TextField } from "./text-field";
 import type { Group } from "../domain/group";
 import type { CustomListView, IconName, TaskView } from "../domain/task-view";
 import { AppText } from "./app-text";
@@ -303,7 +304,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				}}
 			>
 				<Icon glyph="search" size={16} color={palette.textSecondary} />
-				<TextInput
+				<TextField
 					accessibilityLabel={t("sidebar.search")}
 					placeholder={t("sidebar.search")}
 					placeholderTextColor={palette.textSecondary}
@@ -564,7 +565,7 @@ function GroupHeader({
 				<Icon glyph="group" color={palette.accent} />
 			</View>
 			{renaming ? (
-				<TextInput
+				<TextField
 					accessibilityLabel={t("group.name")}
 					autoFocus
 					selectTextOnFocus

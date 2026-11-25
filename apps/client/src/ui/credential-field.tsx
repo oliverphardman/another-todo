@@ -1,4 +1,4 @@
-import { TextInput } from "react-native";
+import { TextField } from "./text-field";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
 
@@ -25,7 +25,7 @@ export function CredentialField({
 }: CredentialFieldProps) {
 	const palette = useTheme();
 	return (
-		<TextInput
+		<TextField
 			accessibilityLabel={label}
 			placeholder={placeholder}
 			placeholderTextColor={palette.textSecondary}

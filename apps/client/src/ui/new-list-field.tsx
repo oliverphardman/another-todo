@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import { TextField } from "./text-field";
 import { Icon } from "./icon";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -38,7 +39,7 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 			}}
 		>
 			<Icon glyph="plus" color={palette.accent} />
-			<TextInput
+			<TextField
 				autoFocus
 				accessibilityLabel={t("sidebar.newList")}
 				placeholder={t("sidebar.newList")}

@@ -8,3 +8,4 @@ overrides:
   zod@<4.6.6: 4.6.6
 patchedDependencies:
   react-native-macos@0.83.0: patches/react-native-macos@0.83.0.patch
+  react-native-svg@15.15.3: patches/react-native-svg@15.15.3.patch

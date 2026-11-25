@@ -1,0 +1,18 @@
+diff --git a/apple/Elements/RNSVGSvgView.mm b/apple/Elements/RNSVGSvgView.mm
+index d03d5c0b6449696dccd966a85f44d0c5c780a47b..f9caa12ef470bbee20bf1f4eaa03ee8045a6ad60 100644
+--- a/apple/Elements/RNSVGSvgView.mm
++++ b/apple/Elements/RNSVGSvgView.mm
+@@ -38,6 +38,13 @@ @implementation RNSVGSvgView {
+ using namespace facebook::react;
+ #endif // RCT_NEW_ARCH_ENABLED
+ 
++#if TARGET_OS_OSX
++- (BOOL)wantsUpdateLayer
++{
++  return NO;
++}
++#endif
++
+ // Needed because of this: https://github.com/facebook/react-native/pull/37274
+ + (void)load
+ {

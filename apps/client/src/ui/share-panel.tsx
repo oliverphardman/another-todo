@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { TextInput, View } from "react-native";
+import { View } from "react-native";
+import { TextField } from "./text-field";
 import type { MessageKey } from "../i18n/en-us";
 import { useI18n } from "../i18n/i18n-context";
 import { ShareErrors } from "../shares/share-errors";
@@ -89,7 +90,7 @@ export function SharePanel({ listId, onClose }: SharePanelProps) {
 				))
 			)}
 			<View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-				<TextInput
+				<TextField
 					accessibilityLabel={t("share.email")}
 					placeholder={t("share.email")}
 					placeholderTextColor={palette.textSecondary}
