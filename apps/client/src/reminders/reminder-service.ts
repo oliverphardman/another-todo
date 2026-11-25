@@ -13,8 +13,16 @@ export interface TaskSource {
 	subscribe(listener: () => void): () => void;
 }
 
+interface Scheduled {
+	readonly key: string;
+	readonly at: string;
+}
+
+const LONGEST_WAIT_MS = 2_147_483_647;
+
 export class ReminderService extends Observable<ReminderState> {
-	private readonly scheduled = new Map<string, string>();
+	private readonly scheduled = new Map<string, Scheduled>();
+	private timer: ReturnType<typeof setTimeout> | null = null;
 	private unsubscribe: (() => void) | null = null;
 
 	constructor(
@@ -40,6 +48,7 @@ export class ReminderService extends Observable<ReminderState> {
 	stop(): void {
 		this.unsubscribe?.();
 		this.unsubscribe = null;
+		this.disarm();
 	}
 
 	async ensurePermission(): Promise<NotificationPermission> {
@@ -48,6 +57,9 @@ export class ReminderService extends Observable<ReminderState> {
 			permission = await this.notifier.requestPermission();
 		}
 		this.set({ ...this.get(), permission });
+		if (permission === "granted") {
+			await this.sync();
+		}
 		return permission;
 	}
 
@@ -60,20 +72,54 @@ export class ReminderService extends Observable<ReminderState> {
 				wanted.set(task.id, { title: task.title, at });
 			}
 		}
-		for (const id of [...this.scheduled.keys()]) {
+		this.arm(now, [...wanted.values()]);
+		for (const [id, { at }] of [...this.scheduled]) {
 			if (!wanted.has(id)) {
 				this.scheduled.delete(id);
-				await this.notifier.cancel(id);
+				if (!this.hasComeDue(id, at, now)) {
+					await this.notifier.cancel(id);
+				}
 			}
 		}
 		for (const [id, { title, at }] of wanted) {
 			const key = `${at}|${title}`;
-			if (this.scheduled.get(id) !== key) {
-				this.scheduled.set(id, key);
+			if (this.scheduled.get(id)?.key !== key) {
+				this.scheduled.set(id, { key, at });
 				await this.notifier.schedule(id, title, new Date(at)).catch(() => {
 					this.scheduled.delete(id);
 				});
 			}
+		}
+	}
+
+	private hasComeDue(id: string, at: string, now: number): boolean {
+		return (
+			Date.parse(at) <= now &&
+			this.tasks
+				.get()
+				.tasks.some((task) => task.id === id && !task.completed && task.remindAt === at)
+		);
+	}
+
+	private arm(now: number, upcoming: readonly { readonly at: string }[]): void {
+		this.disarm();
+		if (this.unsubscribe === null || upcoming.length === 0) {
+			return;
+		}
+		const next = Math.min(...upcoming.map(({ at }) => Date.parse(at)));
+		this.timer = setTimeout(
+			() => {
+				this.set({ ...this.get() });
+				void this.sync();
+			},
+			Math.min(next - now, LONGEST_WAIT_MS),
+		);
+	}
+
+	private disarm(): void {
+		if (this.timer !== null) {
+			clearTimeout(this.timer);
+			this.timer = null;
 		}
 	}
 }

@@ -113,6 +113,71 @@ describe("ReminderService", () => {
 		service.stop();
 	});
 
+	it("leaves a reminder that has come due so it can still be delivered", async () => {
+		const notifier = new FakeReminderNotifier();
+		const tasks = new Tasks();
+		const clock = new FixedClock();
+		const service = new ReminderService(notifier, tasks, clock);
+		tasks.replace([task("a", FUTURE)]);
+		await service.start();
+		clock.advance(24 * 3_600_000);
+		await service.sync();
+		expect(notifier.cancelled).toEqual([]);
+		service.stop();
+	});
+
+	it("cancels a reminder completed or removed after it came due", async () => {
+		for (const changed of [task("a", FUTURE, true), task("a", null)]) {
+			const notifier = new FakeReminderNotifier();
+			const tasks = new Tasks();
+			const clock = new FixedClock();
+			const service = new ReminderService(notifier, tasks, clock);
+			tasks.replace([task("a", FUTURE)]);
+			await service.start();
+			clock.advance(24 * 3_600_000);
+			tasks.replace([changed]);
+			await vi.waitFor(() => expect(notifier.cancelled).toEqual(["a"]));
+			service.stop();
+		}
+	});
+
+	it("tells subscribers the moment a reminder comes due", async () => {
+		vi.useFakeTimers();
+		const clock = new FixedClock();
+		const tasks = new Tasks();
+		const service = new ReminderService(new FakeReminderNotifier(), tasks, clock);
+		tasks.replace([task("a", FUTURE)]);
+		await service.start();
+		const listener = vi.fn();
+		service.subscribe(listener);
+		const wait = Date.parse(FUTURE) - clock.now().getTime();
+		await vi.advanceTimersByTimeAsync(wait - 1);
+		expect(listener).not.toHaveBeenCalled();
+		clock.advance(wait);
+		await vi.advanceTimersByTimeAsync(1);
+		expect(listener).toHaveBeenCalledTimes(1);
+		expect(vi.getTimerCount()).toBe(0);
+		service.stop();
+		vi.useRealTimers();
+	});
+
+	it("schedules again once permission is granted", async () => {
+		const { notifier, tasks, service } = setup();
+		const schedule = notifier.schedule.bind(notifier);
+		notifier.schedule = async (...args) => {
+			if (notifier.current !== "granted") {
+				throw new Error("not allowed yet");
+			}
+			await schedule(...args);
+		};
+		tasks.replace([task("a", FUTURE)]);
+		await service.start();
+		expect(notifier.scheduled.size).toBe(0);
+		await service.ensurePermission();
+		expect(notifier.scheduled.size).toBe(1);
+		service.stop();
+	});
+
 	it("asks for permission once and remembers an answer", async () => {
 		const { notifier, service } = setup();
 		expect(await service.ensurePermission()).toBe("granted");

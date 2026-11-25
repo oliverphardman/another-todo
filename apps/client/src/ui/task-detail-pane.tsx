@@ -49,6 +49,10 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		setNote(task.note);
 	}, [task.id, task.note]);
 	const today = store.today;
+	const reminder =
+		task.remindAt !== null && Date.parse(task.remindAt) > store.now.getTime()
+			? task.remindAt
+			: null;
 	const inMyDay = task.isInMyDay(today);
 	const overdue = task.dueDay !== null && DueDay.isOverdue(task.dueDay, today) && !task.completed;
 	const dueLabel =
@@ -139,18 +143,18 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 						label={
 							!reminderState.available
 								? t("detail.remindUnavailable")
-								: task.remindAt === null
+								: reminder === null
 									? t("detail.remind")
-									: t("detail.remindAt", { when: i18n.reminderLabel(task.remindAt) })
+									: t("detail.remindAt", { when: i18n.reminderLabel(reminder) })
 						}
-						active={task.remindAt !== null}
+						active={reminder !== null}
 						onPress={
 							reminderState.available ? () => setPickingReminder((value) => !value) : undefined
 						}
 					/>
 					{pickingReminder ? (
 						<ReminderPicker
-							at={task.remindAt}
+							at={reminder}
 							now={store.now}
 							onChange={(at) => {
 								store.setReminder(task.id, at);
@@ -161,7 +165,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 							}}
 						/>
 					) : null}
-					{reminderState.permission === "denied" && task.remindAt !== null ? (
+					{reminderState.permission === "denied" && reminder !== null ? (
 						<AppText
 							tone="secondary"
 							size={12}
