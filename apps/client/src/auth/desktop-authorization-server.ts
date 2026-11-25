@@ -1,6 +1,7 @@
 import type { AuthorizationServer, IdentityProvider } from "./authorization-server";
 import { LinkingDeepLinks, type DeepLinks } from "./deep-links";
-import { Pkce, SystemRandom, type RandomSource } from "./pkce";
+import { SystemRandom, type RandomSource } from "../domain/random";
+import { Pkce } from "./pkce";
 import type { TokenSet } from "./token-set";
 
 export interface DesktopAuthorizationConfig {

@@ -5,7 +5,8 @@ import { DesktopAuthorizationServer } from "../src/auth/desktop-authorization-se
 import { ExpoAuthorizationServer as MacAuth } from "../src/auth/expo-authorization-server.macos";
 import { ExpoAuthorizationServer as WinAuth } from "../src/auth/expo-authorization-server.windows";
 import { LinkingDeepLinks, type DeepLinks } from "../src/auth/deep-links";
-import { Pkce, SystemRandom } from "../src/auth/pkce";
+import { Pkce } from "../src/auth/pkce";
+import { SystemRandom } from "../src/domain/random";
 import { Base64Url, Sha256 } from "../src/auth/sha256";
 import { ExpoSoundPlayer as MacSound } from "../src/audio/expo-sound-player.macos";
 import { ExpoSoundPlayer as WinSound } from "../src/audio/expo-sound-player.windows";

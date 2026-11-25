@@ -44,6 +44,23 @@ describe("ports", () => {
 		expect(ids.next()).not.toBe(ids.next());
 	});
 
+	it("builds version 4 ids from its random source", () => {
+		const filled = (value: number) =>
+			new RandomIdGenerator({ bytes: (length) => new Uint8Array(length).fill(value) }).next();
+		expect(filled(0x00)).toBe("00000000-0000-4000-8000-000000000000");
+		expect(filled(0xff)).toBe("ffffffff-ffff-4fff-bfff-ffffffffffff");
+	});
+
+	it("creates ids on engines without a crypto global, such as Hermes", () => {
+		vi.stubGlobal("crypto", undefined);
+		const ids = new RandomIdGenerator();
+		expect(ids.next()).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+		);
+		expect(ids.next()).not.toBe(ids.next());
+		vi.unstubAllGlobals();
+	});
+
 	it("generated ids satisfy the API's id rule", () => {
 		expect(new RandomIdGenerator().next()).toMatch(/^[A-Za-z0-9_-]{1,64}$/);
 	});
