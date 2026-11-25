@@ -62,11 +62,8 @@ function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: bool
 	return (
 		<Frame>
 			<BrandIntro>
-				<AppText role="heading" size={20} weight="600" tone="onAccent">
-					{t("server.title")}
-				</AppText>
-				<AppText tone="onAccent" style={{ marginTop: 8, marginBottom: 12, textAlign: "center" }}>
-					{t("server.body")}
+				<AppText tone="onAccent" style={{ marginBottom: 4, textAlign: "center" }}>
+					{t("server.prompt")}
 				</AppText>
 				<CredentialField
 					label={t("server.label")}

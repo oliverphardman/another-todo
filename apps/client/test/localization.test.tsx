@@ -124,8 +124,7 @@ describe("every user-visible string comes from the message catalog", () => {
 			</ThemeProvider>,
 		);
 		await act(async () => session.start());
-		byText("server.title");
-		byText("server.body");
+		byText("server.prompt");
 		byLabel("server.connect");
 		fireEvent.change(byLabel("server.label"), { target: { value: "ftp://x" } });
 		await act(async () => {

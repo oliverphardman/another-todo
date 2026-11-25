@@ -41,6 +41,7 @@ describe("ServerGate", () => {
 	it("asks for the address, explains a bad one and connects to a good one", async () => {
 		const session = setup(null, ok);
 		await act(async () => session.start());
+		expect(screen.getByText("Enter a server URL")).toBeTruthy();
 		fireEvent.change(screen.getByLabelText("Server address"), { target: { value: "ftp://x" } });
 		fireEvent.click(screen.getByLabelText("Connect"));
 		await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
