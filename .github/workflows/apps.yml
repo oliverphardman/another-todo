@@ -67,7 +67,7 @@ jobs:
           java-version: 17
       - run: pnpm install --frozen-lockfile
       - name: Drop the desktop forks the React Native CLI cannot load here
-        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false
+        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false --config.allow-unused-patches=true
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform android --no-install
       - name: Decode the signing key
@@ -112,7 +112,7 @@ jobs:
           cache-dependency-path: apps/client/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
       - name: Drop the desktop forks the React Native CLI cannot load here
-        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false
+        run: pnpm remove react-native-windows react-native-macos --config.frozen-lockfile=false --config.allow-unused-patches=true
       - name: Generate the native project
         run: pnpm exec expo prebuild --platform ios --no-install
       - name: Install pods
