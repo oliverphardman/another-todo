@@ -4,9 +4,9 @@ import type { AppConfig } from "../config/app-config";
 import type { ServerSession } from "../config/server-session";
 import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
+import { BrandIntro } from "./brand-intro";
 import { CredentialField } from "./credential-field";
 import { useObservable } from "./hooks";
-import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
@@ -58,32 +58,32 @@ function Action({ label, onPress }: { label: string; onPress: () => void }) {
 
 function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: boolean }) {
 	const { t } = useI18n();
-	const palette = useTheme();
 	const [address, setAddress] = useState("");
 	return (
 		<Frame>
-			<Icon glyph="check" size={64} color={palette.onAccent} />
-			<AppText role="heading" size={24} weight="600" tone="onAccent" style={{ marginTop: 16 }}>
-				{t("server.title")}
-			</AppText>
-			<AppText tone="onAccent" style={{ marginTop: 8, marginBottom: 12, textAlign: "center" }}>
-				{t("server.body")}
-			</AppText>
-			<CredentialField
-				label={t("server.label")}
-				placeholder={t("server.placeholder")}
-				value={address}
-				onChange={setAddress}
-				onSubmit={() => void session.connect(address)}
-				kind="url"
-				autoFocus
-			/>
-			{invalid ? (
-				<AppText accessibilityRole="alert" tone="onAccent" style={{ marginTop: 12 }}>
-					{t("server.invalid")}
+			<BrandIntro>
+				<AppText role="heading" size={20} weight="600" tone="onAccent">
+					{t("server.title")}
 				</AppText>
-			) : null}
-			<Action label={t("server.connect")} onPress={() => void session.connect(address)} />
+				<AppText tone="onAccent" style={{ marginTop: 8, marginBottom: 12, textAlign: "center" }}>
+					{t("server.body")}
+				</AppText>
+				<CredentialField
+					label={t("server.label")}
+					placeholder={t("server.placeholder")}
+					value={address}
+					onChange={setAddress}
+					onSubmit={() => void session.connect(address)}
+					kind="url"
+					autoFocus
+				/>
+				{invalid ? (
+					<AppText accessibilityRole="alert" tone="onAccent" style={{ marginTop: 12 }}>
+						{t("server.invalid")}
+					</AppText>
+				) : null}
+				<Action label={t("server.connect")} onPress={() => void session.connect(address)} />
+			</BrandIntro>
 		</Frame>
 	);
 }
