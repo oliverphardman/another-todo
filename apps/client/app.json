@@ -24,7 +24,7 @@
 			"name": "Another To Do",
 			"themeColor": "#2564cf",
 			"favicon": "./assets/favicon.png",
-			"shortName": "To Do",
+			"shortName": "Another To Do",
 			"description": "It's just Another To Do app. What did you expect?",
 			"backgroundColor": "#1e1e1e",
 			"lang": "en"

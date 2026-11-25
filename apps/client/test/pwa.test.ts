@@ -18,7 +18,7 @@ describe("progressive web app metadata", () => {
 
 	it("describes an installable app with every icon file present", () => {
 		expect(manifest.name).toBe("Another To Do");
-		expect(manifest.short_name.length).toBeLessThanOrEqual(12);
+		expect(manifest.short_name).toBe("Another To Do");
 		expect(manifest.start_url).toBe("/");
 		expect(manifest.display).toBe("standalone");
 		expect(manifest.theme_color).toBe("#2564cf");

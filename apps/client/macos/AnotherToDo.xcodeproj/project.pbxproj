@@ -13,8 +13,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* AnotherToDo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnotherToDo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		514201492437B4B30078DB4F /* AnotherToDo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AnotherToDo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Another To Do.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Another To Do.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		514201492437B4B30078DB4F /* Another To Do.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Another To Do.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5142014C2437B4B30078DB4F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		514201512437B4B40078DB4F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 
@@ -84,8 +84,8 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* AnotherToDo.app */,
-				514201492437B4B30078DB4F /* AnotherToDo.app */,
+				13B07F961A680F5B00A75B9A /* Another To Do.app */,
+				514201492437B4B30078DB4F /* Another To Do.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -109,7 +109,7 @@
 			);
 			name = "AnotherToDo-iOS";
 			productName = AnotherToDo;
-			productReference = 13B07F961A680F5B00A75B9A /* AnotherToDo.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Another To Do.app */;
 			productType = "com.apple.product-type.application";
 		};
 		514201482437B4B30078DB4F /* AnotherToDo-macOS */ = {
@@ -128,7 +128,7 @@
 			);
 			name = "AnotherToDo-macOS";
 			productName = AnotherToDo;
-			productReference = 514201492437B4B30078DB4F /* AnotherToDo.app */;
+			productReference = 514201492437B4B30078DB4F /* Another To Do.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -298,7 +298,8 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.oliverhardman.anothertodo";
-				PRODUCT_NAME = AnotherToDo;
+				PRODUCT_MODULE_NAME = AnotherToDo;
+				PRODUCT_NAME = "Another To Do";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -319,7 +320,8 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.oliverhardman.anothertodo";
-				PRODUCT_NAME = AnotherToDo;
+				PRODUCT_MODULE_NAME = AnotherToDo;
+				PRODUCT_NAME = "Another To Do";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -341,7 +343,8 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.oliverhardman.anothertodo";
-				PRODUCT_NAME = AnotherToDo;
+				PRODUCT_MODULE_NAME = AnotherToDo;
+				PRODUCT_NAME = "Another To Do";
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -363,7 +366,8 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.oliverhardman.anothertodo";
-				PRODUCT_NAME = AnotherToDo;
+				PRODUCT_MODULE_NAME = AnotherToDo;
+				PRODUCT_NAME = "Another To Do";
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.0;
 			};

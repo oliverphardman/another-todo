@@ -12,7 +12,7 @@
     Version="1.0.0.0" />
 
   <Properties>
-    <DisplayName>AnotherToDo</DisplayName>
+    <DisplayName>Another To Do</DisplayName>
     <PublisherDisplayName>developer</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
   </Properties>

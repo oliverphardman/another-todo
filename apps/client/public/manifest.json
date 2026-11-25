@@ -1,6 +1,6 @@
 {
 	"name": "Another To Do",
-	"short_name": "To Do",
+	"short_name": "Another To Do",
 	"description": "It's just Another To Do app. What did you expect?",
 	"id": "/",
 	"start_url": "/",
