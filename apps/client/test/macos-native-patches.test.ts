@@ -36,4 +36,10 @@ describe("macOS native patches", () => {
 			source("react-native-macos", "Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m"),
 		).toMatch(/- \(void\)layout\s*\{\s*\[super layout\];\s*\[_scrollView setHasVerticalScroller:/);
 	});
+
+	it("lets a single line field select its text when focused, as renaming does", () => {
+		expect(
+			source("react-native-macos", "Libraries/Text/TextInput/Singleline/RCTUITextField.mm"),
+		).toMatch(/- \(void\)selectAll:\(id\)sender\s*\{\s*\[self selectText:sender\];/);
+	});
 });

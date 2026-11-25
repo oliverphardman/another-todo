@@ -1,5 +1,5 @@
 diff --git a/Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m b/Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m
-index d716f199955e3b63f7e43dbc70e72f67223309a3..3863de8af6be5057bab9d6f5a20c52d51028565d 100644
+index d716f199955e3b63f7e43dbc70e72f67223309a3..ee556f8a288c977d1b9fe3a6ea2c0c7a4de69f4c 100644
 --- a/Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m
 +++ b/Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m
 @@ -174,6 +174,12 @@ - (BOOL)shouldShowVerticalScrollbar
@@ -16,13 +16,18 @@ index d716f199955e3b63f7e43dbc70e72f67223309a3..3863de8af6be5057bab9d6f5a20c52d5
  {
    [_scrollView setHasVerticalScroller:[self shouldShowVerticalScrollbar]];
 diff --git a/Libraries/Text/TextInput/Singleline/RCTUITextField.mm b/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
-index 0f988c19d5c2a3993d58639ca5991da5b1377e6a..c99fd8ae4092808ce2d22f0480dec755cfc510fc 100644
+index 0f988c19d5c2a3993d58639ca5991da5b1377e6a..9d83cb8de3cb9865abd5edffaa9c2c3449cfcb13 100644
 --- a/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
 +++ b/Libraries/Text/TextInput/Singleline/RCTUITextField.mm
-@@ -323,6 +323,15 @@ - (void)setEnableFocusRing:(BOOL)enableFocusRing {
+@@ -323,6 +323,20 @@ - (void)setEnableFocusRing:(BOOL)enableFocusRing {
    }
  }
  
++- (void)selectAll:(id)sender
++{
++  [self selectText:sender];
++}
++
 +- (void)layout
 +{
 +  [super layout];
