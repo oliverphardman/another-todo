@@ -4,7 +4,7 @@
 		"description": "It's just Another To Do app. What did you expect?",
 		"slug": "another-todo",
 		"scheme": "anothertodo",
-		"version": "1.2.0",
+		"version": "1.2.1",
 		"orientation": "default",
 		"userInterfaceStyle": "automatic",
 		"ios": {
