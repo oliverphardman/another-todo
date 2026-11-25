@@ -238,6 +238,17 @@ describe("expanded layout", () => {
 		expect(await screen.findByText(/Notifications are blocked/)).toBeTruthy();
 	});
 
+	it("stops showing a reminder once its time has passed", async () => {
+		const app = await start();
+		addTask("Elapsed");
+		fireEvent.click(screen.getByLabelText("Open Elapsed"));
+		const id = app.container.store.get().tasks[0]!.id;
+		await act(async () => {
+			app.container.store.setReminder(id, new Date("2020-01-01T09:00:00.000Z"));
+		});
+		expect(screen.getByLabelText("Remind me")).toBeTruthy();
+	});
+
 	it("disables the reminder row where notifications are unavailable", async () => {
 		const app = await start();
 		app.reminderNotifier.available = false;
@@ -1405,6 +1416,38 @@ describe("deleting tasks", () => {
 		await act(async () => undefined);
 		expect(screen.queryByRole("alert")).toBeNull();
 		expect(app.container.store.get().tasks).toEqual([]);
+	});
+
+	it("confirms with Enter while the button that opened the dialog was focused", async () => {
+		const app = await start();
+		addTask("One");
+		fireEvent.click(screen.getByLabelText("Open One"));
+		const trash = screen.getByLabelText("Delete task");
+		trash.focus();
+		fireEvent.click(trash);
+		expect(screen.getByRole("alert").contains(document.activeElement)).toBe(false);
+		expect(document.activeElement?.contains(screen.getByRole("alert"))).toBe(true);
+		fireEvent.keyDown(document.activeElement!, { key: "Enter" });
+		await act(async () => undefined);
+		expect(app.container.store.get().tasks).toEqual([]);
+	});
+
+	it("cancels a dialog with Escape and leaves its own buttons to handle Enter", async () => {
+		const app = await start();
+		addTask("One");
+		fireEvent.click(screen.getByLabelText("Open One"));
+		fireEvent.click(screen.getByLabelText("Delete task"));
+		const cancel = within(screen.getByRole("alert")).getByLabelText("Cancel");
+		fireEvent.keyDown(cancel, { key: "Enter" });
+		await act(async () => undefined);
+		expect(app.container.store.get().tasks).toHaveLength(1);
+		if (screen.queryByRole("alert") === null) {
+			fireEvent.click(screen.getByLabelText("Delete task"));
+		}
+		fireEvent.keyDown(window, { key: "Escape" });
+		await act(async () => undefined);
+		expect(screen.queryByRole("alert")).toBeNull();
+		expect(app.container.store.get().tasks).toHaveLength(1);
 	});
 
 	it("still shows a dialog where the window cannot listen for keys", async () => {

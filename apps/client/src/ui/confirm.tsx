@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { Observable } from "../state/observable";
 import { AppText } from "./app-text";
+import { DialogKeys } from "./dialog-keys";
 import { useObservable } from "./hooks";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
@@ -50,20 +51,13 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 	const pending = useObservable(controller);
 	const palette = useTheme();
 	const { t } = useI18n();
-	const open = pending !== null;
-	useEffect(() => {
-		if (!open || typeof window.addEventListener !== "function") {
-			return undefined;
-		}
-		const press = (event: KeyboardEvent) => {
-			if (event.key === "Enter") {
-				event.preventDefault();
-				controller.answer(true);
-			}
-		};
-		window.addEventListener("keydown", press);
-		return () => window.removeEventListener("keydown", press);
-	}, [open, controller]);
+	const keys = useMemo(
+		() => ({
+			accept: () => controller.answer(true),
+			dismiss: () => controller.answer(false),
+		}),
+		[controller],
+	);
 	return (
 		<ConfirmContext.Provider value={controller}>
 			<View style={{ flex: 1 }}>
@@ -87,57 +81,63 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 							onPress={() => controller.answer(false)}
 							style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
 						/>
-						<View
-							accessibilityRole="alert"
-							accessibilityLabel={pending.request.title}
-							style={{
-								width: 360,
-								maxWidth: "90%",
-								padding: 24,
-								borderRadius: 8,
-								backgroundColor: palette.surface,
-								borderWidth: 1,
-								borderColor: palette.border,
-							}}
-						>
-							<AppText size={17} weight="600">
-								{pending.request.title}
-							</AppText>
-							<AppText tone="secondary" style={{ marginTop: 8 }}>
-								{pending.request.body}
-							</AppText>
+						<DialogKeys onAccept={keys.accept} onDismiss={keys.dismiss}>
 							<View
-								style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 24, gap: 8 }}
+								accessibilityRole="alert"
+								accessibilityLabel={pending.request.title}
+								style={{
+									width: 360,
+									padding: 24,
+									borderRadius: 8,
+									backgroundColor: palette.surface,
+									borderWidth: 1,
+									borderColor: palette.border,
+								}}
 							>
-								<PressableSurface
-									accessibilityRole="button"
-									accessibilityLabel={pending.request.cancelLabel ?? t("dialog.cancel")}
-									onPress={() => controller.answer(false)}
-									hoverColor={palette.surfaceHover}
-									style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 4 }}
-								>
-									<AppText weight="600">
-										{pending.request.cancelLabel ?? t("dialog.cancel")}
-									</AppText>
-								</PressableSurface>
-								<PressableSurface
-									accessibilityRole="button"
-									accessibilityLabel={pending.request.confirmLabel}
-									onPress={() => controller.answer(true)}
+								<AppText size={17} weight="600">
+									{pending.request.title}
+								</AppText>
+								<AppText tone="secondary" style={{ marginTop: 8 }}>
+									{pending.request.body}
+								</AppText>
+								<View
 									style={{
-										paddingHorizontal: 16,
-										paddingVertical: 8,
-										borderRadius: 4,
-										backgroundColor:
-											pending.request.destructive === false ? palette.accent : palette.danger,
+										flexDirection: "row",
+										justifyContent: "flex-end",
+										marginTop: 24,
+										gap: 8,
 									}}
 								>
-									<AppText weight="600" tone="onAccent">
-										{pending.request.confirmLabel}
-									</AppText>
-								</PressableSurface>
+									<PressableSurface
+										accessibilityRole="button"
+										accessibilityLabel={pending.request.cancelLabel ?? t("dialog.cancel")}
+										onPress={() => controller.answer(false)}
+										hoverColor={palette.surfaceHover}
+										style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 4 }}
+									>
+										<AppText weight="600">
+											{pending.request.cancelLabel ?? t("dialog.cancel")}
+										</AppText>
+									</PressableSurface>
+									<PressableSurface
+										accessibilityRole="button"
+										accessibilityLabel={pending.request.confirmLabel}
+										onPress={() => controller.answer(true)}
+										style={{
+											paddingHorizontal: 16,
+											paddingVertical: 8,
+											borderRadius: 4,
+											backgroundColor:
+												pending.request.destructive === false ? palette.accent : palette.danger,
+										}}
+									>
+										<AppText weight="600" tone="onAccent">
+											{pending.request.confirmLabel}
+										</AppText>
+									</PressableSurface>
+								</View>
 							</View>
-						</View>
+						</DialogKeys>
 					</View>
 				)}
 			</View>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import { Platform, Pressable, View, useWindowDimensions } from "react-native";
 import { useI18n } from "../i18n/i18n-context";
+import { contextClickProps } from "./context-click";
 import { Observable } from "../state/observable";
 import type { IconGlyph } from "./icon";
 import { MenuItem, MenuPanel } from "./menu";
@@ -150,12 +151,10 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 			<Pressable
 				accessibilityLabel={t("menu.close")}
 				onPress={onClose}
-				{...({
-					onContextMenu: (event: unknown) => {
-						Pointer.suppressDefault(event);
-						onClose();
-					},
-				} as object)}
+				{...contextClickProps((event) => {
+					Pointer.suppressDefault(event);
+					onClose();
+				})}
 				style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
 			/>
 			<MenuPanel label={state.label} placement={{ left, top, width: WIDTH }}>

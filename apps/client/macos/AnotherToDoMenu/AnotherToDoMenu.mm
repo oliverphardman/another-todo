@@ -72,8 +72,8 @@ RCT_EXPORT_METHOD(show:(NSArray *)items
   NSView *view = window.contentView;
   ATDMenuTarget *target = [[ATDMenuTarget alloc] init];
   NSMenu *menu = [self buildMenu:items target:target];
-  CGFloat top = view.isFlipped ? y : view.bounds.size.height - y;
-  [menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(x, top) inView:view];
+  NSPoint pointer = [view convertPoint:window.mouseLocationOutsideOfEventStream fromView:nil];
+  [menu popUpMenuPositioningItem:nil atLocation:pointer inView:view];
   resolve(target.selectedKey ?: [NSNull null]);
 }
 

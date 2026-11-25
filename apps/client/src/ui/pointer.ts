@@ -18,6 +18,8 @@ interface PointerEventLike {
 	readonly nativeEvent?: {
 		readonly pageX?: number;
 		readonly pageY?: number;
+		readonly clientX?: number;
+		readonly clientY?: number;
 		readonly shiftKey?: boolean;
 		readonly ctrlKey?: boolean;
 		readonly metaKey?: boolean;
@@ -27,7 +29,10 @@ interface PointerEventLike {
 export class Pointer {
 	static position(event: unknown): PointerPosition {
 		const { clientX, clientY, nativeEvent } = event as PointerEventLike;
-		return { x: clientX ?? nativeEvent?.pageX ?? 0, y: clientY ?? nativeEvent?.pageY ?? 0 };
+		return {
+			x: clientX ?? nativeEvent?.pageX ?? nativeEvent?.clientX ?? 0,
+			y: clientY ?? nativeEvent?.pageY ?? nativeEvent?.clientY ?? 0,
+		};
 	}
 
 	static modifiers(event: unknown): Modifiers {

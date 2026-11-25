@@ -4,6 +4,7 @@ import {
 	type PressableStateCallbackType,
 	type ViewStyle,
 } from "react-native";
+import { contextClickProps } from "./context-click";
 
 export interface PressableSurfaceProps extends Omit<PressableProps, "style"> {
 	readonly style?: ViewStyle;
@@ -34,7 +35,7 @@ export function PressableSurface({
 	return (
 		<Pressable
 			{...rest}
-			{...(onContextMenu === undefined ? {} : ({ onContextMenu } as object))}
+			{...(onContextMenu === undefined ? {} : contextClickProps(onContextMenu))}
 			style={(state: PressableStateCallbackType) =>
 				surfaceStyle(state as InteractionState, style, hoverColor, activeColor)
 			}
