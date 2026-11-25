@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/oliverphardman/another-todo/compare/v1.2.0...v1.2.1) (2026-11-25)
+
+
+### Fixes
+
+* **ci:** allow the unused macOS patch when the Android and iOS builds drop the fork ([3d1c660](https://github.com/oliverphardman/another-todo/commit/3d1c66008ae7d44797421984426ec1b026140f63))
+
 ## [1.2.0](https://github.com/oliverphardman/another-todo/compare/v1.1.5...v1.2.0) (2026-11-25)
 
 
