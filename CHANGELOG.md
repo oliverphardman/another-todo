@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/oliverphardman/another-todo/compare/v1.1.5...v1.2.0) (2026-11-25)
+
+
+### Features
+
+* **client:** add date and time inputs for custom due dates and reminders on macOS ([91480ae](https://github.com/oliverphardman/another-todo/commit/91480ae8feec6dee8909ffceea7352f86c5b3124))
+
+
+### Fixes
+
+* **client:** register macOS native components safely so a missing class does not abort launch ([53980f3](https://github.com/oliverphardman/another-todo/commit/53980f3a1dd66b80d5b29adf5e2d2d8c3d56c644))
+* **client:** use the desktop date and time inputs on Windows ([6ff62b2](https://github.com/oliverphardman/another-todo/commit/6ff62b212ef9472b91a023d3f84123a4188f9035))
+
 ## [1.1.5](https://github.com/oliverphardman/another-todo/compare/v1.1.4...v1.1.5) (2026-11-24)
 
 
