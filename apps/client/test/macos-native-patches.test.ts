@@ -30,4 +30,10 @@ describe("macOS native patches", () => {
 			),
 		).toContain("_containerView = [[RCTUIView alloc] initWithFrame:");
 	});
+
+	it("rechecks the multiline scrollbar once the field has a size", () => {
+		expect(
+			source("react-native-macos", "Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m"),
+		).toMatch(/- \(void\)layout\s*\{\s*\[super layout\];\s*\[_scrollView setHasVerticalScroller:/);
+	});
 });
