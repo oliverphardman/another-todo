@@ -69,7 +69,7 @@ function addTask(title: string): void {
 describe("the menu bar", () => {
 	it("offers task actions only once a task is selected", async () => {
 		const app = await start();
-		expect(bar.shown.map((item) => item.label)).toEqual(["Task", "List"]);
+		expect(bar.shown.map((item) => item.label)).toEqual(["Another To Do", "Task", "List"]);
 		expect(bar.menu("Task")).toEqual([
 			expect.objectContaining({ label: "No task selected", disabled: true }),
 		]);
@@ -124,6 +124,61 @@ describe("the menu bar", () => {
 		expect(app.container.store.get().renamingViewId).toBe(id);
 		await bar.choose("list/delete");
 		expect(app.container.store.get().lists).toEqual([]);
+	});
+
+	it("offers no way to log out of a locked server that needs no sign in", async () => {
+		const app = await renderApp({ config: { authentication: "none" } });
+		stop = app.stop;
+		expect(bar.shown.map((item) => item.key)).toEqual(["task", "list"]);
+	});
+
+	it("logs out to the server prompt, asking first when changes would be lost", async () => {
+		const logOut = vi.fn(async () => undefined);
+		const app = await renderApp({
+			server: { enforced: false, change: async () => undefined, logOut },
+		});
+		stop = app.stop;
+		expect(bar.menu("Another To Do").map((item) => item.label)).toEqual(["Log Out"]);
+		const reset = vi.spyOn(app.container.reminders, "reset");
+		const signOut = vi.spyOn(app.container.auth, "signOut");
+		act(() => {
+			app.container.sync.stop();
+			app.container.store.addTask("Unsent");
+		});
+		await bar.choose("app/log-out");
+		fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Cancel"));
+		await act(async () => undefined);
+		expect(logOut).not.toHaveBeenCalled();
+		await bar.choose("app/log-out");
+		await act(async () => {
+			fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Log Out"));
+		});
+		expect(reset).toHaveBeenCalledTimes(1);
+		expect(signOut).toHaveBeenCalledTimes(1);
+		expect(logOut).toHaveBeenCalledTimes(1);
+	});
+
+	it("logs straight out when everything is synced", async () => {
+		const logOut = vi.fn(async () => undefined);
+		const app = await renderApp({
+			server: { enforced: false, change: async () => undefined, logOut },
+		});
+		stop = app.stop;
+		await bar.choose("app/log-out");
+		expect(screen.queryByRole("alert")).toBeNull();
+		await vi.waitFor(() => expect(logOut).toHaveBeenCalledTimes(1));
+	});
+
+	it("only signs out of a locked server that has accounts", async () => {
+		const logOut = vi.fn(async () => undefined);
+		const app = await renderApp({
+			server: { enforced: true, change: async () => undefined, logOut },
+			config: { authentication: "external" },
+		});
+		stop = app.stop;
+		await bar.choose("app/log-out");
+		await vi.waitFor(() => expect(app.container.auth.get()).toBe("signedOut"));
+		expect(logOut).not.toHaveBeenCalled();
 	});
 
 	it("clears the menus when the app goes away", async () => {

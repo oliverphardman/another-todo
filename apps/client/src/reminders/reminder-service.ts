@@ -51,6 +51,12 @@ export class ReminderService extends Observable<ReminderState> {
 		this.disarm();
 	}
 
+	async reset(): Promise<void> {
+		this.stop();
+		this.scheduled.clear();
+		await this.notifier.clear();
+	}
+
 	async ensurePermission(): Promise<NotificationPermission> {
 		let permission = await this.notifier.permission();
 		if (permission === "undetermined") {

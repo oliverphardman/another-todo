@@ -27,6 +27,13 @@ import { createContainer } from "../src/container";
 import { TEST_CONFIG, createTestContainer } from "./support/test-container";
 
 describe("createContainer", () => {
+	it("treats the server as locked when nothing can change it", async () => {
+		const { server } = createContainer(TEST_CONFIG, { platform: "web" });
+		expect(server.enforced).toBe(true);
+		await expect(server.change()).resolves.toBeUndefined();
+		await expect(server.logOut()).resolves.toBeUndefined();
+	});
+
 	it("wires the real adapters by default on the web and on native", () => {
 		for (const platform of ["web", "ios"]) {
 			const container = createContainer(TEST_CONFIG, { platform });

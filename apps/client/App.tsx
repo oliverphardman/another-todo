@@ -9,6 +9,7 @@ import { ServerSession, ServerSessions } from "./src/config/server-session";
 import { createContainer } from "./src/container";
 import { AsyncStorageKeyValueStore } from "./src/storage/async-storage-key-value-store";
 import { createTokenStore } from "./src/storage/token-store";
+import { AboutSync } from "./src/ui/about-sync";
 import { ContainerProvider } from "./src/ui/container-context";
 import { AppShell } from "./src/ui/app-shell";
 import { ServerGate } from "./src/ui/server-gate";
@@ -64,6 +65,7 @@ export default function App() {
 		<SafeAreaProvider>
 			<ThemeProvider>
 				<I18nProvider locale={locale}>
+					<AboutSync session={session} />
 					<ServerGate session={session}>
 						{(config) => <Application config={config} session={session} />}
 					</ServerGate>

@@ -30,6 +30,9 @@ static NSString *const ATDMenuBarPrefix = @"atd-menu-bar-";
   NSMutableArray<NSString *> *_selections;
   RCTPromiseResolveBlock _awaitingSelection;
   ATDMenuTarget *_menuBarTarget;
+  NSMutableArray<NSMenuItem *> *_appItems;
+  NSDictionary *_about;
+  BOOL _watchingMenuBar;
 }
 
 - (void)dealloc
@@ -101,16 +104,24 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
     _menuBarTarget.onPick = ^(NSString *key) {
       [weakSelf selectFromMenuBar:key];
     };
-    [NSNotificationCenter.defaultCenter addObserver:self
-                                           selector:@selector(installMenuBar)
-                                               name:NSApplicationDidUpdateNotification
-                                             object:nil];
   }
-  for (NSMenuItem *item in _menuBarItems) {
+  for (NSMenuItem *item in [_menuBarItems arrayByAddingObjectsFromArray:_appItems ?: @[]]) {
     [item.menu removeItem:item];
   }
   _menuBarItems = [NSMutableArray array];
+  _appItems = [NSMutableArray array];
   for (NSDictionary *menu in menus) {
+    if ([menu[@"key"] isEqualToString:@"app"]) {
+      NSMenu *entries = [self buildMenu:menu[@"children"] target:_menuBarTarget];
+      for (NSMenuItem *entry in entries.itemArray.copy) {
+        [entries removeItem:entry];
+        [_appItems addObject:entry];
+      }
+      if (_appItems.count > 0) {
+        [_appItems addObject:[NSMenuItem separatorItem]];
+      }
+      continue;
+    }
     NSString *title = menu[@"label"] ?: @"";
     NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
     item.identifier = [ATDMenuBarPrefix stringByAppendingString:menu[@"key"] ?: title];
@@ -118,7 +129,61 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
     item.submenu.title = title;
     [_menuBarItems addObject:item];
   }
+  [self watchMenuBar];
+}
+
+RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
+{
+  _about = [details copy];
+  [self watchMenuBar];
+}
+
+- (void)watchMenuBar
+{
+  if (!_watchingMenuBar) {
+    _watchingMenuBar = YES;
+    [NSNotificationCenter.defaultCenter addObserver:self
+                                           selector:@selector(installMenuBar)
+                                               name:NSApplicationDidUpdateNotification
+                                             object:nil];
+  }
   [self installMenuBar];
+}
+
+- (void)showAbout:(NSMenuItem *)sender
+{
+  NSMutableAttributedString *credits = [[NSMutableAttributedString alloc] init];
+  NSString *server = [_about[@"serverUrl"] isKindOfClass:NSString.class] ? _about[@"serverUrl"] : nil;
+  if (server != nil) {
+    [self append:credits label:_about[@"serverLabel"] link:server];
+  }
+  [self append:credits label:_about[@"sourceLabel"] link:_about[@"sourceUrl"]];
+  [credits appendAttributedString:[[NSAttributedString alloc]
+                                      initWithString:[@"\n" stringByAppendingString:_about[@"license"] ?: @""]
+                                          attributes:[self creditAttributes]]];
+  [NSApp activateIgnoringOtherApps:YES];
+  [NSApp orderFrontStandardAboutPanelWithOptions:@{NSAboutPanelOptionCredits : credits}];
+}
+
+- (NSDictionary<NSAttributedStringKey, id> *)creditAttributes
+{
+  return @{
+    NSFontAttributeName : [NSFont systemFontOfSize:NSFont.smallSystemFontSize],
+    NSForegroundColorAttributeName : NSColor.labelColor,
+  };
+}
+
+- (void)append:(NSMutableAttributedString *)credits label:(NSString *)label link:(NSString *)link
+{
+  NSString *heading = [NSString stringWithFormat:@"%@: ", label ?: @""];
+  [credits appendAttributedString:[[NSAttributedString alloc] initWithString:heading attributes:[self creditAttributes]]];
+  NSMutableDictionary *attributes = [[self creditAttributes] mutableCopy];
+  NSURL *url = [NSURL URLWithString:link ?: @""];
+  if (url != nil) {
+    attributes[NSLinkAttributeName] = url;
+  }
+  [credits appendAttributedString:[[NSAttributedString alloc] initWithString:link ?: @"" attributes:attributes]];
+  [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:[self creditAttributes]]];
 }
 
 - (void)installMenuBar
@@ -126,6 +191,21 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
   NSMenu *bar = NSApp.mainMenu;
   if (bar == nil) {
     return;
+  }
+  NSMenu *application = bar.numberOfItems > 0 ? [bar itemAtIndex:0].submenu : nil;
+  if (_about != nil && application.numberOfItems > 0) {
+    NSMenuItem *about = [application itemAtIndex:0];
+    if (about.target != self) {
+      about.target = self;
+      about.action = @selector(showAbout:);
+    }
+  }
+  if (application.numberOfItems > 0 && _appItems.firstObject.menu != application) {
+    NSInteger quit = application.numberOfItems - 1;
+    for (NSMenuItem *item in _appItems) {
+      [item.menu removeItem:item];
+      [application insertItem:item atIndex:quit++];
+    }
   }
   for (NSMenuItem *item in _menuBarItems) {
     if (item.menu == bar) {

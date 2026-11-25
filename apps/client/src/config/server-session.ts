@@ -14,6 +14,7 @@ export type ServerState =
 export interface ServerControls {
 	readonly enforced: boolean;
 	change(): Promise<void>;
+	logOut(): Promise<void>;
 }
 
 export class ServerSession extends Observable<ServerState> implements ServerControls {
@@ -57,6 +58,11 @@ export class ServerSession extends Observable<ServerState> implements ServerCont
 	async change(): Promise<void> {
 		await this.settings.forget();
 		this.set({ status: "needsUrl", invalid: false });
+	}
+
+	async logOut(): Promise<void> {
+		this.set({ status: "needsUrl", invalid: false });
+		await this.settings.logOut();
 	}
 
 	private async connectTo(url: string): Promise<void> {

@@ -91,7 +91,11 @@ describe("every user-visible string comes from the message catalog", () => {
 		await start({
 			signedIn: false,
 			config: { authentication: "password" },
-			server: { enforced: false, change: async () => undefined },
+			server: {
+				enforced: false,
+				change: async () => undefined,
+				logOut: async () => undefined,
+			},
 		});
 		byLabel("signIn.username");
 		byLabel("signIn.password");

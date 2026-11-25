@@ -61,11 +61,17 @@ describe("sign-in on other servers", () => {
 describe("changing server", () => {
 	it("is offered at sign-in unless the server is enforced", async () => {
 		const change = vi.fn(async () => undefined);
-		await renderApp({ signedIn: false, server: { enforced: false, change } });
+		await renderApp({
+			signedIn: false,
+			server: { enforced: false, change, logOut: vi.fn(async () => undefined) },
+		});
 		fireEvent.click(screen.getByLabelText("Change server"));
 		expect(change).toHaveBeenCalledTimes(1);
 		cleanup();
-		await renderApp({ signedIn: false, server: { enforced: true, change } });
+		await renderApp({
+			signedIn: false,
+			server: { enforced: true, change, logOut: vi.fn(async () => undefined) },
+		});
 		expect(screen.queryByLabelText("Change server")).toBeNull();
 	});
 

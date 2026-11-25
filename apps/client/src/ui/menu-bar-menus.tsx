@@ -10,12 +10,28 @@ export interface MenuBarContext {
 	readonly i18n: I18n;
 	readonly print: () => void;
 	readonly deleteTasks: (taskIds: readonly string[]) => void;
+	readonly logOut: (() => void) | null;
 }
 
 export class MenuBarMenus {
 	static build(context: MenuBarContext): ContextMenuEntry[] {
 		const { t } = context.i18n;
+		const account: ContextMenuEntry[] =
+			context.logOut === null
+				? []
+				: [
+						MenuBarMenus.menu("app", t("app.name"), [
+							{
+								kind: "action",
+								key: "log-out",
+								glyph: "signOut",
+								label: t("account.logOut"),
+								onPress: context.logOut,
+							},
+						]),
+					];
 		return [
+			...account,
 			MenuBarMenus.menu("task", t("menubar.task"), MenuBarMenus.task(context)),
 			MenuBarMenus.menu("list", t("menubar.list"), MenuBarMenus.list(context)),
 		];

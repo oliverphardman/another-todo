@@ -167,7 +167,11 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 	);
 	return {
 		config,
-		server: overrides.server ?? { enforced: true, change: async () => undefined },
+		server: overrides.server ?? {
+			enforced: true,
+			change: async () => undefined,
+			logOut: async () => undefined,
+		},
 		auth,
 		database,
 		store,

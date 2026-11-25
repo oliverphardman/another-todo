@@ -30,6 +30,12 @@ export class ServerSettings {
 		await this.store.remove(SERVER_KEY);
 	}
 
+	async logOut(): Promise<void> {
+		await this.forget();
+		await this.discardLocalData();
+		await this.store.set(OWNER_KEY, "");
+	}
+
 	async claim(url: string): Promise<void> {
 		const owner = await this.store.get(OWNER_KEY);
 		if (owner !== null && owner !== url) {
