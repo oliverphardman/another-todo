@@ -5,6 +5,10 @@ import { TimeOfDay } from "../src/domain/time-of-day";
 import { I18nProvider } from "../src/i18n/i18n-context";
 import { NativeDateInput } from "../src/ui/native-date-input.macos";
 import { NativeTimeInput } from "../src/ui/native-time-input.macos";
+import { NativeDateInput as WindowsDateInput } from "../src/ui/native-date-input.windows";
+import { NativeTimeInput as WindowsTimeInput } from "../src/ui/native-time-input.windows";
+import { DesktopDateInput } from "../src/ui/desktop-date-input";
+import { DesktopTimeInput } from "../src/ui/desktop-time-input";
 import { ThemeProvider } from "../src/ui/theme-context";
 
 afterEach(cleanup);
@@ -61,7 +65,7 @@ describe("TimeOfDay", () => {
 	});
 });
 
-describe("macOS date input", () => {
+describe("desktop date input", () => {
 	it("shows the month of the fallback day and reports the clicked day", () => {
 		const onChange = vi.fn();
 		render(
@@ -104,7 +108,7 @@ describe("macOS date input", () => {
 	});
 });
 
-describe("macOS time input", () => {
+describe("desktop time input", () => {
 	const field = () => screen.getByLabelText("Time") as HTMLInputElement;
 
 	it("reports a complete time when editing ends", () => {
@@ -135,5 +139,12 @@ describe("macOS time input", () => {
 		const view = render(input("09:00"));
 		view.rerender(input("18:00"));
 		expect(field().value).toBe("18:00");
+	});
+});
+
+describe("desktop platform inputs", () => {
+	it("gives macOS and Windows the same date and time inputs", () => {
+		expect([NativeDateInput, WindowsDateInput]).toEqual([DesktopDateInput, DesktopDateInput]);
+		expect([NativeTimeInput, WindowsTimeInput]).toEqual([DesktopTimeInput, DesktopTimeInput]);
 	});
 });
