@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.3.0](https://github.com/oliverphardman/another-todo/compare/v1.2.1...v1.3.0) (2026-11-25)
+
+
+### Features
+
+* **client:** add Log Out and a richer About panel to the macOS app menu ([5c50204](https://github.com/oliverphardman/another-todo/commit/5c502045f9360fa6a7e2b8b15dbd944067672012))
+* **client:** add Task and List menus to the macOS menu bar ([0ce6c53](https://github.com/oliverphardman/another-todo/commit/0ce6c53000de98f285e481f32ea8e5d3f3c427fd))
+* **client:** introduce the app with an animation before asking for the server ([b63c725](https://github.com/oliverphardman/another-todo/commit/b63c725e2c517ed5a4825eb1501a9ee969e59863))
+* **client:** play the completion sound and attach files on macOS ([f9cf2be](https://github.com/oliverphardman/another-todo/commit/f9cf2be33489aa3ebf0752dbe0e340866f3fd79d))
+* **client:** show attachments with a preview, size and remove button ([8deaeda](https://github.com/oliverphardman/another-todo/commit/8deaeda50f05b39806cbc3814c77fd0397b84d5c))
+* repeat tasks daily, weekly on chosen days, monthly or yearly ([c0b0305](https://github.com/oliverphardman/another-todo/commit/c0b03056448521f66e334456c371269d3a95a322))
+
+
+### Fixes
+
+* **client:** close the details pane when a task is deselected from the list ([261367d](https://github.com/oliverphardman/another-todo/commit/261367d5f876bd2e476fdc84fd2a23059185ed2e))
+* **client:** deliver reminders that come due and stop showing elapsed ones ([c1b4f14](https://github.com/oliverphardman/another-todo/commit/c1b4f1483f779b58d36557ae85dea5a6136d865c))
+* **client:** do not crash on macOS when renaming a list or group ([4138e30](https://github.com/oliverphardman/another-todo/commit/4138e3058b160ebb1257dbcdf9870df2a84e3067))
+* **client:** draw icons, order detail cards and align text fields on macOS ([9883ada](https://github.com/oliverphardman/another-todo/commit/9883ada81a8f4e5b96dac3d73c787aac3bc740fd))
+* **client:** generate ids without the crypto global so adding a task does not crash ([d57a9b2](https://github.com/oliverphardman/another-todo/commit/d57a9b216902ae0eb3e8d82c6fea0b8bc12c3498))
+* **client:** hide the note scrollbar on macOS until the text overflows ([2d5b8bc](https://github.com/oliverphardman/another-todo/commit/2d5b8bc64a78307bf14c21f5afdd5fc4b93a73e9))
+* **client:** label the server field with a single prompt on the welcome screen ([6bcf0ba](https://github.com/oliverphardman/another-todo/commit/6bcf0ba3b7134f61baaa80e169592a51c2c2c3cb))
+* **client:** name the app Another To Do on every platform ([d01f4ac](https://github.com/oliverphardman/another-todo/commit/d01f4acbe4def4eaf0699e544415e59a0b9a524c))
+* **client:** support right-click on macOS and confirm dialogs from the keyboard ([0e82bf5](https://github.com/oliverphardman/another-todo/commit/0e82bf50e988a988301a20198a22ebfb848dcc1f))
+
 ## [1.2.1](https://github.com/oliverphardman/another-todo/compare/v1.2.0...v1.2.1) (2026-11-25)
 
 
