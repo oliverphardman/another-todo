@@ -1,4 +1,5 @@
 import { ValidationError } from "./errors";
+import type { Recurrence } from "./recurrence";
 import type { TaskStep } from "./task-step";
 
 export type Importance = "normal" | "high";
@@ -17,6 +18,7 @@ export interface TaskProps {
 	readonly position: number | null;
 	readonly dueDate: Date | null;
 	readonly remindAt: Date | null;
+	readonly repeat: Recurrence | null;
 	readonly createdAt: Date;
 }
 
@@ -34,6 +36,7 @@ export interface TaskRecord {
 	readonly position?: number | null;
 	readonly dueDate: string | null;
 	readonly remindAt?: string | null;
+	readonly repeat?: Recurrence | null;
 	readonly createdAt: string;
 }
 
@@ -55,6 +58,7 @@ export class Task {
 			position: null,
 			dueDate: null,
 			remindAt: null,
+			repeat: null,
 			createdAt,
 		});
 	}
@@ -74,6 +78,7 @@ export class Task {
 			position: record.position ?? null,
 			dueDate: record.dueDate === null ? null : new Date(record.dueDate),
 			remindAt: record.remindAt == null ? null : new Date(record.remindAt),
+			repeat: record.repeat ?? null,
 			createdAt: new Date(record.createdAt),
 		});
 	}
@@ -128,6 +133,10 @@ export class Task {
 
 	get remindAt(): Date | null {
 		return this.props.remindAt;
+	}
+
+	get repeat(): Recurrence | null {
+		return this.props.repeat;
 	}
 
 	get dueDate(): Date | null {
@@ -190,6 +199,10 @@ export class Task {
 		return new Task({ ...this.props, remindAt });
 	}
 
+	setRepeat(repeat: Recurrence | null): Task {
+		return new Task({ ...this.props, repeat });
+	}
+
 	toRecord(): TaskRecord {
 		return {
 			ownerId: this.props.ownerId,
@@ -205,6 +218,7 @@ export class Task {
 			position: this.props.position,
 			dueDate: this.props.dueDate?.toISOString() ?? null,
 			remindAt: this.props.remindAt?.toISOString() ?? null,
+			repeat: this.props.repeat,
 			createdAt: this.props.createdAt.toISOString(),
 		};
 	}

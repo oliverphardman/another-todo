@@ -30,6 +30,20 @@ const TASK_PROPERTIES = {
 	},
 	myDay: { type: ["string", "null"], description: "YYYY-MM-DD day the task was added to My Day" },
 	dueDate: { type: ["string", "null"], description: "ISO 8601 date or null" },
+	repeat: {
+		type: ["object", "null"],
+		description: "How the task repeats, or null",
+		properties: {
+			frequency: { type: "string", enum: ["daily", "weekly", "monthly", "yearly"] },
+			weekdays: {
+				type: "array",
+				items: { type: "integer", minimum: 0, maximum: 6 },
+				description: "Required for weekly repeats; 0 is Sunday",
+			},
+			monthDay: { type: "integer", minimum: 1, maximum: 31 },
+		},
+		required: ["frequency"],
+	},
 };
 
 const ID_PROPERTY = { id: { type: "string", description: "Resource id" } };

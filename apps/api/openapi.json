@@ -941,6 +941,44 @@
 					"high"
 				]
 			},
+			"Repeat": {
+				"type": "object",
+				"nullable": true,
+				"description": "How the task repeats; completing it creates the next occurrence",
+				"additionalProperties": false,
+				"required": [
+					"frequency"
+				],
+				"properties": {
+					"frequency": {
+						"type": "string",
+						"enum": [
+							"daily",
+							"weekly",
+							"monthly",
+							"yearly"
+						]
+					},
+					"weekdays": {
+						"type": "array",
+						"description": "Days a weekly repeat falls on, 0 being Sunday",
+						"minItems": 1,
+						"maxItems": 7,
+						"uniqueItems": true,
+						"items": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 6
+						}
+					},
+					"monthDay": {
+						"type": "integer",
+						"description": "Day of the month a monthly or yearly repeat aims for",
+						"minimum": 1,
+						"maximum": 31
+					}
+				}
+			},
 			"Task": {
 				"type": "object",
 				"required": [
@@ -956,7 +994,8 @@
 					"steps",
 					"note",
 					"position",
-					"remindAt"
+					"remindAt",
+					"repeat"
 				],
 				"properties": {
 					"id": {
@@ -1017,6 +1056,9 @@
 						"format": "date-time",
 						"nullable": true,
 						"description": "When the client should remind the user about the task"
+					},
+					"repeat": {
+						"$ref": "#/components/schemas/Repeat"
 					}
 				}
 			},
@@ -1099,6 +1141,9 @@
 						"format": "date-time",
 						"nullable": true,
 						"description": "When the client should remind the user about the task"
+					},
+					"repeat": {
+						"$ref": "#/components/schemas/Repeat"
 					}
 				}
 			},
@@ -1159,6 +1204,9 @@
 						"format": "date-time",
 						"nullable": true,
 						"description": "When the client should remind the user about the task"
+					},
+					"repeat": {
+						"$ref": "#/components/schemas/Repeat"
 					}
 				}
 			},

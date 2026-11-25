@@ -1,3 +1,5 @@
+import { DueDay } from "./due-day";
+import { Recurrence, type RepeatRule } from "./recurrence";
 import type { TaskStepData } from "./task-step";
 
 export type Importance = "normal" | "high";
@@ -15,6 +17,7 @@ export interface TaskData {
 	readonly position?: number | null;
 	readonly dueDate: string | null;
 	readonly remindAt?: string | null;
+	readonly repeat?: RepeatRule | null;
 	readonly createdAt: string;
 }
 
@@ -30,6 +33,7 @@ export interface TaskChanges {
 	readonly position?: number | null;
 	readonly dueDate?: string | null;
 	readonly remindAt?: string | null;
+	readonly repeat?: RepeatRule | null;
 }
 
 export class Task {
@@ -93,6 +97,40 @@ export class Task {
 		return this.data.remindAt ?? null;
 	}
 
+	get repeat(): RepeatRule | null {
+		return this.data.repeat ?? null;
+	}
+
+	nextOccurrence(today: string, createdAt: string): Task | null {
+		if (!this.completed || this.repeat === null) {
+			return null;
+		}
+		const due = this.dueDay ?? today;
+		const next = new Recurrence(this.repeat).upcoming(due, today);
+		const series = this.id.replace(/-r\d{8}$/, "").slice(0, 54);
+		return new Task({
+			...this.data,
+			id: `${series}-r${next.replaceAll("-", "")}`,
+			completed: false,
+			myDay: null,
+			myDayDismissed: null,
+			position: null,
+			steps: this.steps.map((step) => ({ ...step, completed: false })),
+			dueDate: DueDay.toIso(next),
+			remindAt: this.reminderMovedBy(DueDay.daysBetween(due, next)),
+			createdAt,
+		});
+	}
+
+	private reminderMovedBy(days: number): string | null {
+		if (this.remindAt === null) {
+			return null;
+		}
+		const moved = new Date(this.remindAt);
+		moved.setDate(moved.getDate() + days);
+		return moved.toISOString();
+	}
+
 	get dueDay(): string | null {
 		return this.data.dueDate === null ? null : this.data.dueDate.slice(0, 10);
 	}
@@ -129,6 +167,7 @@ export class Task {
 			...(changes.position !== undefined && { position: changes.position }),
 			...(changes.dueDate !== undefined && { dueDate: changes.dueDate }),
 			...(changes.remindAt !== undefined && { remindAt: changes.remindAt }),
+			...(changes.repeat !== undefined && { repeat: changes.repeat }),
 		});
 	}
 }

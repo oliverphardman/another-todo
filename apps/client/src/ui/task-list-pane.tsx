@@ -65,6 +65,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				: t("task.stepsProgress", { done: task.stepsCompleted, total: task.steps.length }),
 			view.showsMyDay && task.isInMyDay(today) ? t("task.myDayTag") : null,
 			task.dueDay === null ? null : i18n.dueLabel(task.dueDay, today),
+			task.repeat === null ? null : i18n.repeatLabel(task.repeat),
 		].filter((part): part is string => part !== null);
 		return parts.length === 0 ? null : parts.join(" · ");
 	};

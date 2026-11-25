@@ -1,4 +1,5 @@
 import { DueDay } from "../domain/due-day";
+import type { RepeatRule } from "../domain/recurrence";
 import type { MessageKey } from "./en-us";
 import { CATALOGS, DEFAULT_LOCALE } from "./locales";
 import { PluralRule } from "./plural-rule";
@@ -24,6 +25,8 @@ export class I18n {
 	private readonly reminderFormat: Intl.DateTimeFormat;
 	private readonly monthFormat: Intl.DateTimeFormat;
 	private readonly weekdayFormat: Intl.DateTimeFormat;
+	private readonly shortWeekdayFormat: Intl.DateTimeFormat;
+	private readonly longWeekdayFormat: Intl.DateTimeFormat;
 
 	readonly locale: string;
 
@@ -48,6 +51,11 @@ export class I18n {
 			timeZone: "UTC",
 		});
 		this.weekdayFormat = new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" });
+		this.shortWeekdayFormat = new Intl.DateTimeFormat(locale, {
+			weekday: "short",
+			timeZone: "UTC",
+		});
+		this.longWeekdayFormat = new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "UTC" });
 		this.longDayFormat = new Intl.DateTimeFormat(locale, {
 			weekday: "long",
 			month: "long",
@@ -111,13 +119,35 @@ export class I18n {
 		return this.monthFormat.format(new Date(`${day}T00:00:00.000Z`));
 	}
 
+	get weekdays(): number[] {
+		return Array.from({ length: 7 }, (_, index) => (this.firstWeekday + index) % 7);
+	}
+
 	weekdayInitials(): string[] {
+		return this.weekdays.map((weekday) => this.weekdayFormat.format(I18n.dateOf(weekday)));
+	}
+
+	shortWeekday(weekday: number): string {
+		return this.shortWeekdayFormat.format(I18n.dateOf(weekday));
+	}
+
+	longWeekday(weekday: number): string {
+		return this.longWeekdayFormat.format(I18n.dateOf(weekday));
+	}
+
+	repeatLabel(rule: RepeatRule): string {
+		if (rule.frequency !== "weekly") {
+			return this.t(`repeat.${rule.frequency}`);
+		}
+		const days = this.weekdays
+			.filter((weekday) => rule.weekdays?.includes(weekday))
+			.map((weekday) => this.shortWeekday(weekday));
+		return this.t("repeat.weeklyOn", { days: days.join(", ") });
+	}
+
+	private static dateOf(weekday: number): Date {
 		const sunday = "2026-01-04";
-		return Array.from({ length: 7 }, (_, index) =>
-			this.weekdayFormat.format(
-				new Date(DueDay.toIso(DueDay.add(sunday, this.firstWeekday + index))),
-			),
-		);
+		return new Date(DueDay.toIso(DueDay.add(sunday, weekday)));
 	}
 
 	createdLabel(createdAt: string, now: Date): string {

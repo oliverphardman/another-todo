@@ -107,6 +107,7 @@ export class HttpApiGateway implements ApiGateway {
 			note: task.note,
 			dueDate: task.dueDate,
 			remindAt: task.remindAt ?? null,
+			...(task.repeat && { repeat: task.repeat }),
 		});
 	}
 

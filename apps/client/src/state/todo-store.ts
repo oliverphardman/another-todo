@@ -1,6 +1,7 @@
 import type { SoundPlayer } from "../audio/sound-player";
 import { DueDay } from "../domain/due-day";
 import type { Clock, IdGenerator } from "../domain/ports";
+import { Recurrence, type RepeatRule } from "../domain/recurrence";
 import { Task, type TaskChanges } from "../domain/task";
 import { TaskSorter } from "../domain/task-sorter";
 import type { TaskStepData } from "../domain/task-step";
@@ -71,6 +72,9 @@ export class TodoStore extends Observable<TodoState> {
 				renamingGroupId,
 				searchQuery,
 			});
+			if (this.get().tasks.some((task) => task.completed && task.repeat !== null)) {
+				queueMicrotask(() => this.rollRepeats());
+			}
 		});
 	}
 
@@ -447,6 +451,36 @@ export class TodoStore extends Observable<TodoState> {
 		return task.id;
 	}
 
+	rollRepeats(): void {
+		const now = this.clock.now().toISOString();
+		for (const task of this.get().tasks) {
+			const next = task.nextOccurrence(this.today, now);
+			if (next === null) {
+				continue;
+			}
+			if (!this.get().tasks.some((other) => other.id === next.id)) {
+				this.insertTask(next);
+			}
+			this.updateTask(task.id, { repeat: null });
+		}
+	}
+
+	setRepeat(taskId: string, rule: RepeatRule | null): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task === undefined) {
+			return;
+		}
+		if (rule === null) {
+			this.updateTask(taskId, { repeat: null });
+			return;
+		}
+		const due = new Recurrence(rule).firstOnOrAfter(task.dueDay ?? this.today);
+		this.updateTask(taskId, {
+			repeat: new Recurrence(rule).anchoredTo(due).rule,
+			dueDate: DueDay.toIso(due),
+		});
+	}
+
 	updateTask(taskId: string, changes: TaskChanges): void {
 		if (!this.get().tasks.some((task) => task.id === taskId)) {
 			return;
@@ -463,6 +497,9 @@ export class TodoStore extends Observable<TodoState> {
 				changes,
 			}),
 		}));
+		if (changes.completed === true) {
+			this.rollRepeats();
+		}
 	}
 
 	renameTask(taskId: string, title: string): void {
@@ -570,8 +607,12 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	setDueDay(taskId: string, day: string | null): void {
+		const repeat = this.get().tasks.find((task) => task.id === taskId)?.repeat ?? null;
 		this.updateTask(taskId, {
 			dueDate: day === null ? null : DueDay.toIso(day),
+			...(repeat !== null && {
+				repeat: day === null ? null : new Recurrence(repeat).anchoredTo(day).rule,
+			}),
 		});
 	}
 

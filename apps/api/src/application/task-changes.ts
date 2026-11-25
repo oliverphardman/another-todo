@@ -1,5 +1,6 @@
 import { EntityId } from "../domain/entity-id";
 import { ValidationError } from "../domain/errors";
+import { FREQUENCIES, type Frequency, type Recurrence } from "../domain/recurrence";
 import type { TaskStep } from "../domain/task-step";
 import type { Importance, Task } from "../domain/task";
 
@@ -16,6 +17,7 @@ export interface TaskInput {
 	readonly note?: unknown;
 	readonly dueDate?: unknown;
 	readonly remindAt?: unknown;
+	readonly repeat?: unknown;
 }
 
 export class TaskChanges {
@@ -54,7 +56,45 @@ export class TaskChanges {
 		if (input.remindAt !== undefined) {
 			result = result.setRemindAt(TaskChanges.instant(input.remindAt, "remindAt"));
 		}
+		if (input.repeat !== undefined) {
+			result = result.setRepeat(TaskChanges.repeat(input.repeat));
+		}
 		return result;
+	}
+
+	static repeat(value: unknown): Recurrence | null {
+		if (value === null) {
+			return null;
+		}
+		const { frequency, weekdays, monthDay } = Object(value) as Record<string, unknown>;
+		if (!FREQUENCIES.includes(frequency as Frequency)) {
+			throw new ValidationError(`repeat.frequency must be one of ${FREQUENCIES.join(", ")}`);
+		}
+		if (frequency === "weekly") {
+			return { frequency, weekdays: TaskChanges.weekdays(weekdays) };
+		}
+		if (frequency === "daily" || monthDay === undefined) {
+			return { frequency: frequency as Frequency };
+		}
+		if (!TaskChanges.isWhole(monthDay, 1, 31)) {
+			throw new ValidationError("repeat.monthDay must be a day from 1 to 31");
+		}
+		return { frequency: frequency as Frequency, monthDay };
+	}
+
+	private static weekdays(value: unknown): number[] {
+		if (
+			!Array.isArray(value) ||
+			value.length === 0 ||
+			!value.every((day) => TaskChanges.isWhole(day, 0, 6))
+		) {
+			throw new ValidationError("a weekly repeat needs weekdays from 0 (Sunday) to 6 (Saturday)");
+		}
+		return [...new Set(value as number[])].sort((a, b) => a - b);
+	}
+
+	private static isWhole(value: unknown, from: number, to: number): value is number {
+		return Number.isInteger(value) && (value as number) >= from && (value as number) <= to;
 	}
 
 	static title(value: unknown): string {

@@ -109,6 +109,14 @@ describe("HttpApiGateway", () => {
 		});
 	});
 
+	it("sends a repeat only when there is one, so older servers keep accepting tasks", async () => {
+		const { gateway, calls } = setup();
+		await gateway.createTask(taskData({ id: "t1", title: "A", repeat: { frequency: "daily" } }));
+		await gateway.createTask(taskData({ id: "t2", title: "B", repeat: null }));
+		expect(calls[0]!.body).toMatchObject({ repeat: { frequency: "daily" } });
+		expect(calls[1]!.body).not.toHaveProperty("repeat");
+	});
+
 	it("lists, creates, renames, assigns and deletes groups", async () => {
 		const groups = setup(() =>
 			json({ groups: [{ id: "g", name: "G", createdAt: "x", position: 1 }] }),

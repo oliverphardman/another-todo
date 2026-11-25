@@ -198,9 +198,52 @@ describe("expanded layout", () => {
 			return Array.from(document.querySelectorAll("*")).indexOf(element);
 		});
 		expect(positions).toEqual([...positions].sort((a, b) => a - b));
-		for (const label of ["Repeat"]) {
-			expect(details.getByLabelText(label).getAttribute("aria-disabled")).toBe("true");
-		}
+	});
+
+	it("repeats a task on chosen weekdays and creates the next one on completion", async () => {
+		const app = await start();
+		fireEvent.click(screen.getByLabelText("Tasks"));
+		addTask("Bins");
+		fireEvent.click(screen.getByLabelText("Open Bins"));
+		const details = () => within(screen.getByLabelText("Task details"));
+		const tasks = () => app.container.store.get().tasks;
+		fireEvent.click(details().getByLabelText("Repeat"));
+		fireEvent.click(details().getByLabelText("Weekly"));
+		expect(details().getByLabelText("Thursday").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(details().getByLabelText("Monday"));
+		expect(details().getByLabelText("Monday").getAttribute("aria-checked")).toBe("true");
+		fireEvent.click(details().getByLabelText("Weekly"));
+		expect(tasks()[0]!.repeat).toEqual({ frequency: "weekly", weekdays: [1, 4] });
+		expect(tasks()[0]!.dueDay).toBe("2026-11-19");
+		expect(details().getByLabelText("Weekly on Mon, Thu")).toBeTruthy();
+		await act(async () => {
+			fireEvent.click(screen.getAllByLabelText("Mark as completed")[0]!);
+		});
+		expect(tasks().map((task) => [task.completed, task.dueDay, task.repeat !== null])).toEqual([
+			[true, "2026-11-19", false],
+			[false, "2026-11-23", true],
+		]);
+		expect(screen.getByText(/Weekly on Mon, Thu/, { selector: "div" })).toBeTruthy();
+	});
+
+	it("closes the repeat options after a simple choice and can stop repeating", async () => {
+		const app = await start();
+		addTask("Rent");
+		fireEvent.click(screen.getByLabelText("Open Rent"));
+		fireEvent.click(screen.getByLabelText("Repeat"));
+		expect(screen.queryByLabelText("Never repeat")).toBeNull();
+		fireEvent.click(screen.getByLabelText("Monthly"));
+		expect(screen.queryByLabelText("Repeat options")).toBeNull();
+		expect(app.container.store.get().tasks[0]!.repeat).toEqual({
+			frequency: "monthly",
+			monthDay: 19,
+		});
+		fireEvent.click(within(screen.getByLabelText("Task details")).getByLabelText("Monthly"));
+		fireEvent.click(screen.getByLabelText("Monthly", { selector: "[role=radio]" }));
+		fireEvent.click(within(screen.getByLabelText("Task details")).getByLabelText("Monthly"));
+		fireEvent.click(screen.getByLabelText("Never repeat"));
+		expect(app.container.store.get().tasks[0]!.repeat).toBeNull();
+		expect(screen.queryByLabelText("Repeat options")).toBeNull();
 	});
 
 	it("sets a reminder, asks for permission, schedules it and clears it", async () => {

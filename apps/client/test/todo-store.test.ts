@@ -46,6 +46,78 @@ describe("TodoStore", () => {
 		expect(byId(inList).listId).toBe(listId);
 	});
 
+	it("sets a repeat with a due date to match, and drops it with the date", async () => {
+		const { store } = await setup();
+		const id = store.addTask("A")!;
+		const task = () => store.get().tasks[0]!;
+		store.setRepeat(id, { frequency: "weekly", weekdays: [1] });
+		expect(task().dueDay).toBe("2026-11-23");
+		store.setRepeat(id, { frequency: "monthly" });
+		expect(task().repeat).toEqual({ frequency: "monthly", monthDay: 23 });
+		store.setDueDay(id, "2026-12-05");
+		expect(task().repeat).toEqual({ frequency: "monthly", monthDay: 5 });
+		store.setDueDay(id, null);
+		expect(task().repeat).toBeNull();
+		store.setRepeat(id, { frequency: "daily" });
+		store.setRepeat(id, null);
+		expect(task().repeat).toBeNull();
+		expect(task().dueDay).toBe("2026-11-19");
+		store.setRepeat("missing", null);
+	});
+
+	it("creates the next task once, however the completion arrives", async () => {
+		const { store } = await setup();
+		const id = store.addTask("A")!;
+		store.setRepeat(id, { frequency: "daily" });
+		store.completeTasks([id], true);
+		store.toggleCompleted(id);
+		store.toggleCompleted(id);
+		expect(store.get().tasks.map((task) => task.id)).toEqual([id, `${id}-r20261120`]);
+	});
+
+	it("rolls a repeating task completed elsewhere once it arrives", async () => {
+		const { store, database } = await setup();
+		await database.apply((snapshot) => ({
+			...snapshot,
+			tasks: [
+				taskData({
+					id: "remote",
+					completed: true,
+					dueDate: "2026-11-19T00:00:00.000Z",
+					repeat: { frequency: "daily" },
+				}),
+			],
+		}));
+		await Promise.resolve();
+		expect(store.get().tasks.map((task) => [task.id, task.repeat !== null])).toEqual([
+			["remote", false],
+			["remote-r20261120", true],
+		]);
+		expect(database.get().outbox.map((operation) => operation.kind)).toEqual([
+			"createTask",
+			"updateTask",
+		]);
+	});
+
+	it("does not create a next task that another device already made", async () => {
+		const { store, database } = await setup();
+		await database.apply((snapshot) => ({
+			...snapshot,
+			tasks: [
+				taskData({
+					id: "remote",
+					completed: true,
+					dueDate: "2026-11-19T00:00:00.000Z",
+					repeat: { frequency: "daily" },
+				}),
+				taskData({ id: "remote-r20261120" }),
+			],
+		}));
+		await Promise.resolve();
+		expect(store.get().tasks).toHaveLength(2);
+		expect(database.get().outbox.map((operation) => operation.kind)).toEqual(["updateTask"]);
+	});
+
 	it("toggles completion and importance", async () => {
 		const { store } = await setup();
 		const id = store.addTask("A")!;

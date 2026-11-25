@@ -36,6 +36,10 @@ export class DueDay {
 		return Math.round((DueDay.fromDay(to).getTime() - DueDay.fromDay(from).getTime()) / MS_PER_DAY);
 	}
 
+	static weekday(day: string): number {
+		return DueDay.fromDay(day).getUTCDay();
+	}
+
 	static isOverdue(day: string, today: string): boolean {
 		return day < today;
 	}

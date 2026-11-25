@@ -365,6 +365,15 @@ export interface components {
     schemas: {
         /** @enum {string} */
         Importance: "normal" | "high";
+        /** @description How the task repeats; completing it creates the next occurrence */
+        Repeat: {
+            /** @enum {string} */
+            frequency: "daily" | "weekly" | "monthly" | "yearly";
+            /** @description Days a weekly repeat falls on, 0 being Sunday */
+            weekdays?: number[];
+            /** @description Day of the month a monthly or yearly repeat aims for */
+            monthDay?: number;
+        } | null;
         Task: {
             id: string;
             title: string;
@@ -388,6 +397,7 @@ export interface components {
              * @description When the client should remind the user about the task
              */
             remindAt: string | null;
+            repeat: components["schemas"]["Repeat"];
         };
         TaskList: {
             tasks: components["schemas"]["Task"][];
@@ -414,6 +424,7 @@ export interface components {
              * @description When the client should remind the user about the task
              */
             remindAt?: string | null;
+            repeat?: components["schemas"]["Repeat"];
         };
         UpdateTask: {
             title?: string;
@@ -435,6 +446,7 @@ export interface components {
              * @description When the client should remind the user about the task
              */
             remindAt?: string | null;
+            repeat?: components["schemas"]["Repeat"];
         };
         Error: {
             error: string;

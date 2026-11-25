@@ -10,6 +10,7 @@ import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
 import { ReminderPicker } from "./reminder-picker";
+import { RepeatPicker } from "./repeat-picker";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
@@ -37,10 +38,12 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const [noteFocused, setNoteFocused] = useState(false);
 	const [picking, setPicking] = useState(false);
 	const [pickingReminder, setPickingReminder] = useState(false);
+	const [pickingRepeat, setPickingRepeat] = useState(false);
 	useEffect(() => {
 		setTitle(task.title);
 		setPicking(false);
 		setPickingReminder(false);
+		setPickingRepeat(false);
 	}, [task.id, task.title]);
 	useEffect(() => {
 		void attachments.show(task.id);
@@ -193,7 +196,20 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 						/>
 					) : null}
 					<DetailSeparator />
-					<ActionRow glyph="repeat" label={t("detail.repeat")} />
+					<ActionRow
+						glyph="repeat"
+						label={task.repeat === null ? t("detail.repeat") : i18n.repeatLabel(task.repeat)}
+						active={task.repeat !== null}
+						onPress={() => setPickingRepeat((value) => !value)}
+					/>
+					{pickingRepeat ? (
+						<RepeatPicker
+							repeat={task.repeat}
+							day={task.dueDay ?? today}
+							onChange={(repeat) => store.setRepeat(task.id, repeat)}
+							onDone={() => setPickingRepeat(false)}
+						/>
+					) : null}
 				</DetailCard>
 				<DetailCard>
 					{files.items.map((file) => (

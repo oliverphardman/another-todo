@@ -48,6 +48,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Each step has a menu: Mark as completed, Promote to task, Delete step
 
 - [x] Completed tasks move while the circle fills, and the right pane slides in and out
+- [x] Repeat tasks daily, weekly on chosen days, monthly or yearly
 
 ## 6. Self-hosting
 
