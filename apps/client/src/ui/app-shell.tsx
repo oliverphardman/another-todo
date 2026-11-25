@@ -9,6 +9,7 @@ import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
 import { ConfirmHost, useConfirm } from "./confirm";
 import { ContextMenuHost } from "./context-menu";
+import { MenuBarSync } from "./menu-bar-sync";
 import { NoticeBanner } from "./notice-banner";
 import { ResizeHandle } from "./resize-handle";
 import { SlidingPane } from "./sliding-pane";
@@ -54,6 +55,7 @@ export function AppShell({ providers }: AppShellProps) {
 	return (
 		<ConfirmHost>
 			<ContextMenuHost>
+				<MenuBarSync />
 				<View style={{ flex: 1 }}>
 					<NoticeBanner />
 					<View style={{ flex: 1 }}>

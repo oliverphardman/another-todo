@@ -97,6 +97,10 @@ export interface ContextMenuTrigger {
 	readonly onLongPress?: (event: unknown) => void;
 }
 
+export function useContextMenuController(): ContextMenuController {
+	return useContext(ContextMenuContext);
+}
+
 export function useContextMenuTrigger(
 	label: string,
 	build: () => readonly ContextMenuEntry[],

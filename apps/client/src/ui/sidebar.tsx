@@ -12,7 +12,7 @@ import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
-import { SharePanel } from "./share-panel";
+import { buildListContextMenu } from "./list-context-menu";
 import { usePrintList } from "./use-print-list";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -166,110 +166,17 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			onPress: () => store.deleteGroup(groupId),
 		},
 	];
-	const groupMoves = (viewId: string): ContextMenuEntry[] => {
-		const current = state.lists.find((list) => list.id === viewId)?.groupId ?? null;
-		return [
-			...(current === null
-				? []
-				: [
-						{
-							kind: "action" as const,
-							key: "ungroup-list",
-							glyph: "close" as const,
-							label: t("ctx.removeFromGroup"),
-							onPress: () => store.setListGroup(viewId, null),
-						},
-					]),
-			...state.groups
-				.filter((group) => group.id !== current)
-				.map((group): ContextMenuEntry => ({
-					kind: "action",
-					key: `to-${group.id}`,
-					glyph: "group",
-					label: group.name,
-					onPress: () => store.setListGroup(viewId, group.id),
-				})),
-		];
-	};
-	const listEntries = (viewId: string): ContextMenuEntry[] => {
-		const list = state.lists.find((entry) => entry.id === viewId)!;
-		const siblings = custom.filter((entry) => entry.groupId === list.groupId);
-		const position = siblings.findIndex((entry) => entry.id === viewId);
-		const owned = list.owned;
-		const printEntry: ContextMenuEntry = {
-			kind: "action",
-			key: "print",
-			glyph: "print",
-			label: t("ctx.printList"),
-			onPress: () => {
-				store.select(viewId);
-				print();
+	const listEntries = (viewId: string): ContextMenuEntry[] =>
+		buildListContextMenu({
+			store,
+			i18n,
+			listId: viewId,
+			print,
+			onRename: () => {
+				store.startRenaming(viewId);
+				onSelected();
 			},
-		};
-		const removeEntry: ContextMenuEntry = {
-			kind: "action",
-			key: "delete",
-			separatorBefore: true,
-			danger: true,
-			glyph: "trash",
-			label: owned ? t("ctx.deleteList") : t("ctx.leaveList"),
-			onPress: () => store.deleteList(viewId),
-		};
-		if (!owned) {
-			return [printEntry, removeEntry];
-		}
-		return [
-			{
-				kind: "action",
-				key: "create-group",
-				glyph: "group",
-				label: t("ctx.createGroup"),
-				onPress: () => store.createGroupFor(viewId, t("group.new")),
-			},
-			{
-				kind: "submenu",
-				key: "move-to-group",
-				glyph: "move",
-				label: t("ctx.moveToGroup"),
-				entries: groupMoves(viewId),
-			},
-			{
-				kind: "panel",
-				key: "share",
-				glyph: "people",
-				label: t("ctx.shareList"),
-				render: (close) => <SharePanel listId={viewId} onClose={close} />,
-			},
-			{
-				kind: "action",
-				key: "rename",
-				glyph: "edit",
-				label: t("ctx.renameList"),
-				onPress: () => {
-					store.startRenaming(viewId);
-					onSelected();
-				},
-			},
-			{
-				kind: "action",
-				key: "move-up",
-				glyph: "chevronUp",
-				label: t("ctx.moveListUp"),
-				disabled: position === 0,
-				onPress: () => store.shiftList(viewId, -1),
-			},
-			{
-				kind: "action",
-				key: "move-down",
-				glyph: "chevronDown",
-				label: t("ctx.moveListDown"),
-				disabled: position === siblings.length - 1,
-				onPress: () => store.shiftList(viewId, 1),
-			},
-			printEntry,
-			removeEntry,
-		];
-	};
+		});
 	return (
 		<View
 			style={{ flex: 1, backgroundColor: palette.sidebar }}
