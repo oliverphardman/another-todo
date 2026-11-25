@@ -13,8 +13,11 @@ export function SlidingPane({ open, width, children }: SlidingPaneProps) {
 	const { motion } = useContainer();
 	const palette = useTheme();
 	const progress = useRef(new Animated.Value(open ? 1 : 0)).current;
-	const [closing, setClosing] = useState(false);
+	const [shown, setShown] = useState(open);
 	const previous = useRef(open);
+	if (open && !shown) {
+		setShown(true);
+	}
 	useEffect(() => {
 		if (previous.current === open) {
 			return;
@@ -22,21 +25,20 @@ export function SlidingPane({ open, width, children }: SlidingPaneProps) {
 		previous.current = open;
 		if (motion.slideMs === 0) {
 			progress.setValue(open ? 1 : 0);
-			setClosing(false);
+			setShown(open);
 			return;
 		}
-		setClosing(!open);
 		Animated.timing(progress, {
 			toValue: open ? 1 : 0,
 			duration: motion.slideMs,
 			useNativeDriver: false,
 		}).start(({ finished }) => {
 			if (finished && !open) {
-				setClosing(false);
+				setShown(false);
 			}
 		});
 	}, [open, motion.slideMs, progress]);
-	if (!open && !closing) {
+	if (!open && !shown) {
 		return null;
 	}
 	return (

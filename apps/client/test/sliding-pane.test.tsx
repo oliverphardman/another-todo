@@ -46,9 +46,10 @@ describe("the task details pane", () => {
 		expect(screen.getByLabelText("Task details")).toBeTruthy();
 		expect(finishers).toHaveLength(1);
 		act(() => finishers[0]!({ finished: true }));
+		const pane = screen.getByLabelText("Task details");
 		fireEvent.click(screen.getByLabelText("Close details"));
 		expect(app.container.store.selectedTask).toBeNull();
-		expect(screen.getByLabelText("Task details")).toBeTruthy();
+		expect(screen.getByLabelText("Task details")).toBe(pane);
 		expect(finishers).toHaveLength(2);
 		act(() => finishers[1]!({ finished: true }));
 		expect(screen.queryByLabelText("Task details")).toBeNull();
