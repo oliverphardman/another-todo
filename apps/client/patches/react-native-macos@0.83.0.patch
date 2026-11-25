@@ -1,0 +1,33 @@
+diff --git a/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js b/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js
+index d54bd708c7b72d00391b0357eef91a7dda3b22e5..333e67534d1a904d914dec3f3f395ed9612f3864 100644
+--- a/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js
++++ b/scripts/codegen/generate-artifacts-executor/generateRCTThirdPartyComponents.js
+@@ -138,7 +138,7 @@ function generateRCTThirdPartyComponents(
+     .flatMap(library => {
+       const components = componentsInLibraries[library];
+       return components.map(({componentName, className}) => {
+-        return `\t\t@"${componentName}": NSClassFromString(@"${className}"), // ${library}`;
++        return `    thirdPartyComponents[@"${componentName}"] = NSClassFromString(@"${className}");`;
+       });
+     })
+     .join('\n');
+diff --git a/scripts/codegen/templates/RCTThirdPartyComponentsProviderMM.template b/scripts/codegen/templates/RCTThirdPartyComponentsProviderMM.template
+index 4ce510709e337ce783a52413063b2c1ac6fcb29a..589e1a8719c9954d76bb598768e8c78abcd0bf32 100644
+--- a/scripts/codegen/templates/RCTThirdPartyComponentsProviderMM.template
++++ b/scripts/codegen/templates/RCTThirdPartyComponentsProviderMM.template
+@@ -15,13 +15,12 @@
+ 
+ + (NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *)thirdPartyFabricComponents
+ {
+-  static NSDictionary<NSString *, Class<RCTComponentViewProtocol>> *thirdPartyComponents = nil;
++  static NSMutableDictionary<NSString *, Class<RCTComponentViewProtocol>> *thirdPartyComponents = nil;
+   static dispatch_once_t nativeComponentsToken;
+ 
+   dispatch_once(&nativeComponentsToken, ^{
+-    thirdPartyComponents = @{
++    thirdPartyComponents = [NSMutableDictionary new];
+ {thirdPartyComponentsMapping}
+-    };
+   });
+ 
+   return thirdPartyComponents;

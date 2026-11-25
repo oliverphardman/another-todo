@@ -4,6 +4,7 @@ WORKDIR /repo
 COPY apps/api/package.json apps/api/pnpm-lock.yaml apps/api/pnpm-workspace.yaml apps/api/
 RUN pnpm --dir apps/api install --frozen-lockfile
 COPY apps/client/package.json apps/client/pnpm-lock.yaml apps/client/pnpm-workspace.yaml apps/client/
+COPY apps/client/patches apps/client/patches
 RUN pnpm --dir apps/client install --frozen-lockfile
 COPY apps/api apps/api
 COPY apps/client apps/client
