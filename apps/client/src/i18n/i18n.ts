@@ -103,6 +103,19 @@ export class I18n {
 		);
 	}
 
+	fileSize(bytes: number): string {
+		if (bytes < 1024) {
+			return this.t("attachment.bytes", { size: bytes });
+		}
+		if (bytes < 1024 * 1024) {
+			return this.t("attachment.kilobytes", { size: Math.round(bytes / 1024) });
+		}
+		const size = new Intl.NumberFormat(this.locale, { maximumFractionDigits: 1 }).format(
+			bytes / (1024 * 1024),
+		);
+		return this.t("attachment.megabytes", { size });
+	}
+
 	reminderLabel(iso: string): string {
 		return this.reminderFormat.format(new Date(iso));
 	}

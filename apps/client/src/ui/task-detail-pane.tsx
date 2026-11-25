@@ -5,6 +5,7 @@ import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
+import { AttachmentRow } from "./attachment-row";
 import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
@@ -213,32 +214,21 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 				</DetailCard>
 				<DetailCard>
 					{files.items.map((file) => (
-						<View key={file.id} style={{ flexDirection: "row", alignItems: "center" }}>
-							<View style={{ flex: 1, minWidth: 0 }}>
-								<ActionRow
-									glyph="paperclip"
-									label={t("attachment.open", { name: file.name })}
-									onPress={() => void Linking.openURL(file.url)}
-								/>
-							</View>
-							<PressableSurface
-								accessibilityRole="button"
-								accessibilityLabel={t("attachment.remove", { name: file.name })}
-								onPress={async () => {
-									const confirmed = await confirm({
-										title: t("attachment.removeTitle", { name: file.name }),
-										body: t("attachment.removeBody"),
-										confirmLabel: t("attachment.removeConfirm"),
-									});
-									if (confirmed) {
-										void attachments.remove(file.id);
-									}
-								}}
-								style={{ padding: 14 }}
-							>
-								<Icon glyph="trash" size={18} color={palette.textSecondary} />
-							</PressableSurface>
-						</View>
+						<AttachmentRow
+							key={file.id}
+							file={file}
+							onOpen={() => void Linking.openURL(file.url)}
+							onRemove={async () => {
+								const confirmed = await confirm({
+									title: t("attachment.removeTitle", { name: file.name }),
+									body: t("attachment.removeBody"),
+									confirmLabel: t("attachment.removeConfirm"),
+								});
+								if (confirmed) {
+									void attachments.remove(file.id);
+								}
+							}}
+						/>
 					))}
 					<ActionRow
 						glyph="paperclip"
