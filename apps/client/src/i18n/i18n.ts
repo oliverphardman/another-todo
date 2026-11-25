@@ -22,6 +22,8 @@ export class I18n {
 	private readonly shortDayWithYear: Intl.DateTimeFormat;
 	private readonly longDayFormat: Intl.DateTimeFormat;
 	private readonly reminderFormat: Intl.DateTimeFormat;
+	private readonly monthFormat: Intl.DateTimeFormat;
+	private readonly weekdayFormat: Intl.DateTimeFormat;
 
 	readonly locale: string;
 
@@ -40,12 +42,22 @@ export class I18n {
 			hour: "numeric",
 			minute: "2-digit",
 		});
+		this.monthFormat = new Intl.DateTimeFormat(locale, {
+			month: "long",
+			year: "numeric",
+			timeZone: "UTC",
+		});
+		this.weekdayFormat = new Intl.DateTimeFormat(locale, { weekday: "narrow", timeZone: "UTC" });
 		this.longDayFormat = new Intl.DateTimeFormat(locale, {
 			weekday: "long",
 			month: "long",
 			day: "numeric",
 			timeZone: "UTC",
 		});
+	}
+
+	get firstWeekday(): number {
+		return this.locale === "en-GB" ? 1 : 0;
 	}
 
 	t = (key: MessageKey, params: MessageParams = {}): string =>
@@ -93,6 +105,19 @@ export class I18n {
 
 	longDay(day: string): string {
 		return this.longDayFormat.format(new Date(`${day}T00:00:00.000Z`));
+	}
+
+	monthLabel(day: string): string {
+		return this.monthFormat.format(new Date(`${day}T00:00:00.000Z`));
+	}
+
+	weekdayInitials(): string[] {
+		const sunday = "2026-01-04";
+		return Array.from({ length: 7 }, (_, index) =>
+			this.weekdayFormat.format(
+				new Date(DueDay.toIso(DueDay.add(sunday, this.firstWeekday + index))),
+			),
+		);
 	}
 
 	createdLabel(createdAt: string, now: Date): string {

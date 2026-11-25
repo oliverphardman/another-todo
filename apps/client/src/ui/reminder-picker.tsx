@@ -44,7 +44,15 @@ export function ReminderPicker({ at, now, onChange }: ReminderPickerProps) {
 					<AppText tone="secondary">{i18n.reminderLabel(option.when.toISOString())}</AppText>
 				</PressableSurface>
 			))}
-			<View style={{ flexDirection: "row", alignItems: "center", gap: 8, padding: 12 }}>
+			<View
+				style={{
+					flexDirection: "row",
+					flexWrap: "wrap",
+					alignItems: "center",
+					gap: 8,
+					padding: 12,
+				}}
+			>
 				<NativeDateInput
 					label={t("remind.custom")}
 					value={current === null ? null : day}

@@ -53,6 +53,7 @@ const ContextMenuContext = createContext<ContextMenuController>(new ContextMenuC
 
 const WIDTH = 270;
 const ROW = 40;
+const PANEL_ROWS = 11;
 const MARGIN = 8;
 
 export class MenuPlacement {
@@ -135,7 +136,8 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 	const [stack, setStack] = useState<readonly ContextMenuEntry[][]>([[...state.entries]]);
 	const [panel, setPanel] = useState<ContextMenuEntry | null>(state.initialPanel ?? null);
 	const entries = stack[stack.length - 1]!;
-	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, entries.length);
+	const rows = panel === null ? entries.length : Math.max(entries.length, PANEL_ROWS);
+	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, rows);
 	const finish = (action: () => void) => () => {
 		action();
 		onClose();

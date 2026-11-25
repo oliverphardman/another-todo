@@ -93,6 +93,8 @@ export const EN_US = {
 	"due.nextWeek": "Next week",
 	"due.custom": "Custom due date",
 	"due.remove": "Remove due date",
+	"calendar.previousMonth": "Previous month",
+	"calendar.nextMonth": "Next month",
 	"created.fewMoments": "a few moments ago",
 	"created.minutes_one": "{count} minute ago",
 	"created.minutes_other": "{count} minutes ago",
