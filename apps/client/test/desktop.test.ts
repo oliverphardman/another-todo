@@ -10,6 +10,7 @@ import { SystemRandom } from "../src/domain/random";
 import { Base64Url, Sha256 } from "../src/auth/sha256";
 import { ExpoSoundPlayer as MacSound } from "../src/audio/expo-sound-player.macos";
 import { ExpoSoundPlayer as WinSound } from "../src/audio/expo-sound-player.windows";
+import { DesktopSoundPlayer } from "../src/audio/desktop-sound-player";
 import { SilentSoundPlayer } from "../src/audio/silent-sound-player";
 import { DeviceLocale as MacLocale } from "../src/i18n/device-locale.macos";
 import { DeviceLocale as WinLocale } from "../src/i18n/device-locale.windows";
@@ -239,7 +240,7 @@ describe("desktop platform adapters", () => {
 		expect(WinAuth).toBe(DesktopAuthorizationServer);
 		expect(MacStore).toBe(AsyncStorageKeyValueStore);
 		expect(WinStore).toBe(AsyncStorageKeyValueStore);
-		expect(MacSound).toBe(SilentSoundPlayer);
+		expect(new MacSound()).toBeInstanceOf(DesktopSoundPlayer);
 		expect(WinSound).toBe(SilentSoundPlayer);
 		expect(MacPicker).toBe(UnavailablePhotoPicker);
 		expect(WinPicker).toBe(UnavailablePhotoPicker);

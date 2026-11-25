@@ -16,6 +16,7 @@ target 'AnotherToDo-macOS' do
   pod 'AnotherToDoMenu', :path => './AnotherToDoMenu'
   pod 'AnotherToDoReminderCore', :path => './AnotherToDoReminderCore'
   pod 'AnotherToDoReminders', :path => './AnotherToDoReminders'
+  pod 'AnotherToDoSystem', :path => './AnotherToDoSystem'
 
   flags = get_default_flags()
 
