@@ -87,10 +87,14 @@ describe("SidebarColors", () => {
 });
 
 describe("sidebarMetrics", () => {
-	it("leaves signing out to the menu bar on macOS only", () => {
-		expect(sidebarMetrics("macos").signOutInHeader).toBe(false);
-		expect(sidebarMetrics("windows").signOutInHeader).toBe(true);
-		expect(sidebarMetrics("ios").signOutInHeader).toBe(true);
+	it.each([
+		["macos", null],
+		["windows", "signOut"],
+		["web", "signOut"],
+		["ios", "logOut"],
+		["android", "logOut"],
+	])("gives the header of the %s sidebar the %s action", (platform, action) => {
+		expect(sidebarMetrics(platform).headerAction).toBe(action);
 	});
 
 	it("is denser for pointer platforms than for touch", () => {
@@ -98,5 +102,6 @@ describe("sidebarMetrics", () => {
 		expect(sidebarMetrics("windows").rowHeight).toBe(28);
 		expect(sidebarMetrics("android").rowHeight).toBe(44);
 		expect(sidebarMetrics()).toBe(sidebarMetrics("web"));
+		expect(sidebarMetrics("ios").rowHeight).toBe(44);
 	});
 });

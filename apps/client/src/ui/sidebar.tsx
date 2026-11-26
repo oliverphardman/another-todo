@@ -11,7 +11,8 @@ import { Icon, type IconGlyph } from "./icon";
 import { AccountHeader } from "./account-header";
 import { NewListField } from "./new-list-field";
 import { SidebarColors } from "./sidebar-colors";
-import { sidebarMetrics } from "./sidebar-metrics";
+import { sidebarMetrics, type SidebarMetrics } from "./sidebar-metrics";
+import { useLogOut } from "./use-log-out";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
@@ -38,7 +39,7 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ onSelected }: SidebarProps) {
-	const { store, auth, microsoft } = useContainer();
+	const { store, microsoft } = useContainer();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const palette = useTheme();
@@ -198,17 +199,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		>
 			<StatusBarTone foreground={palette.text} />
 			<AccountHeader>
-				{auth.automatic || !metrics.signOutInHeader ? null : (
-					<PressableSurface
-						accessibilityRole="button"
-						accessibilityLabel={t("signOut.button")}
-						onPress={() => void auth.signOut()}
-						hoverColor={palette.sidebarHover}
-						style={{ padding: 8, borderRadius: 4 }}
-					>
-						<Icon glyph="signOut" color={palette.textSecondary} />
-					</PressableSurface>
-				)}
+				<HeaderAction kind={metrics.headerAction} />
 			</AccountHeader>
 			<View
 				style={{
@@ -358,6 +349,33 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				)}
 			</View>
 		</View>
+	);
+}
+
+function HeaderAction({ kind }: { kind: SidebarMetrics["headerAction"] }) {
+	const { auth } = useContainer();
+	const { t } = useI18n();
+	const palette = useTheme();
+	const logOut = useLogOut();
+	const actions = {
+		logOut: logOut === null ? null : { label: t("account.logOut"), run: logOut },
+		signOut: auth.automatic ? null : { label: t("signOut.button"), run: () => void auth.signOut() },
+	};
+	const action = kind === null ? null : actions[kind];
+	if (action === null) {
+		return null;
+	}
+	return (
+		<PressableSurface
+			accessibilityRole="button"
+			accessibilityLabel={action.label}
+			onPress={action.run}
+			hoverColor={palette.sidebarHover}
+			android_ripple={{ color: palette.sidebarSelected, borderless: true }}
+			style={{ padding: 8, borderRadius: 4 }}
+		>
+			<Icon glyph="signOut" color={palette.textSecondary} />
+		</PressableSurface>
 	);
 }
 

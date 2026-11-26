@@ -6,7 +6,7 @@ export interface SidebarMetrics {
 	readonly iconSize: number;
 	readonly searchHeight: number;
 	readonly strokeWidth: number;
-	readonly signOutInHeader: boolean;
+	readonly headerAction: "logOut" | "signOut" | null;
 }
 
 const TOUCH: SidebarMetrics = {
@@ -15,8 +15,10 @@ const TOUCH: SidebarMetrics = {
 	iconSize: 20,
 	searchHeight: 38,
 	strokeWidth: 1.6,
-	signOutInHeader: true,
+	headerAction: "logOut",
 };
+
+const WEB: SidebarMetrics = { ...TOUCH, headerAction: "signOut" };
 
 const WINDOWS: SidebarMetrics = {
 	rowHeight: 28,
@@ -24,12 +26,16 @@ const WINDOWS: SidebarMetrics = {
 	iconSize: 16,
 	searchHeight: 28,
 	strokeWidth: 2,
-	signOutInHeader: true,
+	headerAction: "signOut",
 };
 
-const MACOS: SidebarMetrics = { ...WINDOWS, signOutInHeader: false };
+const MACOS: SidebarMetrics = { ...WINDOWS, headerAction: null };
 
-const BY_PLATFORM: Readonly<Record<string, SidebarMetrics>> = { macos: MACOS, windows: WINDOWS };
+const BY_PLATFORM: Readonly<Record<string, SidebarMetrics>> = {
+	macos: MACOS,
+	windows: WINDOWS,
+	web: WEB,
+};
 
 export function sidebarMetrics(platform: string = Platform.OS): SidebarMetrics {
 	return BY_PLATFORM[platform] ?? TOUCH;
