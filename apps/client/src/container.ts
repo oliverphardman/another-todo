@@ -36,6 +36,7 @@ import { TokenRepository } from "./auth/token-repository";
 import type { AppConfig } from "./config/app-config";
 import type { ServerControls } from "./config/server-session";
 import { RandomIdGenerator, SystemClock, type Clock, type IdGenerator } from "./domain/ports";
+import { AppSettings } from "./state/app-settings";
 import { NetInfoConnectivity, type Connectivity } from "./state/connectivity";
 import { PaneWidths } from "./state/pane-widths";
 import { STANDARD_MOTION, type Motion } from "./ui/motion";
@@ -60,6 +61,7 @@ export interface Container {
 	readonly reminders: ReminderService;
 	readonly printer: ListPrinter;
 	readonly paneWidths: PaneWidths;
+	readonly settings: AppSettings;
 	readonly shares: ShareGateway;
 	readonly microsoft: MicrosoftSyncService;
 	readonly motion: Motion;
@@ -131,12 +133,14 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			),
 		overrides.filePicker ?? new ExpoFilePicker(),
 	);
+	const settings = new AppSettings(dataStore);
 	const store = new TodoStore(
 		database,
 		ids,
 		clock,
 		sync,
 		overrides.sounds ?? new ExpoSoundPlayer(),
+		settings,
 	);
 	const reminders = new ReminderService(
 		overrides.reminderNotifier ?? createReminderNotifier(),
@@ -161,8 +165,10 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		microsoftLinks,
 		dataStore,
 		connectivity,
+		settings,
 	);
 	return {
+		settings,
 		config,
 		server: overrides.server ?? {
 			enforced: true,

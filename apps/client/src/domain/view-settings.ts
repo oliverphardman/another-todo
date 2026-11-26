@@ -29,6 +29,7 @@ const VIEW_THEME_COLORS: Record<string, string> = {
 	important: DEFAULT_THEME_COLOR,
 	all: "#f9e7de",
 	planned: "#d5f1ee",
+	completed: DEFAULT_THEME_COLOR,
 };
 
 export const THEME_COLORS: readonly { readonly nameKey: MessageKey; readonly hex: string }[] = [

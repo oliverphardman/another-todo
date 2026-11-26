@@ -1,3 +1,4 @@
+import { AppSettings } from "../src/state/app-settings";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthenticationService } from "../src/auth/authentication-service";
 import { TokenRepository } from "../src/auth/token-repository";
@@ -33,6 +34,7 @@ function engineSetup() {
 		clock,
 		{ request: () => undefined },
 		new RecordingSoundPlayer(),
+		new AppSettings(new MemoryKeyValueStore()),
 	);
 	const remote = new FakeRemoteTodo();
 	const links = new LinkRepository(new MemoryKeyValueStore());
@@ -204,6 +206,7 @@ function serviceSetup(options: { token?: string; available?: boolean } = {}) {
 		clock,
 		{ request: () => undefined },
 		new RecordingSoundPlayer(),
+		new AppSettings(new MemoryKeyValueStore()),
 	);
 	const remote = new FakeRemoteTodo();
 	const dataStore = new MemoryKeyValueStore();
@@ -220,6 +223,7 @@ function serviceSetup(options: { token?: string; available?: boolean } = {}) {
 	const auth = new AuthenticationService(server, new TokenRepository(tokenStore), clock);
 	const session = new MicrosoftSession(tokenStore, authorizer, clock);
 	const connectivity = new ManualConnectivity();
+	const settings = new AppSettings(new MemoryKeyValueStore());
 	const engine = new MicrosoftSyncEngine(store, remote, links, ids, clock);
 	const service = new MicrosoftSyncService(
 		auth,
@@ -229,9 +233,179 @@ function serviceSetup(options: { token?: string; available?: boolean } = {}) {
 		links,
 		dataStore,
 		connectivity,
+		settings,
 	);
-	return { service, auth, authorizer, remote, dataStore, connectivity, store, session, tokenStore };
+	return {
+		service,
+		auth,
+		authorizer,
+		remote,
+		dataStore,
+		connectivity,
+		store,
+		session,
+		tokenStore,
+		settings,
+	};
 }
+
+describe("one way syncing", () => {
+	const receiveOnly = { receive: true, send: false };
+	const sendOnly = { receive: false, send: true };
+	const writes = (calls: string[]) =>
+		calls.filter((call) => /^(create|update|delete|rename)/.test(call));
+
+	async function linked() {
+		const setup = engineSetup();
+		const work = setup.remote.addList("Work");
+		setup.remote.addTask(work.id, { title: "Report" });
+		await setup.engine.run();
+		setup.remote.calls.length = 0;
+		const list = setup.store.get().lists[0]!;
+		return { ...setup, work, list, task: setup.store.get().tasks[0]! };
+	}
+
+	const edit = (remote: FakeRemoteTodo, listId: string, title: string) => {
+		remote.tasksByList.get(listId)![0] = { ...remote.tasksByList.get(listId)![0]!, title };
+	};
+
+	it("receiving only brings changes in and writes nothing to Microsoft", async () => {
+		const { store, remote, engine, work, list, task } = await linked();
+		store.updateTask(task.id, { title: "Mine" });
+		store.addList("Local list");
+		store.select(list.id);
+		store.addTask("Local task");
+		remote.addTask(work.id, { title: "New there" });
+		await engine.run(receiveOnly);
+		expect(titles(store, list.id)).toEqual(["Local task", "Mine", "New there"]);
+		edit(remote, work.id, "Theirs");
+		await engine.run(receiveOnly);
+		expect(titles(store, list.id)).toEqual(["Local task", "New there", "Theirs"]);
+		expect(writes(remote.calls)).toEqual([]);
+	});
+
+	it("receiving only keeps what was deleted here deleted, and deletes it later when sending", async () => {
+		const { store, remote, engine, list, task } = await linked();
+		store.deleteTask(task.id);
+		await engine.run(receiveOnly);
+		await engine.run(receiveOnly);
+		expect(store.get().tasks).toEqual([]);
+		store.deleteList(list.id);
+		remote.addTask("ms-default", { title: "Elsewhere" });
+		await engine.run(receiveOnly);
+		await engine.run(receiveOnly);
+		expect(store.get().lists).toEqual([]);
+		expect(titles(store, null)).toEqual(["Elsewhere"]);
+		expect(writes(remote.calls)).toEqual([]);
+		await engine.run();
+		expect(writes(remote.calls)).toEqual([expect.stringMatching(/^deleteList/)]);
+	});
+
+	it("sending only pushes changes and takes nothing in", async () => {
+		const { store, remote, engine, work, list, task } = await linked();
+		remote.addTask(work.id, { title: "New there" });
+		remote.addList("Their list");
+		remote.addTask("ms-default", { title: "Their default" });
+		edit(remote, work.id, "Theirs");
+		await engine.run(sendOnly);
+		expect(store.get().lists.map((entry) => entry.name)).toEqual(["Work"]);
+		expect(titles(store, list.id)).toEqual(["Report"]);
+		expect(titles(store, null)).toEqual([]);
+		store.updateTask(task.id, { title: "Mine" });
+		store.renameList(list.id, "Office");
+		await engine.run(sendOnly);
+		expect(remote.tasksByList.get(work.id)![0]!.title).toBe("Mine");
+		expect(remote.listsById.get(work.id)!.name).toBe("Office");
+		store.deleteTask(task.id);
+		await engine.run(sendOnly);
+		expect(remote.tasksByList.get(work.id)!.map((entry) => entry.title)).toEqual(["New there"]);
+	});
+
+	it("sending only ignores remote renames and deletions without sending the items back", async () => {
+		const { store, remote, engine, work, list } = await linked();
+		remote.listsById.set(work.id, { ...work, name: "Renamed there" });
+		await engine.run(sendOnly);
+		expect(store.get().lists[0]!.name).toBe("Work");
+		remote.tasksByList.set(work.id, []);
+		await engine.run(sendOnly);
+		await engine.run(sendOnly);
+		expect(titles(store, list.id)).toEqual(["Report"]);
+		remote.listsById.delete(work.id);
+		await engine.run(sendOnly);
+		await engine.run(sendOnly);
+		expect(store.get().lists).toHaveLength(1);
+		expect(writes(remote.calls)).toEqual([]);
+		await engine.run();
+		expect(store.get().lists).toEqual([]);
+	});
+
+	it("forgets tasks and lists that are gone from both sides", async () => {
+		const { store, remote, links, engine, work, list, task } = await linked();
+		store.deleteTask(task.id);
+		remote.tasksByList.set(work.id, []);
+		await engine.run(sendOnly);
+		expect(Object.keys((await links.load()).tasks)).toEqual([]);
+		store.deleteList(list.id);
+		remote.listsById.delete(work.id);
+		await engine.run(sendOnly);
+		expect(Object.keys((await links.load()).lists)).toEqual(["ms-default"]);
+	});
+});
+
+describe("MicrosoftSyncService preferences", () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+	});
+
+	async function connected() {
+		const setup = serviceSetup();
+		await setup.auth.signIn();
+		await setup.service.accept();
+		setup.remote.calls.length = 0;
+		return setup;
+	}
+
+	const runs = (calls: string[]) => calls.filter((call) => call === "lists").length;
+
+	it("syncs as often as chosen", async () => {
+		const { service, settings, remote } = await connected();
+		settings.changeMicrosoft({ intervalMinutes: 5 });
+		await vi.advanceTimersByTimeAsync(4 * 60_000);
+		expect(runs(remote.calls)).toBe(0);
+		await vi.advanceTimersByTimeAsync(60_000);
+		expect(runs(remote.calls)).toBe(1);
+		service.stop();
+		settings.changeMicrosoft({ intervalMinutes: 1 });
+		await vi.advanceTimersByTimeAsync(10 * 60_000);
+		expect(runs(remote.calls)).toBe(1);
+	});
+
+	it("syncs as soon as a direction changes and not at all with both off", async () => {
+		const { service, settings, remote } = await connected();
+		settings.changeMicrosoft({ send: false });
+		await vi.advanceTimersByTimeAsync(0);
+		expect(runs(remote.calls)).toBe(1);
+		settings.changeMicrosoft({ receive: false });
+		await vi.advanceTimersByTimeAsync(10 * 60_000);
+		expect(runs(remote.calls)).toBe(1);
+		service.stop();
+	});
+
+	it("turns both directions back on when connecting with neither", async () => {
+		const setup = serviceSetup();
+		await setup.auth.signIn();
+		setup.settings.changeMicrosoft({ receive: false, send: false });
+		await setup.service.accept();
+		expect(setup.settings.get().microsoft).toMatchObject({ receive: true, send: true });
+		setup.service.stop();
+	});
+
+	it("stays usable for a connected account whatever it signed in with", async () => {
+		const { service } = await connected();
+		expect(await service.eligibility()).toBe("eligible");
+		service.stop();
+	});
+});
 
 describe("MicrosoftSyncService", () => {
 	beforeEach(() => {
@@ -326,6 +500,7 @@ describe("MicrosoftSyncService", () => {
 			new LinkRepository(declined.dataStore),
 			declined.dataStore,
 			declined.connectivity,
+			new AppSettings(new MemoryKeyValueStore()),
 		);
 		await again.start();
 		expect(again.get()).toBe("idle");
@@ -351,6 +526,7 @@ describe("MicrosoftSyncService", () => {
 			new LinkRepository(first.dataStore),
 			first.dataStore,
 			first.connectivity,
+			new AppSettings(new MemoryKeyValueStore()),
 		);
 		await resumed.start();
 		expect(resumed.get()).toBe("connected");

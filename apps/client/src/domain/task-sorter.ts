@@ -10,8 +10,9 @@ export class TaskSorter {
 		viewOrder: TaskOrder,
 		today: string,
 		descending = false,
+		includeDueToday = true,
 	): TaskComparator {
-		const base = TaskSorter.ascending(sort, viewOrder, today);
+		const base = TaskSorter.ascending(sort, viewOrder, today, includeDueToday);
 		return sort !== null && descending ? (a, b) => base(b, a) : base;
 	}
 
@@ -19,6 +20,7 @@ export class TaskSorter {
 		sort: SortKey | null,
 		viewOrder: TaskOrder,
 		today: string,
+		includeDueToday: boolean,
 	): TaskComparator {
 		switch (sort) {
 			case "importance":
@@ -33,7 +35,8 @@ export class TaskSorter {
 				return (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id);
 			case "myDay":
 				return (a, b) =>
-					Number(b.isInMyDay(today)) - Number(a.isInMyDay(today)) || TaskSorter.newest(a, b);
+					Number(b.isInMyDay(today, includeDueToday)) -
+						Number(a.isInMyDay(today, includeDueToday)) || TaskSorter.newest(a, b);
 			default:
 				return viewOrder === "due" ? TaskSorter.byDue : TaskSorter.manual;
 		}

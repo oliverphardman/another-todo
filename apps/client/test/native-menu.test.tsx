@@ -177,6 +177,12 @@ describe("bridges", () => {
 });
 
 describe("native menu icons", () => {
+	it("puts the app menu entries after the system's Settings item", () => {
+		const source = readFileSync("macos/AnotherToDoMenu/AnotherToDoMenu.mm", "utf8");
+		expect(source).toContain('[item.keyEquivalent isEqualToString:@","]');
+		expect(source).toContain("[self indexAfterSettingsIn:application]");
+	});
+
 	it("hands the macOS menu each icon as a template image", () => {
 		const source = readFileSync("macos/AnotherToDoMenu/AnotherToDoMenu.mm", "utf8");
 		expect(source).toContain('[self illustrate:entry markup:item[@"icon"]];');

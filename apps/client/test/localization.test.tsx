@@ -360,8 +360,25 @@ describe("every user-visible string comes from the message catalog", () => {
 		fireEvent.click(byLabel("menu.close"));
 		fireEvent.click(byLabel("list.showLists"));
 		byLabel("sidebar.lists");
-		byLabel("signOut.button");
 		byText("view.important");
+		expect(unlocalized()).toEqual([]);
+		await act(async () => {
+			fireEvent.click(byLabel("settings.title"));
+		});
+		for (const key of [
+			"settings.appearance",
+			"settings.microsoft",
+			"settings.msSignIn",
+			"settings.server",
+			"settings.showLists",
+			"settings.yesterdayHint",
+		] as const) {
+			byText(key);
+		}
+		byLabel("settings.close");
+		byLabel("settings.preview");
+		byLabel("settings.msInterval");
+		byLabel("signOut.button");
 		expect(unlocalized()).toEqual([]);
 	});
 

@@ -13,6 +13,7 @@ import type { LocalDatabase, Snapshot } from "../storage/local-database";
 import { Outbox } from "../sync/outbox";
 import type { Operation } from "../sync/operation";
 import type { SyncTrigger } from "../sync/sync-coordinator";
+import type { AppSettings, AppSettingsState } from "./app-settings";
 import { Observable } from "./observable";
 
 const DEFAULT_VIEW_ID = "my-day";
@@ -38,6 +39,7 @@ export interface TodoState {
 export interface VisibleTasks {
 	readonly open: readonly Task[];
 	readonly done: readonly Task[];
+	readonly yesterday: readonly Task[];
 }
 
 export class TodoStore extends Observable<TodoState> {
@@ -47,46 +49,61 @@ export class TodoStore extends Observable<TodoState> {
 		private readonly clock: Clock,
 		private readonly trigger: SyncTrigger,
 		private readonly sounds: SoundPlayer,
+		private readonly preferences: AppSettings,
 	) {
 		super(
-			TodoStore.derive(database.get(), DEFAULT_VIEW_ID, [], null, DueDay.fromDate(clock.now())),
+			TodoStore.derive(
+				database.get(),
+				preferences.get(),
+				DEFAULT_VIEW_ID,
+				[],
+				null,
+				DueDay.fromDate(clock.now()),
+			),
 		);
 		database.subscribe(() => {
-			const {
-				selectedViewId,
-				selectedTaskIds,
-				anchorTaskId,
-				renamingViewId,
-				renamingGroupId,
-				searchQuery,
-			} = this.get();
-			this.set({
-				...TodoStore.derive(
-					database.get(),
-					selectedViewId,
-					selectedTaskIds,
-					anchorTaskId,
-					DueDay.fromDate(clock.now()),
-				),
-				renamingViewId,
-				renamingGroupId,
-				searchQuery,
-			});
+			this.refresh();
 			if (this.get().tasks.some((task) => task.completed && task.repeat !== null)) {
 				queueMicrotask(() => this.rollRepeats());
 			}
+		});
+		preferences.subscribe(() => this.refresh());
+	}
+
+	private refresh(): void {
+		const {
+			selectedViewId,
+			selectedTaskIds,
+			anchorTaskId,
+			renamingViewId,
+			renamingGroupId,
+			searchQuery,
+		} = this.get();
+		this.set({
+			...TodoStore.derive(
+				this.database.get(),
+				this.preferences.get(),
+				selectedViewId,
+				selectedTaskIds,
+				anchorTaskId,
+				DueDay.fromDate(this.clock.now()),
+			),
+			renamingViewId,
+			renamingGroupId,
+			searchQuery,
 		});
 	}
 
 	private static derive(
 		snapshot: Snapshot,
+		preferences: AppSettingsState,
 		selectedViewId: string,
 		selectedIds: readonly string[],
 		anchorId: string | null,
 		today: string,
 	): TodoState {
 		const lists = snapshot.lists.map((data) => new TodoList(data));
-		const views = ViewCatalog.build(lists);
+		const views = ViewCatalog.build(lists, preferences);
 		const tasks = snapshot.tasks.map((data) => new Task(data));
 		return {
 			lists,
@@ -148,6 +165,10 @@ export class TodoStore extends Observable<TodoState> {
 		return this.get().today;
 	}
 
+	isInMyDay(task: Task): boolean {
+		return task.isInMyDay(this.today, this.preferences.get().myDay.dueToday);
+	}
+
 	refreshToday(): void {
 		const today = DueDay.fromDate(this.clock.now());
 		if (today !== this.get().today) {
@@ -165,9 +186,17 @@ export class TodoStore extends Observable<TodoState> {
 			view.order,
 			today,
 			settings.sortDescending,
+			this.preferences.get().myDay.dueToday,
 		);
+		const yesterday = this.get()
+			.tasks.filter((task) => view.carriesOver(task, today))
+			.sort(compare);
+		if (!view.separatesCompleted) {
+			return { open: matching.sort(compare), yesterday, done: [] };
+		}
 		return {
 			open: matching.filter((task) => !task.completed).sort(compare),
+			yesterday,
 			done: settings.hideCompleted ? [] : matching.filter((task) => task.completed).sort(compare),
 		};
 	}
@@ -316,8 +345,8 @@ export class TodoStore extends Observable<TodoState> {
 	}
 
 	selectTaskRange(taskId: string): void {
-		const { open, done } = this.visibleTasks();
-		const order = [...open, ...done].map((task) => task.id);
+		const { open, yesterday, done } = this.visibleTasks();
+		const order = [...open, ...yesterday, ...done].map((task) => task.id);
 		const anchor = this.get().anchorTaskId ?? taskId;
 		const from = order.indexOf(anchor);
 		const to = order.indexOf(taskId);
@@ -350,9 +379,7 @@ export class TodoStore extends Observable<TodoState> {
 
 	setInMyDay(taskIds: readonly string[], inMyDay: boolean): void {
 		const today = this.today;
-		for (const task of this.targets(taskIds).filter(
-			(entry) => entry.isInMyDay(today) !== inMyDay,
-		)) {
+		for (const task of this.targets(taskIds).filter((entry) => this.isInMyDay(entry) !== inMyDay)) {
 			this.updateTask(
 				task.id,
 				inMyDay ? { myDay: today, myDayDismissed: null } : { myDay: null, myDayDismissed: today },
@@ -599,7 +626,7 @@ export class TodoStore extends Observable<TodoState> {
 		if (task !== undefined) {
 			this.updateTask(
 				taskId,
-				task.isInMyDay(this.today)
+				this.isInMyDay(task)
 					? { myDay: null, myDayDismissed: this.today }
 					: { myDay: this.today, myDayDismissed: null },
 			);

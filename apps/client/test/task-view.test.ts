@@ -75,6 +75,7 @@ describe("task views", () => {
 			"important",
 			"planned",
 			"all",
+			"completed",
 			"tasks",
 			"l",
 		]);

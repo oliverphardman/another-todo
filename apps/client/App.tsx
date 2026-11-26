@@ -12,6 +12,7 @@ import { createTokenStore } from "./src/storage/token-store";
 import { AboutSync } from "./src/ui/about-sync";
 import { ContainerProvider } from "./src/ui/container-context";
 import { KeyboardDismisser } from "./src/ui/keyboard-dismisser";
+import { NativeSettingsPlaceholder } from "./src/ui/native-settings-sync";
 import { AppShell } from "./src/ui/app-shell";
 import { ServerGate } from "./src/ui/server-gate";
 import { ThemeProvider } from "./src/ui/theme-context";
@@ -30,9 +31,11 @@ function Application({ config, session }: { config: AppConfig; session: ServerSe
 		[config, session],
 	);
 	useEffect(() => {
-		void Promise.all([container.database.load(), container.paneWidths.load()]).then(() =>
-			container.auth.restore(),
-		);
+		void Promise.all([
+			container.database.load(),
+			container.paneWidths.load(),
+			container.settings.load(),
+		]).then(() => container.auth.restore());
 		container.sync.start();
 		container.photos.start();
 		container.realtime.start();
@@ -68,6 +71,7 @@ export default function App() {
 				<StatusBar style="auto" />
 				<I18nProvider locale={locale}>
 					<AboutSync session={session} />
+					<NativeSettingsPlaceholder />
 					<KeyboardDismisser>
 						<ServerGate session={session}>
 							{(config) => <Application config={config} session={session} />}

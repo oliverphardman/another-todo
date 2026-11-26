@@ -87,9 +87,10 @@ export class Task {
 		return this.steps.filter((step) => step.completed).length;
 	}
 
-	isInMyDay(today: string): boolean {
+	isInMyDay(today: string, includeDueToday = true): boolean {
 		return (
-			this.data.myDay === today || (this.dueDay === today && this.data.myDayDismissed !== today)
+			this.data.myDay === today ||
+			(includeDueToday && this.dueDay === today && this.data.myDayDismissed !== today)
 		);
 	}
 

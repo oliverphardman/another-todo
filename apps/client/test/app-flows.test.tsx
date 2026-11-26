@@ -600,6 +600,7 @@ describe("expanded layout", () => {
 
 	it("signs out from the sidebar", async () => {
 		const app = await start();
+		fireEvent.click(screen.getByLabelText("Settings", { selector: "[role=button]" }));
 		await act(async () => {
 			fireEvent.click(screen.getByLabelText("Sign out"));
 		});
@@ -609,6 +610,9 @@ describe("expanded layout", () => {
 
 	it("hides sign out when authentication is disabled", async () => {
 		await start({ config: { authentication: "none" } });
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Settings", { selector: "[role=button]" }));
+		});
 		expect(screen.queryByLabelText("Sign out")).toBeNull();
 	});
 

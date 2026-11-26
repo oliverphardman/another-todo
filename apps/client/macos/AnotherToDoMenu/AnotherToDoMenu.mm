@@ -130,9 +130,6 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
         [entries removeItem:entry];
         [_appItems addObject:entry];
       }
-      if (_appItems.count > 0) {
-        [_appItems addObject:[NSMenuItem separatorItem]];
-      }
       continue;
     }
     NSString *title = menu[@"label"] ?: @"";
@@ -199,6 +196,14 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
   [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:[self creditAttributes]]];
 }
 
+- (NSInteger)indexAfterSettingsIn:(NSMenu *)application
+{
+  NSInteger settings = [application.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger index, BOOL *stop) {
+    return [item.keyEquivalent isEqualToString:@","];
+  }];
+  return settings == NSNotFound ? MIN(2, application.numberOfItems) : settings + 1;
+}
+
 - (void)installMenuBar
 {
   NSMenu *bar = NSApp.mainMenu;
@@ -214,10 +219,12 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
     }
   }
   if (application.numberOfItems > 0 && _appItems.firstObject.menu != application) {
-    NSInteger quit = application.numberOfItems - 1;
     for (NSMenuItem *item in _appItems) {
       [item.menu removeItem:item];
-      [application insertItem:item atIndex:quit++];
+    }
+    NSInteger position = [self indexAfterSettingsIn:application];
+    for (NSMenuItem *item in _appItems) {
+      [application insertItem:item atIndex:position++];
     }
   }
   for (NSMenuItem *item in _menuBarItems) {

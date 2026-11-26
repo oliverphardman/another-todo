@@ -13,7 +13,7 @@ export function buildTaskMenu(
 	const { t } = i18n;
 	const today = store.today;
 	const tasks = store.get().tasks.filter((task) => taskIds.includes(task.id));
-	const inMyDay = tasks.every((task) => task.isInMyDay(today));
+	const inMyDay = tasks.every((task) => store.isInMyDay(task));
 	const important = tasks.every((task) => task.important);
 	const completed = tasks.every((task) => task.completed);
 	const sharedDue = tasks.every((task) => task.dueDay === tasks[0]!.dueDay)

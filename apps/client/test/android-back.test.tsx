@@ -44,6 +44,17 @@ async function start(width: number) {
 }
 
 describe("Android back", () => {
+	it("closes settings before anything else", async () => {
+		await start(400);
+		fireEvent.click(screen.getByLabelText("Show lists"));
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Settings", { selector: "[role=button]" }));
+		});
+		expect(screen.getByRole("dialog")).toBeTruthy();
+		expect(back()).toBe(true);
+		expect(screen.queryByRole("dialog")).toBeNull();
+	});
+
 	it.each([400, 1280])(
 		"closes the selected task at width %i before leaving the app",
 		async (width) => {

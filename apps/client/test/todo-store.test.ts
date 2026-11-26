@@ -1,3 +1,4 @@
+import { AppSettings } from "../src/state/app-settings";
 import { describe, expect, it, vi } from "vitest";
 import { MemoryKeyValueStore } from "../src/storage/key-value-store";
 import { LocalDatabase } from "../src/storage/local-database";
@@ -9,7 +10,14 @@ async function setup() {
 	const trigger = { request: vi.fn() };
 	const clock = new FixedClock();
 	const sounds = new RecordingSoundPlayer();
-	const store = new TodoStore(database, new SequenceIds(), clock, trigger, sounds);
+	const store = new TodoStore(
+		database,
+		new SequenceIds(),
+		clock,
+		trigger,
+		sounds,
+		new AppSettings(new MemoryKeyValueStore()),
+	);
 	return { database, trigger, store, clock, sounds };
 }
 

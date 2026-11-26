@@ -182,6 +182,13 @@ describe("the menu bar", () => {
 		expect(logOut).not.toHaveBeenCalled();
 	});
 
+	it("leaves hiding completed tasks out of the Completed list's menu", async () => {
+		const app = await start();
+		act(() => app.container.store.select("completed"));
+		expect(bar.labels("List")).toContain("Print List");
+		expect(bar.labels("List")).not.toContain("Hide Completed Tasks");
+	});
+
 	it("clears the menus when the app goes away", async () => {
 		const app = await start();
 		app.unmount();

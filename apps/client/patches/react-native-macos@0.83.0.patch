@@ -108,6 +108,23 @@ index 6f332dc1701cada0aff0e9a2678fa7bdcea0ef85..5dfc6dda6d45c13b377805654db61e2a
  + (Class)cellClass
  {
    return RCTUISecureTextFieldCell.class;
+diff --git a/React/CoreModules/RCTDeviceInfo.mm b/React/CoreModules/RCTDeviceInfo.mm
+index 0bb5a4d978165951adce61301b9ca1c3ff11a63b..ecd34986ff829601628db82c848eabdea3fe874c 100644
+--- a/React/CoreModules/RCTDeviceInfo.mm
++++ b/React/CoreModules/RCTDeviceInfo.mm
+@@ -204,6 +204,12 @@ static BOOL RCTIsIPhoneNotched()
+   NSScreen *mainScreen = NSScreen.mainScreen;
+   CGSize screenSize = mainScreen.frame.size;
+   NSWindow *mainWindow = RCTKeyWindow();
++  for (NSWindow *candidate in NSApp.windows) {
++    if (candidate.isVisible && (candidate.styleMask & NSWindowStyleMaskResizable) != 0) {
++      mainWindow = candidate;
++      break;
++    }
++  }
+ #endif // macOS]
+ 
+   // We fallback to screen size if a key window is not found.
 diff --git a/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm b/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm
 index d22921730f6046550189017acd1c3b45d8b1cd64..4ec089cc0077c195f664baf4e4e08d0e0899a907 100644
 --- a/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm
