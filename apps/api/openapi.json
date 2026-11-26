@@ -2,7 +2,7 @@
 	"openapi": "3.0.3",
 	"info": {
 		"title": "Another To Do API",
-		"version": "1.4.0",
+		"version": "1.5.0",
 		"description": "REST and MCP API for Another To Do. All endpoints except discovery require a Cognito access token."
 	},
 	"security": [
@@ -1601,33 +1601,65 @@
 				"description": "Settings apps start with until someone changes them on their device",
 				"additionalProperties": false,
 				"properties": {
-					"rowStyle": { "type": "string", "enum": ["cozy", "compact"] },
-					"addTaskPosition": { "type": "string", "enum": ["top", "bottom"] },
+					"rowStyle": {
+						"type": "string",
+						"enum": [
+							"cozy",
+							"compact"
+						]
+					},
+					"addTaskPosition": {
+						"type": "string",
+						"enum": [
+							"top",
+							"bottom"
+						]
+					},
 					"microsoft": {
 						"type": "object",
 						"additionalProperties": false,
 						"properties": {
-							"receive": { "type": "boolean" },
-							"send": { "type": "boolean" },
-							"intervalMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+							"receive": {
+								"type": "boolean"
+							},
+							"send": {
+								"type": "boolean"
+							},
+							"intervalMinutes": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 1440
+							}
 						}
 					},
 					"lists": {
 						"type": "object",
 						"additionalProperties": false,
 						"properties": {
-							"all": { "type": "boolean" },
-							"important": { "type": "boolean" },
-							"planned": { "type": "boolean" },
-							"completed": { "type": "boolean" }
+							"all": {
+								"type": "boolean"
+							},
+							"important": {
+								"type": "boolean"
+							},
+							"planned": {
+								"type": "boolean"
+							},
+							"completed": {
+								"type": "boolean"
+							}
 						}
 					},
 					"myDay": {
 						"type": "object",
 						"additionalProperties": false,
 						"properties": {
-							"yesterday": { "type": "boolean" },
-							"dueToday": { "type": "boolean" }
+							"yesterday": {
+								"type": "boolean"
+							},
+							"dueToday": {
+								"type": "boolean"
+							}
 						}
 					}
 				}
