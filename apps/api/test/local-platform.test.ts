@@ -198,6 +198,7 @@ describe("enforced username", () => {
 			providers: [],
 			notice: "Shared demo",
 			realtimeUrl: null,
+			signIn: null,
 		});
 		const login = await fetch(`${app.base}/auth/login`, {
 			method: "POST",

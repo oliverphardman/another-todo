@@ -25,6 +25,7 @@ export function enforced(env: Env): Identity {
 		authenticator: new EnforcedAuthenticator(ENFORCED_USERNAME),
 		directory: new NoUserDirectory(),
 		issuer: null,
+		signIn: null,
 		router: null,
 	};
 }

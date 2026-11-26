@@ -650,7 +650,8 @@
 										"authentication",
 										"providers",
 										"notice",
-										"realtimeUrl"
+										"realtimeUrl",
+										"signIn"
 									],
 									"properties": {
 										"authentication": {
@@ -677,6 +678,20 @@
 										"realtimeUrl": {
 											"type": "string",
 											"nullable": true
+										},
+										"signIn": {
+											"type": "object",
+											"nullable": true,
+											"description": "Where an app signs in when authentication is external",
+											"required": ["url", "clientId"],
+											"properties": {
+												"url": {
+													"type": "string"
+												},
+												"clientId": {
+													"type": "string"
+												}
+											}
 										}
 									}
 								}

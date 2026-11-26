@@ -77,6 +77,7 @@ function password(env: Env): Identity {
 		authenticator: authenticatorFor(accounts),
 		directory: new LocalUserDirectory(users),
 		issuer: null,
+		signIn: null,
 		router,
 	};
 }

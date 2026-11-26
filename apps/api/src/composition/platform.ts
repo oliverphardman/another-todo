@@ -10,12 +10,18 @@ export type Env = Readonly<Record<string, string | undefined>>;
 
 export type AuthenticationMode = "none" | "password" | "external";
 
+export interface SignIn {
+	readonly url: string;
+	readonly clientId: string;
+}
+
 export interface Identity {
 	readonly mode: AuthenticationMode;
 	readonly providers: readonly string[];
 	readonly authenticator: Authenticator;
 	readonly directory: UserDirectory;
 	readonly issuer: string | null;
+	readonly signIn: SignIn | null;
 	readonly router: Router | null;
 }
 

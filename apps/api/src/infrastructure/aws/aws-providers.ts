@@ -27,10 +27,12 @@ export class AwsClients {
 }
 
 function cognito(env: Env): Identity {
-	const { COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID } = new Settings(env).require(
+	const settings = new Settings(env);
+	const { COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID } = settings.require(
 		"COGNITO_USER_POOL_ID",
 		"COGNITO_CLIENT_ID",
 	);
+	const authUrl = settings.optional("COGNITO_AUTH_URL");
 	const verifier = new CognitoTokenVerifier(COGNITO_USER_POOL_ID, COGNITO_CLIENT_ID);
 	return {
 		mode: "external",
@@ -38,6 +40,7 @@ function cognito(env: Env): Identity {
 		authenticator: new BearerAuthenticator(verifier),
 		directory: CognitoUserDirectory.forPool(COGNITO_USER_POOL_ID),
 		issuer: verifier.issuer,
+		signIn: authUrl === null ? null : { url: authUrl, clientId: COGNITO_CLIENT_ID },
 		router: null,
 	};
 }
