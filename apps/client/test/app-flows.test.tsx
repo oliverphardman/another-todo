@@ -158,7 +158,7 @@ describe("expanded layout", () => {
 		fireEvent.click(screen.getByLabelText("Planned"));
 		const rows = screen.getAllByLabelText(/^Open /);
 		expect(rows.map((row) => row.getAttribute("aria-label"))).toEqual(["Open Old", "Open Soon"]);
-		expect(screen.getByText(/Tasks · My Day · Tue, Nov 10/)).toBeTruthy();
+		expect(screen.getByLabelText("Open Old").textContent).toBe("OldTasks·My Day·Tue, Nov 10");
 		fireEvent.click(screen.getByLabelText("Open Old"));
 		expect(screen.getByLabelText("Due Tue, Nov 10")).toBeTruthy();
 	});
@@ -478,7 +478,7 @@ describe("expanded layout", () => {
 		fireEvent.keyDown(name, { key: "Enter" });
 		expect(screen.getByRole("heading", { name: "Groceries" })).toBeTruthy();
 		addTask("Eggs");
-		expect(screen.queryByText(/Groceries ·/)).toBeNull();
+		expect(screen.getByLabelText("Open Eggs").textContent).toBe("Eggs");
 		fireEvent.click(screen.getByLabelText("Rename list"));
 		const rename = screen.getByLabelText("List name");
 		fireEvent.change(rename, { target: { value: "Shopping" } });
@@ -551,7 +551,7 @@ describe("expanded layout", () => {
 		addTask("Counted");
 		expect(screen.getAllByLabelText("1 open")).toHaveLength(3);
 		fireEvent.click(screen.getByLabelText("All"));
-		expect(screen.getByText("Tasks · My Day")).toBeTruthy();
+		expect(screen.getByLabelText("Open Counted").textContent).toBe("CountedTasks·My Day");
 	});
 
 	it("adds tasks to My Day, and lets them be added or removed from the details", async () => {
@@ -600,6 +600,7 @@ describe("expanded layout", () => {
 
 	it("signs out from the sidebar", async () => {
 		const app = await start();
+		fireEvent.click(screen.getByLabelText("Settings", { selector: "[role=button]" }));
 		await act(async () => {
 			fireEvent.click(screen.getByLabelText("Sign out"));
 		});
@@ -609,6 +610,9 @@ describe("expanded layout", () => {
 
 	it("hides sign out when authentication is disabled", async () => {
 		await start({ config: { authentication: "none" } });
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Settings", { selector: "[role=button]" }));
+		});
 		expect(screen.queryByLabelText("Sign out")).toBeNull();
 	});
 

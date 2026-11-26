@@ -26,7 +26,7 @@ export function buildListOptions({
 		entries.push({
 			kind: "action",
 			key: "rename",
-			glyph: "edit",
+			glyph: "rename",
 			label: t("ctx.renameList"),
 			onPress: () => store.startRenaming(view.id),
 		});
@@ -67,16 +67,22 @@ export function buildListOptions({
 			onPress: () => store.duplicateList(view.id, t("list.copyOf", { name: view.title })),
 		});
 	}
-	entries.push(
-		{ kind: "action", key: "print", glyph: "print", label: t("menu.print"), onPress: print },
-		{
+	entries.push({
+		kind: "action",
+		key: "print",
+		glyph: "print",
+		label: t("menu.print"),
+		onPress: print,
+	});
+	if (view.separatesCompleted) {
+		entries.push({
 			kind: "action",
 			key: "hide-completed",
 			glyph: "check",
 			label: settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted"),
 			onPress: () => store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
-		},
-	);
+		});
+	}
 	if (view.isCustomList) {
 		entries.push({
 			kind: "action",

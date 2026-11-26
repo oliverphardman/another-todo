@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { DefaultSettingsData } from "../application/default-settings";
 import type { AuthenticationMode, SignIn } from "../composition/platform";
 
 export interface PublicConfig {
@@ -7,6 +8,8 @@ export interface PublicConfig {
 	readonly notice: string | null;
 	readonly realtimeUrl: string | null;
 	readonly signIn: SignIn | null;
+	readonly maxUploadBytes: number;
+	readonly defaultSettings: DefaultSettingsData;
 }
 
 export class ConfigController {

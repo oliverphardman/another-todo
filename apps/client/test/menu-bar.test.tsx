@@ -119,6 +119,7 @@ describe("the menu bar", () => {
 		);
 		expect(labels.filter((label) => label === "Rename List")).toHaveLength(1);
 		expect(labels.at(-1)).toBe("Delete List");
+		expect(bar.menu("List").some((item) => item.icon !== undefined)).toBe(false);
 		const id = app.container.store.get().lists[0]!.id;
 		await bar.choose("list/rename");
 		expect(app.container.store.get().renamingViewId).toBe(id);
@@ -179,6 +180,13 @@ describe("the menu bar", () => {
 		await bar.choose("app/log-out");
 		await vi.waitFor(() => expect(app.container.auth.get()).toBe("signedOut"));
 		expect(logOut).not.toHaveBeenCalled();
+	});
+
+	it("leaves hiding completed tasks out of the Completed list's menu", async () => {
+		const app = await start();
+		act(() => app.container.store.select("completed"));
+		expect(bar.labels("List")).toContain("Print List");
+		expect(bar.labels("List")).not.toContain("Hide Completed Tasks");
 	});
 
 	it("clears the menus when the app goes away", async () => {

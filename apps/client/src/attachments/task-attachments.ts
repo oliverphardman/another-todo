@@ -3,6 +3,7 @@ import type { LocalizedText } from "../i18n/i18n";
 import { Observable } from "../state/observable";
 import { AttachmentRules, type AttachmentData } from "./attachment";
 import type { AttachmentGateway, FilePicker } from "./attachment-gateway";
+import { UNADVERTISED_UPLOAD_BYTES } from "./upload-limit";
 
 export interface TaskAttachmentsState {
 	readonly taskId: string | null;
@@ -17,6 +18,7 @@ export class TaskAttachments extends Observable<TaskAttachmentsState> {
 	constructor(
 		private readonly gateway: AttachmentGateway,
 		private readonly picker: FilePicker,
+		private readonly maxBytes: number = UNADVERTISED_UPLOAD_BYTES,
 	) {
 		super(EMPTY);
 	}
@@ -55,9 +57,9 @@ export class TaskAttachments extends Observable<TaskAttachmentsState> {
 		this.set({ ...this.get(), busy: "uploading", error: null });
 		try {
 			const picked = await this.picker.pick();
-			const problem = picked === null ? null : AttachmentRules.problemWith(picked);
+			const problem = picked === null ? null : AttachmentRules.problemWith(picked, this.maxBytes);
 			if (picked === null || problem !== null) {
-				this.settle(taskId, this.get().items, problem === null ? null : { key: problem });
+				this.settle(taskId, this.get().items, problem);
 				return;
 			}
 			const created = await this.gateway.create(taskId, picked);

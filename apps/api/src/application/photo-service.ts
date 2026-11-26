@@ -24,25 +24,25 @@ export interface CreatedPhoto extends PhotoWithUrl {
 }
 
 export class PhotoService {
+	private readonly maxBytes: number;
+
 	constructor(
 		private readonly photos: PhotoRepository,
 		private readonly settings: ViewSettingsRepository,
 		private readonly storage: MediaStorage,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
-	) {}
+		maxUploadBytes: number = MAX_PHOTO_BYTES,
+	) {
+		this.maxBytes = Math.min(MAX_PHOTO_BYTES, maxUploadBytes);
+	}
 
 	async create(ownerId: string, input: PhotoInput): Promise<CreatedPhoto> {
-		const photo = Photo.create(
-			ownerId,
-			this.ids.next(),
-			PhotoService.details(input),
-			this.clock.now(),
-		);
+		const photo = Photo.create(ownerId, this.ids.next(), this.details(input), this.clock.now());
 		const upload = await this.storage.createUpload(
 			photo.storageKey,
 			photo.contentType,
-			MAX_PHOTO_BYTES,
+			this.maxBytes,
 		);
 		await this.photos.save(photo);
 		return { photo, url: await this.storage.downloadUrl(photo.storageKey), upload };
@@ -75,7 +75,7 @@ export class PhotoService {
 		await this.photos.delete(ownerId, id);
 	}
 
-	private static details(input: PhotoInput): {
+	private details(input: PhotoInput): {
 		name: string;
 		contentType: string;
 		size: number;
@@ -87,8 +87,8 @@ export class PhotoService {
 		if (!PHOTO_CONTENT_TYPES.includes(contentType as (typeof PHOTO_CONTENT_TYPES)[number])) {
 			throw new ValidationError(`contentType must be one of ${PHOTO_CONTENT_TYPES.join(", ")}`);
 		}
-		if (typeof size !== "number" || !Number.isInteger(size) || size < 1 || size > MAX_PHOTO_BYTES) {
-			throw new ValidationError(`size must be between 1 and ${MAX_PHOTO_BYTES} bytes`);
+		if (typeof size !== "number" || !Number.isInteger(size) || size < 1 || size > this.maxBytes) {
+			throw new ValidationError(`size must be between 1 and ${this.maxBytes} bytes`);
 		}
 		return { name: name.trim(), contentType: contentType as string, size };
 	}

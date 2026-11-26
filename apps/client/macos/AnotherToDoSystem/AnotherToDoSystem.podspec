@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name = "AnotherToDoSystem"
   s.version = "1.0.0"
-  s.summary = "Sounds and file choosing for Another To Do"
+  s.summary = "Sounds, file choosing and settings for Another To Do"
   s.homepage = "https://another-todo.oliverhardman.dev"
   s.license = "MIT"
   s.authors = { "Another To Do" => "https://another-todo.oliverhardman.dev" }

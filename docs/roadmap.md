@@ -45,7 +45,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Removed the "No tasks here yet" text
 - [x] Search bar in the left sidebar above My Day
 - [x] The due date menu uses the platform's date input (a date field on the web, the system picker on native)
-- [x] Add file attaches files of up to 25 MB to a task; they can be opened and removed from the details pane
+- [x] Add file attaches files to a task (10 MB by default, set by the server); they can be opened and removed from the details pane
 - [x] Each step has a menu: Mark as completed, Promote to task, Delete step
 
 - [x] Completed tasks move while the circle fills, and the right pane slides in and out
@@ -61,6 +61,15 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] The demo is an ordinary deployment (enforced server URL and user, plus a notice)
 - [ ] Publish the container image to a registry
 - [ ] A generic OpenID Connect auth provider
+
+## 7. Settings
+
+- [x] A settings window, opened from the menu bar on macOS and from a gear elsewhere, with logging out at the bottom
+- [x] Cozy or compact rows with a live preview, and the add task bar at the top or bottom
+- [x] Choose whether to receive from and send to Microsoft To Do, and how often
+- [x] Show or hide the All, Important, Planned and Completed lists
+- [x] My Day can show yesterday's unfinished tasks and can leave out tasks that are only due today
+- [ ] Sync settings between devices
 
 ## Dependencies
 

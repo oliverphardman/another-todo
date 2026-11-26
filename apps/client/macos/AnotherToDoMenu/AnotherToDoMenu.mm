@@ -52,6 +52,16 @@ RCT_EXPORT_MODULE()
   return dispatch_get_main_queue();
 }
 
+- (void)illustrate:(NSMenuItem *)entry markup:(NSString *)markup
+{
+  NSImage *icon = [[NSImage alloc] initWithData:[markup dataUsingEncoding:NSUTF8StringEncoding]];
+  [icon setTemplate:YES];
+  entry.image = icon;
+  if ([entry respondsToSelector:NSSelectorFromString(@"setPreferredImageVisibility:")]) {
+    [entry setValue:@1 forKey:@"preferredImageVisibility"];
+  }
+}
+
 - (NSMenu *)buildMenu:(NSArray *)items target:(ATDMenuTarget *)target
 {
   NSMenu *menu = [[NSMenu alloc] init];
@@ -65,6 +75,9 @@ RCT_EXPORT_MODULE()
     NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @"" action:nil keyEquivalent:@""];
     entry.enabled = ![item[@"disabled"] boolValue];
     entry.state = [item[@"checked"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
+    if (item[@"icon"] != nil) {
+      [self illustrate:entry markup:item[@"icon"]];
+    }
     if ([kind isEqualToString:@"submenu"] && item[@"children"] != nil) {
       entry.submenu = [self buildMenu:item[@"children"] target:target];
     } else {
@@ -116,9 +129,6 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
       for (NSMenuItem *entry in entries.itemArray.copy) {
         [entries removeItem:entry];
         [_appItems addObject:entry];
-      }
-      if (_appItems.count > 0) {
-        [_appItems addObject:[NSMenuItem separatorItem]];
       }
       continue;
     }
@@ -186,6 +196,14 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
   [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:[self creditAttributes]]];
 }
 
+- (NSInteger)indexAfterSettingsIn:(NSMenu *)application
+{
+  NSInteger settings = [application.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger index, BOOL *stop) {
+    return [item.keyEquivalent isEqualToString:@","];
+  }];
+  return settings == NSNotFound ? MIN(2, application.numberOfItems) : settings + 1;
+}
+
 - (void)installMenuBar
 {
   NSMenu *bar = NSApp.mainMenu;
@@ -201,10 +219,12 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
     }
   }
   if (application.numberOfItems > 0 && _appItems.firstObject.menu != application) {
-    NSInteger quit = application.numberOfItems - 1;
     for (NSMenuItem *item in _appItems) {
       [item.menu removeItem:item];
-      [application insertItem:item atIndex:quit++];
+    }
+    NSInteger position = [self indexAfterSettingsIn:application];
+    for (NSMenuItem *item in _appItems) {
+      [application insertItem:item atIndex:position++];
     }
   }
   for (NSMenuItem *item in _menuBarItems) {

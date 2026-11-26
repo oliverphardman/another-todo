@@ -1,7 +1,7 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { createElement } from "react";
 import { Platform } from "react-native";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useIsDark, useTheme } from "./theme-context";
 
 export interface NativeTimeInputProps {
@@ -26,7 +26,7 @@ export function NativeTimeInput({ label, value, onChange }: NativeTimeInputProps
 				}
 			},
 			style: {
-				fontFamily: FONT_FAMILY,
+				...fontStyle(),
 				fontSize: 14,
 				color: palette.text,
 				backgroundColor: "transparent",

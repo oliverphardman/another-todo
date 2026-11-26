@@ -88,13 +88,14 @@ describe("SidebarColors", () => {
 
 describe("sidebarMetrics", () => {
 	it.each([
-		["macos", null],
-		["windows", "signOut"],
-		["web", "signOut"],
-		["ios", "logOut"],
-		["android", "logOut"],
-	])("gives the header of the %s sidebar the %s action", (platform, action) => {
-		expect(sidebarMetrics(platform).headerAction).toBe(action);
+		["macos", null, "logOut"],
+		["windows", "settings", "signOut"],
+		["web", "settings", "signOut"],
+		["ios", "settings", "logOut"],
+		["android", "settings", "logOut"],
+	])("gives the %s app its header button and account action", (platform, header, account) => {
+		expect(sidebarMetrics(platform).headerAction).toBe(header);
+		expect(sidebarMetrics(platform).accountAction).toBe(account);
 	});
 
 	it("is denser for pointer platforms than for touch", () => {
@@ -103,5 +104,18 @@ describe("sidebarMetrics", () => {
 		expect(sidebarMetrics("android").rowHeight).toBe(44);
 		expect(sidebarMetrics()).toBe(sidebarMetrics("web"));
 		expect(sidebarMetrics("ios").rowHeight).toBe(44);
+	});
+});
+
+describe("sidebar edge", () => {
+	it.each([
+		["dark", "rgb(56, 56, 56)"],
+		["light", "rgba(0, 0, 0, 0)"],
+	] as const)("is a one point line in %s mode", async (scheme, color) => {
+		const app = await renderApp({ scheme });
+		stop = app.stop;
+		const sidebar = screen.getByLabelText("Lists");
+		expect(sidebar.style.borderRightWidth).toBe("1px");
+		expect(sidebar.style.borderRightColor).toBe(color);
 	});
 });

@@ -4,9 +4,10 @@ import type { MessageKey } from "./en-us";
 import { CATALOGS, DEFAULT_LOCALE } from "./locales";
 import { PluralRule } from "./plural-rule";
 
-export type LocalizedText = { readonly key: MessageKey } | { readonly message: string };
-
 export type MessageParams = Readonly<Record<string, string | number>>;
+
+export type LocalizedText =
+	{ readonly key: MessageKey; readonly params?: MessageParams } | { readonly message: string };
 
 type PluralBase = {
 	[K in MessageKey]: K extends `${infer Base}_one` ? Base : never;
@@ -23,6 +24,7 @@ export class I18n {
 	private readonly shortDayWithYear: Intl.DateTimeFormat;
 	private readonly longDayFormat: Intl.DateTimeFormat;
 	private readonly reminderFormat: Intl.DateTimeFormat;
+	private readonly exactFormat: Intl.DateTimeFormat;
 	private readonly monthFormat: Intl.DateTimeFormat;
 	private readonly weekdayFormat: Intl.DateTimeFormat;
 	private readonly shortWeekdayFormat: Intl.DateTimeFormat;
@@ -44,6 +46,15 @@ export class I18n {
 			day: "numeric",
 			hour: "numeric",
 			minute: "2-digit",
+		});
+		this.exactFormat = new Intl.DateTimeFormat(locale, {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			hour: "numeric",
+			minute: "2-digit",
+			second: "2-digit",
 		});
 		this.monthFormat = new Intl.DateTimeFormat(locale, {
 			month: "long",
@@ -83,7 +94,7 @@ export class I18n {
 	}
 
 	text(value: LocalizedText): string {
-		return "key" in value ? this.t(value.key) : value.message;
+		return "key" in value ? this.t(value.key, value.params) : value.message;
 	}
 
 	dueLabel(day: string, today: string): string {
@@ -114,6 +125,10 @@ export class I18n {
 			bytes / (1024 * 1024),
 		);
 		return this.t("attachment.megabytes", { size });
+	}
+
+	exactTime(iso: string): string {
+		return this.exactFormat.format(new Date(iso));
 	}
 
 	reminderLabel(iso: string): string {

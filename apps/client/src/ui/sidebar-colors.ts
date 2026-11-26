@@ -6,6 +6,7 @@ const ICON_COLORS: Readonly<Record<string, string>> = {
 	important: "#d06c8c",
 	planned: "#7fc4bd",
 	all: "#d9a987",
+	completed: "#c9786a",
 	tasks: "#6f7fe0",
 };
 

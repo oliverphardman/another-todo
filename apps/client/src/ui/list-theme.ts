@@ -27,13 +27,17 @@ export class ListTheme {
 			: ColorMath.ensureContrast(color, "#ffffff", MINIMUM_CONTRAST, "#000000");
 		const accentSoft = ColorMath.mix(accent, dark ? "#000000" : "#ffffff", dark ? 0.65 : 0.85);
 		if (setting?.type === "photo" && photoUrl !== null) {
-			return { overrides: { accent, accentSoft, onAccent: "#ffffff" }, imageUrl: photoUrl };
+			return {
+				overrides: { accent, accentSoft, onAccent: "#ffffff", title: "#ffffff" },
+				imageUrl: photoUrl,
+			};
 		}
 		if (dark) {
-			return { overrides: { accent, accentSoft }, imageUrl: null };
+			return { overrides: { accent, accentSoft, title: accent }, imageUrl: null };
 		}
+		const onAccent = ColorMath.readableOn(color);
 		return {
-			overrides: { background: color, onAccent: ColorMath.readableOn(color), accent, accentSoft },
+			overrides: { background: color, onAccent, title: onAccent, accent, accentSoft },
 			imageUrl: null,
 		};
 	}

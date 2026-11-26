@@ -7,6 +7,8 @@ describe("readConfig", () => {
 			publicUrl: "https://api.example.com",
 			corsOrigins: [],
 			notice: null,
+			maxUploadBytes: 10 * 1024 * 1024,
+			defaultSettings: {},
 		});
 	});
 
@@ -21,6 +23,18 @@ describe("readConfig", () => {
 			corsOrigins: ["https://a.example.com", "https://b.example.com"],
 			notice: "Shared demo",
 		});
+	});
+
+	it("takes the upload limit in megabytes", () => {
+		expect(readConfig({ MAX_UPLOAD_MB: " 64 " }, "http://localhost:3000").maxUploadBytes).toBe(
+			64 * 1024 * 1024,
+		);
+	});
+
+	it.each(["0", "1025", "2.5", "ten"])("rejects an upload limit of %s", (value) => {
+		expect(() => readConfig({ MAX_UPLOAD_MB: value }, "http://localhost:3000")).toThrow(
+			"MAX_UPLOAD_MB must be a whole number from 1 to 1024",
+		);
 	});
 
 	it("falls back to the given URL and rejects a missing one", () => {

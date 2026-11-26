@@ -10,6 +10,7 @@ export class S3MediaStorage implements MediaStorage {
 	constructor(
 		private readonly client: S3Client,
 		private readonly bucket: string,
+		private readonly origin: string | null = null,
 	) {}
 
 	async createUpload(key: string, contentType: string, maxBytes: number): Promise<MediaUpload> {
@@ -23,11 +24,11 @@ export class S3MediaStorage implements MediaStorage {
 			Fields: { "Content-Type": contentType },
 			Expires: UPLOAD_SECONDS,
 		});
-		return { url, fields };
+		return { url: this.published(url), fields };
 	}
 
-	downloadUrl(key: string): Promise<string> {
-		return getSignedUrl(
+	async downloadUrl(key: string): Promise<string> {
+		const signed = await getSignedUrl(
 			this.client,
 			new GetObjectCommand({
 				Bucket: this.bucket,
@@ -38,9 +39,18 @@ export class S3MediaStorage implements MediaStorage {
 				expiresIn: DOWNLOAD_SECONDS,
 			},
 		);
+		return this.published(signed);
 	}
 
 	async remove(key: string): Promise<void> {
 		await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+	}
+
+	private published(address: string): string {
+		if (this.origin === null) {
+			return address;
+		}
+		const { pathname, search } = new URL(address);
+		return `${this.origin}${pathname}${search}`;
 	}
 }

@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { CheckedCircle, Icon, type IconGlyph } from "../src/ui/icon";
+import { IconArtwork } from "../src/ui/icon-artwork";
 
 const GLYPHS: IconGlyph[] = [
 	"check",
@@ -9,7 +10,11 @@ const GLYPHS: IconGlyph[] = [
 	"starFilled",
 	"sun",
 	"move",
-	"edit",
+	"rename",
+	"settings",
+	"tick",
+	"note",
+	"addPerson",
 	"sync",
 	"people",
 	"group",
@@ -68,5 +73,25 @@ describe("Icon", () => {
 		expect(
 			render(<Icon glyph="plus" size={32} color="#000" />).container.querySelector("svg"),
 		).toBeTruthy();
+	});
+});
+
+describe("IconArtwork", () => {
+	const parse = (markup: string) =>
+		new DOMParser().parseFromString(markup, "image/svg+xml").documentElement;
+
+	it("draws the same outline as the on screen icon for native menus", () => {
+		const svg = parse(IconArtwork.svg("trash"));
+		const path = svg.querySelector("path")!;
+		expect(svg.getAttribute("width")).toBe("16");
+		expect(path.getAttribute("d")).toBe(IconArtwork.path("trash").d);
+		expect(path.getAttribute("fill")).toBe("none");
+		expect(path.getAttribute("stroke")).toBe("#000");
+	});
+
+	it("fills the solid glyphs", () => {
+		expect(parse(IconArtwork.svg("starFilled")).querySelector("path")!.getAttribute("fill")).toBe(
+			"#000",
+		);
 	});
 });

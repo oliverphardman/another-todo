@@ -18,6 +18,7 @@ export interface TaskData {
 	readonly dueDate: string | null;
 	readonly remindAt?: string | null;
 	readonly repeat?: RepeatRule | null;
+	readonly hasAttachments?: boolean;
 	readonly createdAt: string;
 }
 
@@ -83,13 +84,18 @@ export class Task {
 		return this.data.note ?? "";
 	}
 
+	get hasAttachments(): boolean {
+		return this.data.hasAttachments ?? false;
+	}
+
 	get stepsCompleted(): number {
 		return this.steps.filter((step) => step.completed).length;
 	}
 
-	isInMyDay(today: string): boolean {
+	isInMyDay(today: string, includeDueToday = true): boolean {
 		return (
-			this.data.myDay === today || (this.dueDay === today && this.data.myDayDismissed !== today)
+			this.data.myDay === today ||
+			(includeDueToday && this.dueDay === today && this.data.myDayDismissed !== today)
 		);
 	}
 
@@ -115,6 +121,7 @@ export class Task {
 			myDay: null,
 			myDayDismissed: null,
 			position: null,
+			hasAttachments: false,
 			steps: this.steps.map((step) => ({ ...step, completed: false })),
 			dueDate: DueDay.toIso(next),
 			remindAt: this.reminderMovedBy(DueDay.daysBetween(due, next)),

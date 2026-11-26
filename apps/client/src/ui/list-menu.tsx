@@ -72,7 +72,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 				<MenuPanel label={t("list.options")} placement={main}>
 					{view.canEditList ? (
 						<MenuItem
-							glyph="edit"
+							glyph="rename"
 							label={t("ctx.renameList")}
 							onPress={finish(() => store.startRenaming(view.id))}
 						/>
@@ -94,13 +94,15 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 						/>
 					) : null}
 					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
-					<MenuItem
-						glyph="check"
-						label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
-						onPress={finish(() =>
-							store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
-						)}
-					/>
+					{view.separatesCompleted ? (
+						<MenuItem
+							glyph="check"
+							label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
+							onPress={finish(() =>
+								store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
+							)}
+						/>
+					) : null}
 					{view.isCustomList ? (
 						<>
 							<MenuDivider />

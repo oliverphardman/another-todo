@@ -1,11 +1,11 @@
 import { Text, type TextProps, type TextStyle } from "react-native";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export interface AppTextProps extends TextProps {
 	readonly size?: number;
 	readonly weight?: TextStyle["fontWeight"];
-	readonly tone?: "primary" | "secondary" | "onAccent" | "danger";
+	readonly tone?: "primary" | "secondary" | "onAccent" | "title" | "danger";
 }
 
 export function AppText({
@@ -20,6 +20,7 @@ export function AppText({
 		primary: palette.text,
 		secondary: palette.textSecondary,
 		onAccent: palette.onAccent,
+		title: palette.title,
 		danger: palette.danger,
 	};
 	return (
@@ -27,9 +28,8 @@ export function AppText({
 			{...rest}
 			style={[
 				{
-					fontFamily: FONT_FAMILY,
+					...fontStyle(weight),
 					fontSize: size,
-					fontWeight: weight,
 					color: colors[tone],
 				},
 				style,

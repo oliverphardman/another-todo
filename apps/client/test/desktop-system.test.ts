@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { Image, NativeModules } from "react-native";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { DesktopFilePicker } from "../src/attachments/desktop-file-picker";
@@ -16,6 +17,12 @@ afterEach(() => {
 });
 
 describe("desktop completion sound", () => {
+	it("keeps loading and playing it off the main thread so the list animation does not stall", () => {
+		const module = readFileSync("macos/AnotherToDoSystem/AnotherToDoSound.mm", "utf8");
+		expect(module).toContain('dispatch_queue_create("dev.oliverhardman.anothertodo.sound"');
+		expect(module).not.toContain("dispatch_get_main_queue");
+	});
+
 	it("plays the bundled sound through the native module", () => {
 		const play = vi.fn();
 		modules.AnotherToDoSound = { play };
