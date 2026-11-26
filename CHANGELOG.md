@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.4.0](https://github.com/oliverphardman/another-todo/compare/v1.3.2...v1.4.0) (2026-11-26)
+
+
+### Features
+
+* **client:** give the sign-in screen the server screen's layout ([f4abf90](https://github.com/oliverphardman/another-todo/commit/f4abf9037b6626fbab714f40645c3cbcef866b21))
+* **client:** hold a list in the mobile sidebar to reorder it ([aa229cb](https://github.com/oliverphardman/another-todo/commit/aa229cb52d909f64e6b6bf71a9a4b453537f5e5e))
+* **client:** log out from the mobile sidebar back to the server address ([7c53315](https://github.com/oliverphardman/another-todo/commit/7c53315324cdc57f1a07b286f93a7a1052f4da34))
+* **client:** offer Microsoft To Do sync in the desktop apps ([5d8d7f1](https://github.com/oliverphardman/another-todo/commit/5d8d7f1d82ceafd506d3f172b1e896de964ff26f))
+* **client:** redesign the sidebar around the signed-in account ([7444b16](https://github.com/oliverphardman/another-todo/commit/7444b16444e4cdacf6ed9027915d3beee6a797d7))
+* **client:** use the system menus for context and list menus on mobile ([c068c03](https://github.com/oliverphardman/another-todo/commit/c068c0347350c892cbda06b5ac8b0cbb46cc31e1))
+
+
+### Fixes
+
+* **client:** close the open task on Android back instead of leaving the app ([483e1d5](https://github.com/oliverphardman/another-todo/commit/483e1d5f49893027e75df60a0eccc4a57797bad3))
+* **client:** dismiss the mobile keyboard when someone taps outside a field ([7ab497f](https://github.com/oliverphardman/another-todo/commit/7ab497fcdac0f18d64d6d8995e01a23315e7aeca))
+* **client:** keep the Add file label while a file uploads ([f1aeca2](https://github.com/oliverphardman/another-todo/commit/f1aeca28d4c622af367affcbc925cae7d84a5a92))
+* **client:** keep the task details footer behind the mobile keyboard ([9547659](https://github.com/oliverphardman/another-todo/commit/95476591df20f65a3c7a488a0ce7dd1ef994f123))
+* **client:** repair the macOS title bar and make text fields behave natively ([6af8ddc](https://github.com/oliverphardman/another-todo/commit/6af8ddcb07121bd49ac0bc03f033e5b3853fa428))
+* **client:** stop sorting a list from crashing the mobile apps ([023c4fd](https://github.com/oliverphardman/another-todo/commit/023c4fd2b34b75ca5d8c52daff6489cedcb1a23a))
+* **client:** stop text fields taking focus by themselves on mobile ([3341159](https://github.com/oliverphardman/another-todo/commit/334115970853b82a4b9edf5825b2f8758bc67eef))
+
 ## [1.3.2](https://github.com/oliverphardman/another-todo/compare/v1.3.1...v1.3.2) (2026-11-26)
 
 
