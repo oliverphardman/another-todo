@@ -26,7 +26,7 @@ export function buildListOptions({
 		entries.push({
 			kind: "action",
 			key: "rename",
-			glyph: "edit",
+			glyph: "rename",
 			label: t("ctx.renameList"),
 			onPress: () => store.startRenaming(view.id),
 		});

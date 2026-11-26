@@ -72,7 +72,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 				<MenuPanel label={t("list.options")} placement={main}>
 					{view.canEditList ? (
 						<MenuItem
-							glyph="edit"
+							glyph="rename"
 							label={t("ctx.renameList")}
 							onPress={finish(() => store.startRenaming(view.id))}
 						/>

@@ -18,18 +18,21 @@ function usesTouchKeyboard(): boolean {
 	return Platform.OS === "ios" || Platform.OS === "android";
 }
 
+function keepsFieldsFocused(): boolean {
+	return Platform.OS !== "web";
+}
+
 export function KeyboardDismisser({ children }: { children: ReactNode }) {
 	const start = useRef<TouchStart | null>(null);
 	const pending = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 	useEffect(() => {
-		if (!usesTouchKeyboard()) {
-			return;
-		}
-		const subscription = Keyboard.addListener("keyboardDidHide", () =>
-			TextInput.State.currentlyFocusedInput()?.blur(),
-		);
+		const subscription = usesTouchKeyboard()
+			? Keyboard.addListener("keyboardDidHide", () =>
+					TextInput.State.currentlyFocusedInput()?.blur(),
+				)
+			: null;
 		return () => {
-			subscription.remove();
+			subscription?.remove();
 			clearTimeout(pending.current);
 		};
 	}, []);
@@ -63,7 +66,7 @@ export function KeyboardDismisser({ children }: { children: ReactNode }) {
 	return (
 		<View
 			style={{ flex: 1 }}
-			{...(usesTouchKeyboard() ? { onTouchStart: began, onTouchEnd: ended } : {})}
+			{...(keepsFieldsFocused() ? { onTouchStart: began, onTouchEnd: ended } : {})}
 		>
 			{children}
 		</View>

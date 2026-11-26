@@ -125,6 +125,16 @@ describe("tapping outside a text field", () => {
 		expect(dismiss).not.toHaveBeenCalled();
 	});
 
+	it.each(["macos", "windows"] as const)(
+		"leaves the field on %s, where clicking elsewhere would otherwise keep it focused",
+		(platform) => {
+			const { dismiss, content } = setup(platform as typeof Platform.OS);
+			expect(hidden).toHaveLength(0);
+			tap(content);
+			expect(dismiss).toHaveBeenCalledTimes(1);
+		},
+	);
+
 	it("leaves browsers to handle it", () => {
 		const { dismiss, content } = setup("web");
 		tap(content);

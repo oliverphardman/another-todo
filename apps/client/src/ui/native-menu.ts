@@ -1,4 +1,5 @@
 import type { ContextMenuEntry } from "./context-menu";
+import { IconArtwork } from "./icon-artwork";
 import { nativeMenuBridge } from "./native-menu-bridge";
 
 export interface NativeMenuItem {
@@ -8,6 +9,7 @@ export interface NativeMenuItem {
 	readonly disabled?: boolean;
 	readonly destructive?: boolean;
 	readonly checked?: boolean;
+	readonly icon?: string;
 	readonly children?: readonly NativeMenuItem[];
 }
 
@@ -26,8 +28,12 @@ export interface NativeMenuBridge {
 export class NativeMenu {
 	static bridge: NativeMenuBridge = nativeMenuBridge;
 
-	static items(entries: readonly ContextMenuEntry[]): NativeMenuItem[] {
+	static items(
+		entries: readonly ContextMenuEntry[],
+		{ icons = false }: { readonly icons?: boolean } = {},
+	): NativeMenuItem[] {
 		return entries.flatMap((entry): NativeMenuItem[] => {
+			const artwork = icons ? { icon: IconArtwork.svg(entry.glyph) } : {};
 			const separator: NativeMenuItem[] =
 				entry.separatorBefore === true
 					? [{ key: `${entry.key}-separator`, label: "", kind: "separator" }]
@@ -39,12 +45,13 @@ export class NativeMenu {
 						key: entry.key,
 						label: entry.label,
 						kind: "submenu",
-						children: NativeMenu.items(entry.entries),
+						children: NativeMenu.items(entry.entries, { icons }),
+						...artwork,
 					},
 				];
 			}
 			if (entry.kind === "panel") {
-				return [...separator, { key: entry.key, label: entry.label, kind: "action" }];
+				return [...separator, { key: entry.key, label: entry.label, kind: "action", ...artwork }];
 			}
 			return [
 				...separator,
@@ -55,6 +62,7 @@ export class NativeMenu {
 					disabled: entry.disabled === true,
 					destructive: entry.danger === true,
 					checked: entry.checked === true,
+					...artwork,
 				},
 			];
 		});

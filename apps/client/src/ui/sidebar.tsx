@@ -184,7 +184,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		{
 			kind: "action",
 			key: "rename-group",
-			glyph: "edit",
+			glyph: "rename",
 			label: t("ctx.renameGroup"),
 			onPress: () => store.startRenamingGroup(groupId),
 		},
