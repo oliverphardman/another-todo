@@ -4,7 +4,12 @@ import { DesktopMenuBridge } from "../src/ui/desktop-menu-bridge";
 import { nativeMenuBridge as macBridge } from "../src/ui/native-menu-bridge.macos";
 import { nativeMenuBridge as windowsBridge } from "../src/ui/native-menu-bridge.windows";
 import { nativeMenuBridge as defaultBridge } from "../src/ui/native-menu-bridge";
-import { NativeMenu, type NativeMenuBridge, type NativeMenuItem } from "../src/ui/native-menu";
+import {
+	NativeMenu,
+	type NativeMenuBridge,
+	type NativeMenuItem,
+	type NativeMenuRequest,
+} from "../src/ui/native-menu";
 import type { ContextMenuEntry } from "../src/ui/context-menu";
 import { renderApp } from "./support/render-app";
 
@@ -18,7 +23,10 @@ class FakeBridge implements NativeMenuBridge {
 		return true;
 	}
 
-	async show(items: readonly NativeMenuItem[], x: number, y: number): Promise<string | null> {
+	cancelLabels: string[] = [];
+
+	async show({ items, x, y, cancelLabel }: NativeMenuRequest): Promise<string | null> {
+		this.cancelLabels.push(cancelLabel);
 		this.shown.push([...items]);
 		this.positions.push({ x, y });
 		if (this.failure !== null) {
@@ -133,7 +141,7 @@ describe("NativeMenu items", () => {
 describe("bridges", () => {
 	it("are unavailable by default and on platforms without the native module", async () => {
 		expect(defaultBridge.isAvailable()).toBe(false);
-		expect(await defaultBridge.show([], 0, 0)).toBeNull();
+		expect(await defaultBridge.show({ items: [], x: 0, y: 0, cancelLabel: "" })).toBeNull();
 		expect(macBridge.isAvailable()).toBe(false);
 		expect(windowsBridge.isAvailable()).toBe(false);
 	});
@@ -147,7 +155,8 @@ describe("bridges", () => {
 			},
 		});
 		expect(bridge.isAvailable()).toBe(true);
-		expect(await bridge.show([{ key: "a", label: "A", kind: "action" }], 3, 4)).toBe("picked");
+		const items: NativeMenuItem[] = [{ key: "a", label: "A", kind: "action" }];
+		expect(await bridge.show({ items, x: 3, y: 4, cancelLabel: "Cancel" })).toBe("picked");
 		expect(calls).toEqual([[[{ key: "a", label: "A", kind: "action" }], 3, 4]]);
 		expect(new DesktopMenuBridge(null).isAvailable()).toBe(false);
 	});
@@ -171,6 +180,7 @@ describe("native context menus", () => {
 		fireEvent.contextMenu(screen.getByLabelText("Open Solo"), { clientX: 120, clientY: 80 });
 		await waitFor(() => expect(store.get().tasks[0]!.important).toBe(true));
 		expect(fake().positions[0]).toEqual({ x: 120, y: 80 });
+		expect(fake().cancelLabels[0]).toBe("Cancel");
 		expect(screen.queryByRole("menu")).toBeNull();
 		const labels = flat(fake().shown[0]!).map((item) => item.label);
 		expect(labels).toContain("Move Task to…");

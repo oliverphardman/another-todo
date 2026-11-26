@@ -1,4 +1,4 @@
-import type { NativeMenuBridge, NativeMenuItem } from "./native-menu";
+import type { NativeMenuBridge, NativeMenuItem, NativeMenuRequest } from "./native-menu";
 
 export interface DesktopMenuModule {
 	show(items: readonly NativeMenuItem[], x: number, y: number): Promise<string | null>;
@@ -11,7 +11,7 @@ export class DesktopMenuBridge implements NativeMenuBridge {
 		return this.module !== null && this.module !== undefined;
 	}
 
-	show(items: readonly NativeMenuItem[], x: number, y: number): Promise<string | null> {
+	show({ items, x, y }: NativeMenuRequest): Promise<string | null> {
 		return this.module!.show(items, x, y);
 	}
 }
