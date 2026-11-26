@@ -124,6 +124,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			),
 		overrides.photoPicker ?? new ExpoPhotoPicker(),
 		auth,
+		config.maxUploadBytes,
 	);
 	const attachments = new TaskAttachments(
 		overrides.attachmentGateway ??
@@ -132,8 +133,9 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 				overrides.fetcher,
 			),
 		overrides.filePicker ?? new ExpoFilePicker(),
+		config.maxUploadBytes,
 	);
-	const settings = new AppSettings(dataStore);
+	const settings = new AppSettings(dataStore, config.defaultSettings);
 	const store = new TodoStore(
 		database,
 		ids,
@@ -142,6 +144,12 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		overrides.sounds ?? new ExpoSoundPlayer(),
 		settings,
 	);
+	attachments.subscribe(() => {
+		const { taskId, items, busy, error } = attachments.get();
+		if (taskId !== null && busy === "idle" && error === null) {
+			store.noteAttachments(taskId, items.length > 0);
+		}
+	});
 	const reminders = new ReminderService(
 		overrides.reminderNotifier ?? createReminderNotifier(),
 		store,

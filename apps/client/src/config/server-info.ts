@@ -1,4 +1,5 @@
 import type { Fetcher } from "../api/authorized-http";
+import { UNADVERTISED_UPLOAD_BYTES } from "../attachments/upload-limit";
 import type { IdentityProvider } from "../auth/authorization-server";
 import type { Authentication, ServerInfo, SignInSettings } from "./app-config";
 
@@ -32,6 +33,11 @@ export class ServerInfoLoader {
 				notice: typeof body.notice === "string" ? body.notice : null,
 				realtimeUrl: typeof body.realtimeUrl === "string" ? body.realtimeUrl : null,
 				signIn,
+				maxUploadBytes:
+					typeof body.maxUploadBytes === "number" && body.maxUploadBytes > 0
+						? body.maxUploadBytes
+						: UNADVERTISED_UPLOAD_BYTES,
+				defaultSettings: body.defaultSettings ?? null,
 			};
 		} catch {
 			throw new ServerUnreachableError(serverUrl);

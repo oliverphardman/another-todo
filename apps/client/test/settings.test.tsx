@@ -98,7 +98,7 @@ describe("appearance", () => {
 		expect(rowHeight("Water plants")).toBe("52px");
 		const settings = await openSettings();
 		const preview = within(settings.getByLabelText("Row preview"));
-		expect(preview.getByText("Tasks · Today")).toBeTruthy();
+		expect(preview.getByLabelText("Open Example task").textContent).toBe("Example taskTasks·Today");
 		expect(checked(settings.getByLabelText("Cozy"))).toBe("true");
 		expect(rowHeight("Example task")).toBe("52px");
 		await press(settings.getByLabelText("Compact"));

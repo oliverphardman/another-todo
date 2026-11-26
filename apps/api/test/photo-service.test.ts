@@ -1,3 +1,7 @@
+import { PhotoService } from "../src/application/photo-service";
+import { InMemoryPhotoRepository } from "../src/infrastructure/memory/in-memory-photo-repository";
+import { InMemoryViewSettingsRepository } from "../src/infrastructure/memory/in-memory-view-settings-repository";
+import { FakeMediaStorage } from "./support/fake-media-storage";
 import { describe, expect, it } from "vitest";
 import { NotFoundError, ValidationError } from "../src/domain/errors";
 import { FixedClock, createServices } from "./support/fixtures";
@@ -5,6 +9,24 @@ import { FixedClock, createServices } from "./support/fixtures";
 const input = { name: " Beach ", contentType: "image/jpeg", size: 1000 };
 
 describe("PhotoService", () => {
+	it("applies a smaller server upload limit to photos", async () => {
+		const storage = new FakeMediaStorage();
+		const photos = new PhotoService(
+			new InMemoryPhotoRepository(),
+			new InMemoryViewSettingsRepository(),
+			storage,
+			{ next: () => "p" },
+			new FixedClock(),
+			1024,
+		);
+		const photo = { name: "n", contentType: "image/png", size: 1025 };
+		await expect(photos.create("u", photo)).rejects.toThrow(
+			"size must be between 1 and 1024 bytes",
+		);
+		await photos.create("u", { ...photo, size: 1024 });
+		expect(storage.uploads[0]!.maxBytes).toBe(1024);
+	});
+
 	it("registers a photo and returns a signed upload with the size and type limits", async () => {
 		const { photos, storage } = createServices();
 		const created = await photos.create("u", input);

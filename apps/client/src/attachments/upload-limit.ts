@@ -1,0 +1,3 @@
+export const MEGABYTE = 1024 * 1024;
+
+export const UNADVERTISED_UPLOAD_BYTES = 25 * MEGABYTE;

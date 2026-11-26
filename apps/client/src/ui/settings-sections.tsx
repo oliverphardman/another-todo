@@ -10,7 +10,7 @@ import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-contr
 import { useAccountAction, useMicrosoftSettings, type SyncDirectionKey } from "./settings-state";
 import { TaskRow } from "./task-row";
 import { TextField } from "./text-field";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export function AppearanceSection() {
@@ -51,7 +51,7 @@ function RowPreview() {
 	const palette = useTheme();
 	const { rowStyle } = useObservable(settings);
 	const example = Task.create("settings-preview", t("settings.previewTask"), "");
-	const subtitle = [t("view.tasks"), i18n.dueLabel(store.today, store.today)].join(" · ");
+	const subtitle = [{ text: t("view.tasks") }, { text: i18n.dueLabel(store.today, store.today) }];
 	return (
 		<View
 			accessibilityLabel={t("settings.preview")}
@@ -63,11 +63,9 @@ function RowPreview() {
 					task={example}
 					subtitle={subtitle}
 					overdue={false}
-					travel={0}
 					selected={false}
 					rowStyle={rowStyle}
 					onToggleCompleted={ignore}
-					onCompleting={ignore}
 					onToggleImportant={ignore}
 					onSelect={ignore}
 					marker={null}
@@ -142,7 +140,7 @@ export function ServerSection() {
 						borderWidth: 1,
 						borderColor: palette.border,
 						backgroundColor: palette.surfaceHover,
-						fontFamily: FONT_FAMILY,
+						...fontStyle(),
 						fontSize: 14,
 						color: palette.textSecondary,
 						outlineStyle: "none",

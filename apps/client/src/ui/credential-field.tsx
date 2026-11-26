@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import { TextField } from "./text-field";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export const CREDENTIAL_FIELD_WIDTH = 260;
@@ -48,7 +48,7 @@ export function CredentialField({
 					paddingHorizontal: 12,
 					borderRadius: 4,
 					backgroundColor: palette.surface,
-					fontFamily: FONT_FAMILY,
+					...fontStyle(),
 					fontSize: 14,
 					color: palette.text,
 					outlineStyle: "none",

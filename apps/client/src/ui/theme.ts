@@ -1,6 +1,7 @@
 export interface Palette {
 	readonly background: string;
 	readonly sidebar: string;
+	readonly sidebarBorder: string;
 	readonly sidebarSelected: string;
 	readonly sidebarHover: string;
 	readonly sidebarField: string;
@@ -11,6 +12,7 @@ export interface Palette {
 	readonly text: string;
 	readonly textSecondary: string;
 	readonly onAccent: string;
+	readonly title: string;
 	readonly accent: string;
 	readonly accentSoft: string;
 	readonly border: string;
@@ -22,6 +24,7 @@ export interface Palette {
 export const LIGHT: Palette = {
 	background: "#2564cf",
 	sidebar: "#f5f5f5",
+	sidebarBorder: "transparent",
 	sidebarSelected: "#e1e1e1",
 	sidebarHover: "#ebebeb",
 	sidebarField: "#ffffff",
@@ -32,6 +35,7 @@ export const LIGHT: Palette = {
 	text: "#323130",
 	textSecondary: "#605e5c",
 	onAccent: "#ffffff",
+	title: "#ffffff",
 	accent: "#2564cf",
 	accentSoft: "#dbe7fa",
 	border: "#e1dfdd",
@@ -43,6 +47,7 @@ export const LIGHT: Palette = {
 export const DARK: Palette = {
 	background: "#1e1e1e",
 	sidebar: "#252525",
+	sidebarBorder: "#383838",
 	sidebarSelected: "#3a3a3a",
 	sidebarHover: "#2f2f2f",
 	sidebarField: "#1b1b1b",
@@ -53,6 +58,7 @@ export const DARK: Palette = {
 	text: "#ffffff",
 	textSecondary: "#c8c6c4",
 	onAccent: "#ffffff",
+	title: "#ffffff",
 	accent: "#6ea0f5",
 	accentSoft: "#27406e",
 	border: "#3b3a39",
@@ -60,9 +66,6 @@ export const DARK: Palette = {
 	overdue: "#f1707b",
 	warning: "#433519",
 };
-
-export const FONT_FAMILY =
-	'"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif';
 
 export type LayoutMode = "compact" | "medium" | "expanded";
 

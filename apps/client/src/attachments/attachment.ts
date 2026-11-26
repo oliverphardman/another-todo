@@ -1,4 +1,5 @@
-import type { MessageKey } from "../i18n/en-us";
+import type { LocalizedText } from "../i18n/i18n";
+import { MEGABYTE } from "./upload-limit";
 
 export interface AttachmentData {
 	readonly id: string;
@@ -17,15 +18,13 @@ export interface PickedFile {
 	readonly body: Blob | { readonly uri: string; readonly name: string; readonly type: string };
 }
 
-export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
-
 export class AttachmentRules {
-	static problemWith(picked: PickedFile): MessageKey | null {
+	static problemWith(picked: PickedFile, maxBytes: number): LocalizedText | null {
 		if (picked.size < 1) {
-			return "attachment.errorUnreadable";
+			return { key: "attachment.errorUnreadable" };
 		}
-		if (picked.size > MAX_ATTACHMENT_BYTES) {
-			return "attachment.errorSize";
+		if (picked.size > maxBytes) {
+			return { key: "attachment.errorSize", params: { size: maxBytes / MEGABYTE } };
 		}
 		return null;
 	}

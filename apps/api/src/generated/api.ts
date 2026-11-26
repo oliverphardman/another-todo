@@ -375,6 +375,8 @@ export interface components {
             monthDay?: number;
         } | null;
         Task: {
+            /** @description Whether any file is attached to the task */
+            hasAttachments: boolean;
             id: string;
             title: string;
             completed: boolean;
@@ -534,6 +536,28 @@ export interface components {
             /** @enum {string} */
             contentType: "image/jpeg" | "image/png" | "image/webp";
             size: number;
+        };
+        /** @description Settings apps start with until someone changes them on their device */
+        DefaultSettings: {
+            /** @enum {string} */
+            rowStyle?: "cozy" | "compact";
+            /** @enum {string} */
+            addTaskPosition?: "top" | "bottom";
+            microsoft?: {
+                receive?: boolean;
+                send?: boolean;
+                intervalMinutes?: number;
+            };
+            lists?: {
+                all?: boolean;
+                important?: boolean;
+                planned?: boolean;
+                completed?: boolean;
+            };
+            myDay?: {
+                yesterday?: boolean;
+                dueToday?: boolean;
+            };
         };
         PhotoUpload: {
             url: string;
@@ -1232,6 +1256,9 @@ export interface operations {
                         providers: "Microsoft"[];
                         notice: string | null;
                         realtimeUrl: string | null;
+                        defaultSettings: components["schemas"]["DefaultSettings"];
+                        /** @description The largest file the server accepts; photos are also limited to 5 MB */
+                        maxUploadBytes: number;
                         /** @description Where an app signs in when authentication is external */
                         signIn: {
                             url: string;

@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
@@ -25,10 +25,12 @@ import { buildTaskMenu } from "./task-menu";
 import { SyncIndicator } from "./sync-indicator";
 import { useListTheme } from "./use-list-theme";
 import type { LayoutMode } from "./theme";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 import { TaskRow } from "./task-row";
+import { TaskSubtitleParts } from "./task-subtitle";
 import { rowMetrics } from "./row-metrics";
+import { MovingList, type MovingItem } from "./list-motion";
 
 export interface TaskListPaneProps {
 	readonly mode: LayoutMode;
@@ -36,10 +38,10 @@ export interface TaskListPaneProps {
 }
 
 const DRAG_THRESHOLD = 5;
-const COMPLETED_GAP = 40;
+const SECTION_HEIGHT = 48;
 
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
-	const { store, settings } = useContainer();
+	const { store, settings, motion } = useContainer();
 	const { rowStyle, addTaskPosition } = useObservable(settings);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
@@ -60,18 +62,6 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	}, [view.id]);
 	const { open, yesterday, done } = store.visibleTasks();
 	const today = store.today;
-	const subtitleFor = (task: Task): string | null => {
-		const parts = [
-			view.showsListName ? (store.listName(task) ?? t("view.tasks")) : null,
-			task.steps.length === 0
-				? null
-				: t("task.stepsProgress", { done: task.stepsCompleted, total: task.steps.length }),
-			view.showsMyDay && store.isInMyDay(task) ? t("task.myDayTag") : null,
-			task.dueDay === null ? null : i18n.dueLabel(task.dueDay, today),
-			task.repeat === null ? null : i18n.repeatLabel(task.repeat),
-		].filter((part): part is string => part !== null);
-		return parts.length === 0 ? null : parts.join(" · ");
-	};
 	const manualOrder = store.settingsFor(view.id).sort === null && view.order === "newest";
 	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);
@@ -115,6 +105,21 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 		return drag.index >= others.length && others[others.length - 1]?.id === taskId ? "after" : null;
 	};
 	const compact = mode === "compact";
+	const completedIds = state.tasks.filter((task) => task.completed).map((task) => task.id);
+	const moved = useRef({ trigger: "", ids: new Set<string>(), completed: completedIds });
+	const trigger = completedIds.join(" ");
+	if (moved.current.trigger !== trigger) {
+		const before = new Set(moved.current.completed);
+		const after = new Set(completedIds);
+		moved.current = {
+			trigger,
+			completed: completedIds,
+			ids: new Set([
+				...completedIds.filter((id) => !before.has(id)),
+				...[...before].filter((id) => !after.has(id)),
+			]),
+		};
+	}
 	const row = (task: Task) => (
 		<TaskRow
 			rowStyle={rowStyle}
@@ -126,15 +131,10 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			}
 			key={task.id}
 			task={task}
-			subtitle={subtitleFor(task)}
+			subtitle={TaskSubtitleParts.of(task, view, store, i18n)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
-			travel={
-				Math.max(0, open.length - 1 - open.indexOf(task)) * rowMetrics(rowStyle).pitch +
-				COMPLETED_GAP
-			}
 			selected={state.selectedTaskIds.includes(task.id)}
-			onToggleCompleted={(silent) => store.toggleCompleted(task.id, !silent)}
-			onCompleting={() => store.announceCompleted()}
+			onToggleCompleted={() => store.toggleCompleted(task.id)}
 			onToggleImportant={() => store.toggleImportant(task.id)}
 			onSelect={(event) => {
 				if (dragged.current) {
@@ -164,6 +164,56 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			}}
 		/>
 	);
+	const rows = (tasks: readonly Task[]): MovingItem[] =>
+		tasks.map((task) => ({
+			key: task.id,
+			estimatedHeight: rowMetrics(rowStyle).pitch,
+			element: row(task),
+		}));
+	const section = (
+		key: string,
+		title: string,
+		expanded: boolean,
+		toggleLabel: string,
+		onToggle: () => void,
+		tasks: readonly Task[],
+	): MovingItem[] =>
+		tasks.length === 0
+			? []
+			: [
+					{
+						key,
+						estimatedHeight: SECTION_HEIGHT,
+						element: (
+							<SectionHeader
+								title={title}
+								toggleLabel={toggleLabel}
+								expanded={expanded}
+								onToggle={onToggle}
+							/>
+						),
+					},
+					...(expanded ? rows(tasks) : []),
+				];
+	const items: MovingItem[] = [
+		...rows(open),
+		...section(
+			"section-yesterday",
+			t("list.yesterday"),
+			showYesterday,
+			showYesterday ? t("list.hideYesterdaySection") : t("list.showYesterdaySection"),
+			() => setShowYesterday((value) => !value),
+			yesterday,
+		),
+		...section(
+			"section-completed",
+			t("list.completed", { count: done.length }),
+			showDone,
+			showDone ? t("list.hideCompletedSection") : t("list.showCompletedSection"),
+			() => setShowDone((value) => !value),
+			done,
+		),
+	];
 	const addBar = (
 		<AddTaskBar placeholder={t("task.add")} onSubmit={(text) => store.addTask(text)} />
 	);
@@ -206,7 +256,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 						onPress={() => store.startRenaming(view.id)}
 						style={{ flex: 1 }}
 					>
-						<AppText role="heading" size={28} weight="600" tone="onAccent">
+						<AppText role="heading" size={28} weight="600" tone="title">
 							{i18n.viewTitle(view)}
 						</AppText>
 						{view.showsDate ? (
@@ -246,29 +296,13 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
 				/>
 				{view.allowsAdding && addTaskPosition === "top" ? addBar : null}
-				{open.map(row)}
-				{yesterday.length === 0 ? null : (
-					<TaskSection
-						title={t("list.yesterday")}
-						toggleLabel={
-							showYesterday ? t("list.hideYesterdaySection") : t("list.showYesterdaySection")
-						}
-						expanded={showYesterday}
-						onToggle={() => setShowYesterday((value) => !value)}
-					>
-						{yesterday.map(row)}
-					</TaskSection>
-				)}
-				{done.length === 0 ? null : (
-					<TaskSection
-						title={t("list.completed", { count: done.length })}
-						toggleLabel={showDone ? t("list.hideCompletedSection") : t("list.showCompletedSection")}
-						expanded={showDone}
-						onToggle={() => setShowDone((value) => !value)}
-					>
-						{done.map(row)}
-					</TaskSection>
-				)}
+				<MovingList
+					scope={view.id}
+					trigger={trigger}
+					raised={moved.current.ids}
+					duration={motion.travelMs}
+					items={items}
+				/>
 			</ScrollView>
 			{view.allowsAdding && addTaskPosition === "bottom" ? (
 				<View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: compact ? 8 : 16 }}>
@@ -287,39 +321,30 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	);
 }
 
-function TaskSection({
+function SectionHeader({
 	title,
 	toggleLabel,
 	expanded,
 	onToggle,
-	children,
 }: {
 	readonly title: string;
 	readonly toggleLabel: string;
 	readonly expanded: boolean;
 	readonly onToggle: () => void;
-	readonly children: ReactNode;
 }) {
 	const palette = useTheme();
 	return (
-		<View style={{ marginTop: 12 }}>
-			<PressableSurface
-				accessibilityRole="button"
-				accessibilityLabel={toggleLabel}
-				onPress={onToggle}
-				style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}
-			>
-				<Icon
-					glyph={expanded ? "chevronDown" : "chevronRight"}
-					size={16}
-					color={palette.onAccent}
-				/>
-				<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
-					{title}
-				</AppText>
-			</PressableSurface>
-			{expanded ? children : null}
-		</View>
+		<PressableSurface
+			accessibilityRole="button"
+			accessibilityLabel={toggleLabel}
+			onPress={onToggle}
+			style={{ flexDirection: "row", alignItems: "center", marginTop: 12, paddingVertical: 8 }}
+		>
+			<Icon glyph={expanded ? "chevronDown" : "chevronRight"} size={16} color={palette.onAccent} />
+			<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
+				{title}
+			</AppText>
+		</PressableSurface>
 	);
 }
 
@@ -340,10 +365,9 @@ function RenameField({ initial, onDone }: { initial: string; onDone: (name: stri
 			style={
 				{
 					flex: 1,
-					fontFamily: FONT_FAMILY,
+					...fontStyle("600"),
 					fontSize: 28,
-					fontWeight: "600",
-					color: palette.onAccent,
+					color: palette.title,
 					outlineStyle: "none",
 				} as object
 			}

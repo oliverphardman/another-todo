@@ -5,7 +5,7 @@ import { TextField } from "./text-field";
 import { AppText } from "./app-text";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export interface AddTaskBarProps {
@@ -47,7 +47,7 @@ export function AddTaskBar({ placeholder, onSubmit }: AddTaskBarProps) {
 					{
 						flex: 1,
 						marginLeft: 12,
-						fontFamily: FONT_FAMILY,
+						...fontStyle(),
 						fontSize: 15,
 						color: palette.text,
 						paddingVertical: 12,

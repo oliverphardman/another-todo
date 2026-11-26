@@ -2,7 +2,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { createElement } from "react";
 import { Platform } from "react-native";
 import { DueDay } from "../domain/due-day";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useIsDark, useTheme } from "./theme-context";
 
 export interface NativeDateInputProps {
@@ -27,7 +27,7 @@ export function NativeDateInput({ label, value, fallback, onChange }: NativeDate
 			},
 			style: {
 				flex: 1,
-				fontFamily: FONT_FAMILY,
+				...fontStyle(),
 				fontSize: 14,
 				color: palette.text,
 				backgroundColor: "transparent",

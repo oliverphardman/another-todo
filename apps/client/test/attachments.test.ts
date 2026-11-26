@@ -62,11 +62,15 @@ function gatewayFor(upload: Response | Error = new Response(null, { status: 204 
 
 describe("AttachmentRules", () => {
 	it("rejects empty and oversized files", () => {
-		expect(AttachmentRules.problemWith({ ...file, size: 0 })).toBe("attachment.errorUnreadable");
-		expect(AttachmentRules.problemWith({ ...file, size: 26 * 1024 * 1024 })).toBe(
-			"attachment.errorSize",
-		);
-		expect(AttachmentRules.problemWith(file)).toBeNull();
+		const limit = 10 * 1024 * 1024;
+		expect(AttachmentRules.problemWith({ ...file, size: 0 }, limit)).toEqual({
+			key: "attachment.errorUnreadable",
+		});
+		expect(AttachmentRules.problemWith({ ...file, size: limit + 1 }, limit)).toEqual({
+			key: "attachment.errorSize",
+			params: { size: 10 },
+		});
+		expect(AttachmentRules.problemWith({ ...file, size: limit }, limit)).toBeNull();
 	});
 });
 

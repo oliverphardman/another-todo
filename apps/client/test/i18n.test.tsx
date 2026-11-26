@@ -88,7 +88,9 @@ describe("I18n", () => {
 		const i18n = new I18n("en-GB");
 		expect(i18n.viewTitle({ title: "My Day", titleKey: "view.myDay" })).toBe("My Day");
 		expect(i18n.viewTitle({ title: "Groceries", titleKey: null })).toBe("Groceries");
-		expect(i18n.text({ key: "photo.errorSize" })).toBe("Photos must be 5 MB or smaller.");
+		expect(i18n.text({ key: "photo.errorSize", params: { size: 5 } })).toBe(
+			"Photos must be 5 MB or smaller.",
+		);
 		expect(i18n.text({ message: "From the server" })).toBe("From the server");
 		expect(i18n.shortDay("2026-11-27")).toBe("Fri 27 Nov");
 	});

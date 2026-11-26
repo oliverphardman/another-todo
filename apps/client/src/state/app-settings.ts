@@ -40,9 +40,25 @@ const KEY = "atd.settings";
 
 type Saved = Readonly<Record<string, unknown>>;
 
+export interface SettingsChanges {
+	readonly rowStyle?: RowStyle;
+	readonly addTaskPosition?: AddTaskPosition;
+	readonly microsoft?: Partial<MicrosoftPreferences>;
+	readonly lists?: Partial<Record<OptionalList, boolean>>;
+	readonly myDay?: Partial<MyDayPreferences>;
+}
+
 export class AppSettings extends Observable<AppSettingsState> {
-	constructor(private readonly storage: KeyValueStore) {
-		super(DEFAULT_SETTINGS);
+	private readonly defaults: AppSettingsState;
+	private overrides: Saved = {};
+
+	constructor(
+		private readonly storage: KeyValueStore,
+		serverDefaults: unknown = null,
+	) {
+		const defaults = AppSettings.resolve(serverDefaults, DEFAULT_SETTINGS);
+		super(defaults);
+		this.defaults = defaults;
 	}
 
 	static minutes(value: number): number {
@@ -55,58 +71,66 @@ export class AppSettings extends Observable<AppSettingsState> {
 			return;
 		}
 		try {
-			this.set(AppSettings.parse(JSON.parse(raw) as unknown));
+			this.overrides = AppSettings.section(JSON.parse(raw) as unknown);
 		} catch {
 			return;
 		}
+		this.set(AppSettings.resolve(this.overrides, this.defaults));
 	}
 
-	change(changes: Partial<AppSettingsState>): void {
-		this.set({ ...this.get(), ...changes });
-		void this.storage.set(KEY, JSON.stringify(this.get()));
+	change(changes: SettingsChanges): void {
+		const merged: Record<string, unknown> = { ...this.overrides };
+		for (const [name, value] of Object.entries(changes)) {
+			merged[name] =
+				typeof value === "object" ? { ...AppSettings.section(merged[name]), ...value } : value;
+		}
+		this.overrides = merged;
+		this.set(AppSettings.resolve(merged, this.defaults));
+		void this.storage.set(KEY, JSON.stringify(merged));
 	}
 
-	changeMicrosoft(changes: Partial<MicrosoftPreferences>): void {
-		this.change({ microsoft: { ...this.get().microsoft, ...changes } });
+	changeMicrosoft(microsoft: Partial<MicrosoftPreferences>): void {
+		this.change({ microsoft });
 	}
 
-	changeMyDay(changes: Partial<MyDayPreferences>): void {
-		this.change({ myDay: { ...this.get().myDay, ...changes } });
+	changeMyDay(myDay: Partial<MyDayPreferences>): void {
+		this.change({ myDay });
 	}
 
 	showList(list: OptionalList, shown: boolean): void {
-		this.change({ lists: { ...this.get().lists, [list]: shown } });
+		this.change({ lists: { [list]: shown } });
 	}
 
-	private static parse(value: unknown): AppSettingsState {
+	private static resolve(value: unknown, fallback: AppSettingsState): AppSettingsState {
 		const saved = AppSettings.section(value);
 		const microsoft = AppSettings.section(saved.microsoft);
 		const lists = AppSettings.section(saved.lists);
 		const myDay = AppSettings.section(saved.myDay);
-		const defaults = DEFAULT_SETTINGS;
-		const flag = (stored: unknown, fallback: boolean) =>
-			typeof stored === "boolean" ? stored : fallback;
+		const flag = (stored: unknown, otherwise: boolean) =>
+			typeof stored === "boolean" ? stored : otherwise;
+		const choice = <T extends string>(stored: unknown, choices: readonly T[], otherwise: T) =>
+			choices.find((candidate) => candidate === stored) ?? otherwise;
 		const minutes = microsoft.intervalMinutes;
 		return {
-			rowStyle: saved.rowStyle === "compact" ? "compact" : defaults.rowStyle,
-			addTaskPosition: saved.addTaskPosition === "bottom" ? "bottom" : defaults.addTaskPosition,
+			rowStyle: choice(saved.rowStyle, ["cozy", "compact"], fallback.rowStyle),
+			addTaskPosition: choice(saved.addTaskPosition, ["top", "bottom"], fallback.addTaskPosition),
 			microsoft: {
-				receive: flag(microsoft.receive, defaults.microsoft.receive),
-				send: flag(microsoft.send, defaults.microsoft.send),
+				receive: flag(microsoft.receive, fallback.microsoft.receive),
+				send: flag(microsoft.send, fallback.microsoft.send),
 				intervalMinutes:
 					typeof minutes === "number"
 						? AppSettings.minutes(minutes)
-						: defaults.microsoft.intervalMinutes,
+						: fallback.microsoft.intervalMinutes,
 			},
 			lists: {
-				all: flag(lists.all, defaults.lists.all),
-				important: flag(lists.important, defaults.lists.important),
-				planned: flag(lists.planned, defaults.lists.planned),
-				completed: flag(lists.completed, defaults.lists.completed),
+				all: flag(lists.all, fallback.lists.all),
+				important: flag(lists.important, fallback.lists.important),
+				planned: flag(lists.planned, fallback.lists.planned),
+				completed: flag(lists.completed, fallback.lists.completed),
 			},
 			myDay: {
-				yesterday: flag(myDay.yesterday, defaults.myDay.yesterday),
-				dueToday: flag(myDay.dueToday, defaults.myDay.dueToday),
+				yesterday: flag(myDay.yesterday, fallback.myDay.yesterday),
+				dueToday: flag(myDay.dueToday, fallback.myDay.dueToday),
 			},
 		};
 	}

@@ -49,6 +49,9 @@ importers:
       expo-document-picker:
         specifier: ~55.0.17
         version: 55.0.17(expo@55.0.32)
+      expo-font:
+        specifier: ~55.0.8
+        version: 55.0.8(expo@55.0.32)(react-native@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(@react-native-community/cli@21.0.0(supports-color@10.2.2)(typescript@5.9.3))(@react-native/metro-config@0.83.10(@babel/core@7.29.13(supports-color@10.2.2))(supports-color@10.2.2))(@types/react@19.2.18)(react@19.2.0)(supports-color@10.2.2))(react@19.2.0)
       expo-image-picker:
         specifier: ^55.0.24
         version: 55.0.24(expo@55.0.32)

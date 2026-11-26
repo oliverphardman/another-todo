@@ -12,6 +12,7 @@ export type IconGlyph =
 	| "rename"
 	| "settings"
 	| "tick"
+	| "note"
 	| "addPerson"
 	| "people"
 	| "group"
@@ -93,6 +94,9 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	},
 	settings: {
 		d: "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM10.3 3h3.4l.5 2.4 1.7 1 2.3-.8 1.7 3-1.8 1.6v2.6l1.8 1.6-1.7 3-2.3-.8-1.7 1-.5 2.4h-3.4l-.5-2.4-1.7-1-2.3.8-1.7-3 1.8-1.6v-2.6L4.1 8.6l1.7-3 2.3.8 1.7-1z",
+	},
+	note: {
+		d: "M7 4h10a3 3 0 0 1 3 3v6l-7 7H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zM13 20v-4a3 3 0 0 1 3-3h4",
 	},
 	tick: { d: "M5 12.5l4.5 4.5L19 7.5" },
 	rename: {

@@ -4,7 +4,7 @@ import { AppText } from "./app-text";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { TextField } from "./text-field";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
@@ -161,7 +161,7 @@ export function NumberField({ label, value, onCommit, disabled }: NumberFieldPro
 					borderRadius: 4,
 					borderWidth: 1,
 					borderColor: palette.border,
-					fontFamily: FONT_FAMILY,
+					...fontStyle(),
 					fontSize: 14,
 					color: palette.text,
 					textAlign: "center",

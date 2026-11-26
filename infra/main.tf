@@ -453,6 +453,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       GROUPS_TABLE_NAME            = aws_dynamodb_table.groups.name
       SHARES_TABLE_NAME            = aws_dynamodb_table.shares.name
       PHOTOS_BUCKET                = aws_s3_bucket.photos.id
+      MEDIA_PUBLIC_URL             = "https://${local.media_domain}"
       CONNECTIONS_TABLE_NAME       = aws_dynamodb_table.connections.name
       WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"
       COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
@@ -462,8 +463,12 @@ resource "aws_lambdaweb_function_revision" "api" {
       PUBLIC_API_URL               = "https://${local.api_domain}"
       ENFORCED_USERNAME            = var.enforced_username
       SERVER_NOTICE                = var.server_notice
+      MAX_UPLOAD_MB                = var.max_upload_mb
+      DEFAULT_SETTINGS             = var.default_settings
     }
   }
+
+  depends_on = [aws_route53_record.media]
 
   lifecycle {
     create_before_destroy = true

@@ -36,6 +36,39 @@
 			"expo-secure-store",
 			"expo-web-browser",
 			"expo-asset",
+			[
+				"expo-font",
+				{
+					"android": {
+						"fonts": [
+							{
+								"fontFamily": "Selawik",
+								"fontDefinitions": [
+									{
+										"path": "./assets/fonts/selawk.ttf",
+										"weight": 400
+									},
+									{
+										"path": "./assets/fonts/selawksb.ttf",
+										"weight": 600
+									},
+									{
+										"path": "./assets/fonts/selawkb.ttf",
+										"weight": 700
+									}
+								]
+							}
+						]
+					},
+					"ios": {
+						"fonts": [
+							"./assets/fonts/selawk.ttf",
+							"./assets/fonts/selawksb.ttf",
+							"./assets/fonts/selawkb.ttf"
+						]
+					}
+				}
+			],
 			"@react-native-community/datetimepicker"
 		],
 		"icon": "./assets/brand/icon-1024.png"

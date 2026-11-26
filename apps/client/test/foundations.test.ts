@@ -112,7 +112,13 @@ describe("AppConfigReader", () => {
 
 	it("offers Microsoft on an external server and what the server lists otherwise", () => {
 		const build = AppConfigReader.read({}, undefined, undefined);
-		const info = { notice: null, realtimeUrl: null, signIn: null } as const;
+		const info = {
+			notice: null,
+			realtimeUrl: null,
+			signIn: null,
+			maxUploadBytes: 10485760,
+			defaultSettings: null,
+		} as const;
 		expect(
 			AppConfigReader.compose(build, "https://x", {
 				...info,
@@ -139,6 +145,8 @@ describe("AppConfigReader", () => {
 				notice: null,
 				realtimeUrl: null,
 				signIn: { url: "https://auth.example.com/", clientId: "app" },
+				maxUploadBytes: 10485760,
+				defaultSettings: null,
 			},
 		);
 		expect(config).toMatchObject({ authUrl: "https://auth.example.com", clientId: "app" });
@@ -151,6 +159,8 @@ describe("AppConfigReader", () => {
 			providers: [],
 			notice: "Hello",
 			signIn: null,
+			maxUploadBytes: 10485760,
+			defaultSettings: null,
 		} as const;
 		expect(
 			AppConfigReader.compose(build, "https://todo.example.com/", { ...base, realtimeUrl: null }),

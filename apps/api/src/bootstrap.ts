@@ -6,10 +6,12 @@ import type { ChangeChannel } from "./application/change-channel";
 import type { DataStore } from "./application/data-store";
 import type { MediaStorage } from "./application/media-storage";
 import { ChangeNotifier } from "./application/change-notifier";
+import { DefaultSettings, type DefaultSettingsData } from "./application/default-settings";
 import { GroupService } from "./application/group-service";
 import { ListService } from "./application/list-service";
 import { AttachmentService } from "./application/attachment-service";
 import { PhotoService } from "./application/photo-service";
+import { DEFAULT_MAX_UPLOAD_BYTES, UploadLimit } from "./application/upload-limit";
 import { SystemClock, UuidGenerator } from "./application/ports";
 import { SharedAccess } from "./application/shared-access";
 import { ShareService } from "./application/share-service";
@@ -31,6 +33,7 @@ import { RouteSupport } from "./http/route-support";
 import { SettingsController } from "./http/settings-controller";
 import { ShareController } from "./http/share-controller";
 import { TaskController } from "./http/task-controller";
+import { TaskPresenter } from "./http/task-presenter";
 import { McpController } from "./mcp/mcp-controller";
 import { McpServer } from "./mcp/mcp-server";
 import { createTools } from "./mcp/tools";
@@ -39,10 +42,13 @@ export interface ApiConfig {
 	readonly publicUrl: string;
 	readonly corsOrigins: readonly string[];
 	readonly notice: string | null;
+	readonly maxUploadBytes: number;
+	readonly defaultSettings: DefaultSettingsData;
 }
 
 export interface Services {
 	readonly tasks: TaskService;
+	readonly taskViews: TaskPresenter;
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
@@ -62,6 +68,8 @@ export function readConfig(env: Env, fallbackUrl?: string): ApiConfig {
 		publicUrl,
 		corsOrigins: settings.list("CORS_ORIGINS"),
 		notice: settings.optional("SERVER_NOTICE"),
+		maxUploadBytes: UploadLimit.parse(settings.optional("MAX_UPLOAD_MB")),
+		defaultSettings: DefaultSettings.parse(settings.optional("DEFAULT_SETTINGS")),
 	};
 }
 
@@ -78,7 +86,7 @@ export function createApp(
 	const { identity, media, realtime } = platform;
 	const app = express();
 	app.disable("x-powered-by");
-	app.use(new CorsPolicy(config.corsOrigins).middleware());
+	app.use(new CorsPolicy([...config.corsOrigins, new URL(config.publicUrl).origin]).middleware());
 	app.use(new DiscoveryController(identity.issuer ?? config.publicUrl, config.publicUrl).router());
 	app.use(
 		new ConfigController({
@@ -87,6 +95,8 @@ export function createApp(
 			notice: config.notice,
 			realtimeUrl: realtime.endpoint,
 			signIn: identity.signIn,
+			maxUploadBytes: config.maxUploadBytes,
+			defaultSettings: config.defaultSettings,
 		}).router(),
 	);
 	if (identity.router !== null) {
@@ -120,7 +130,7 @@ export function createApp(
 		}) as unknown as RequestHandler[]),
 	);
 	app.use("/tasks", new AttachmentController(services.attachments).router());
-	app.use("/tasks", new TaskController(services.tasks).router());
+	app.use("/tasks", new TaskController(services.tasks, services.taskViews).router());
 	app.use("/lists", new ShareController(services.shares).router());
 	app.use("/lists", new ListController(services.lists, services.shares).router());
 	app.use("/groups", new GroupController(services.groups).router());
@@ -135,11 +145,19 @@ export function createServices(
 	storage: MediaStorage,
 	channel: ChangeChannel,
 	directory: UserDirectory,
+	maxUploadBytes: number = DEFAULT_MAX_UPLOAD_BYTES,
 ): Services {
 	const access = new SharedAccess(data.shares);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
-	const attachments = new AttachmentService(data.attachments, data.tasks, storage, ids, clock);
+	const attachments = new AttachmentService(
+		data.attachments,
+		data.tasks,
+		storage,
+		ids,
+		clock,
+		maxUploadBytes,
+	);
 	return {
 		tasks: new TaskService(data.tasks, data.lists, access, ids, clock, attachments),
 		lists: new ListService(
@@ -153,10 +171,11 @@ export function createServices(
 			attachments,
 		),
 		attachments,
+		taskViews: new TaskPresenter(data.attachments),
 		shares: new ShareService(data.shares, data.lists, access, directory, clock),
 		groups: new GroupService(data.groups, data.lists, ids, clock),
 		settings: new ViewSettingsService(data.settings, data.photos, clock),
-		photos: new PhotoService(data.photos, data.settings, storage, ids, clock),
+		photos: new PhotoService(data.photos, data.settings, storage, ids, clock, maxUploadBytes),
 		notifier: new ChangeNotifier(channel, access),
 	};
 }
@@ -173,6 +192,7 @@ export function createApplication(
 			platform.media.storage,
 			platform.realtime.channel,
 			platform.identity.directory,
+			config.maxUploadBytes,
 		),
 		platform,
 		web,

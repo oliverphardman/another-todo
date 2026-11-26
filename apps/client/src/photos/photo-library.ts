@@ -23,6 +23,7 @@ export class PhotoLibrary extends Observable<PhotoLibraryState> {
 		private readonly gateway: PhotoGateway,
 		private readonly picker: PhotoPicker,
 		private readonly auth: Observable<AuthStatus>,
+		private readonly maxBytes?: number,
 	) {
 		super({ photos: [], busy: "idle", error: null });
 	}
@@ -83,9 +84,9 @@ export class PhotoLibrary extends Observable<PhotoLibraryState> {
 				this.set({ ...this.get(), busy: "idle" });
 				return null;
 			}
-			const problem = PhotoRules.problemWith(picked);
+			const problem = PhotoRules.problemWith(picked, this.maxBytes);
 			if (problem !== null) {
-				this.set({ ...this.get(), busy: "idle", error: { key: problem } });
+				this.set({ ...this.get(), busy: "idle", error: problem });
 				return null;
 			}
 			const photo = await this.gateway.create(picked);

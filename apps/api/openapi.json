@@ -651,7 +651,9 @@
 										"providers",
 										"notice",
 										"realtimeUrl",
-										"signIn"
+										"signIn",
+										"maxUploadBytes",
+										"defaultSettings"
 									],
 									"properties": {
 										"authentication": {
@@ -678,6 +680,13 @@
 										"realtimeUrl": {
 											"type": "string",
 											"nullable": true
+										},
+										"defaultSettings": {
+											"$ref": "#/components/schemas/DefaultSettings"
+										},
+										"maxUploadBytes": {
+											"type": "integer",
+											"description": "The largest file the server accepts; photos are also limited to 5 MB"
 										},
 										"signIn": {
 											"type": "object",
@@ -1013,9 +1022,14 @@
 					"note",
 					"position",
 					"remindAt",
-					"repeat"
+					"repeat",
+					"hasAttachments"
 				],
 				"properties": {
+					"hasAttachments": {
+						"type": "boolean",
+						"description": "Whether any file is attached to the task"
+					},
 					"id": {
 						"type": "string"
 					},
@@ -1582,6 +1596,42 @@
 					}
 				}
 			},
+			"DefaultSettings": {
+				"type": "object",
+				"description": "Settings apps start with until someone changes them on their device",
+				"additionalProperties": false,
+				"properties": {
+					"rowStyle": { "type": "string", "enum": ["cozy", "compact"] },
+					"addTaskPosition": { "type": "string", "enum": ["top", "bottom"] },
+					"microsoft": {
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"receive": { "type": "boolean" },
+							"send": { "type": "boolean" },
+							"intervalMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 }
+						}
+					},
+					"lists": {
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"all": { "type": "boolean" },
+							"important": { "type": "boolean" },
+							"planned": { "type": "boolean" },
+							"completed": { "type": "boolean" }
+						}
+					},
+					"myDay": {
+						"type": "object",
+						"additionalProperties": false,
+						"properties": {
+							"yesterday": { "type": "boolean" },
+							"dueToday": { "type": "boolean" }
+						}
+					}
+				}
+			},
 			"PhotoUpload": {
 				"type": "object",
 				"required": [
@@ -1788,8 +1838,7 @@
 					},
 					"size": {
 						"type": "integer",
-						"minimum": 1,
-						"maximum": 26214400
+						"minimum": 1
 					}
 				}
 			},

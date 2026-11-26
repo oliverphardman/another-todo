@@ -21,7 +21,12 @@ RCT_EXPORT_MODULE()
 
 - (dispatch_queue_t)methodQueue
 {
-  return dispatch_get_main_queue();
+  static dispatch_queue_t queue;
+  static dispatch_once_t once;
+  dispatch_once(&once, ^{
+    queue = dispatch_queue_create("dev.oliverhardman.anothertodo.sound", DISPATCH_QUEUE_SERIAL);
+  });
+  return queue;
 }
 
 RCT_EXPORT_METHOD(play:(NSString *)uri)

@@ -93,7 +93,7 @@ export const EN_US = {
 	"attachment.removeTitle": "Remove {name}?",
 	"attachment.removeBody": "The file will be permanently deleted.",
 	"attachment.removeConfirm": "Remove",
-	"attachment.errorSize": "Files must be 25 MB or smaller.",
+	"attachment.errorSize": "Files must be {size} MB or smaller.",
 	"attachment.errorUnreadable": "That file could not be read.",
 	"attachment.errorUnavailable":
 		"Attachments are unavailable right now. Check your connection and try again.",
@@ -183,7 +183,7 @@ export const EN_US = {
 	"photo.uploading": "Uploading…",
 	"photo.errorType": "Choose a JPEG, PNG or WebP image.",
 	"photo.errorUnreadable": "That photo could not be read.",
-	"photo.errorSize": "Photos must be 5 MB or smaller.",
+	"photo.errorSize": "Photos must be {size} MB or smaller.",
 	"photo.errorUnavailable":
 		"Photos are unavailable right now. Check your connection and try again.",
 	"ctx.addToMyDay": "Add to My Day",
@@ -253,6 +253,8 @@ export const EN_US = {
 	"list.showYesterdaySection": "Show yesterday's tasks",
 	"list.hideYesterdaySection": "Hide yesterday's tasks",
 	"settings.title": "Settings",
+	"task.noteTag": "Note",
+	"task.attachmentTag": "Attachment",
 	"settings.signedOut": "Sign in to change settings",
 	"settings.close": "Close settings",
 	"settings.appearance": "Appearance",

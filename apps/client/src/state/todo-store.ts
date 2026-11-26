@@ -265,6 +265,7 @@ export class TodoStore extends Observable<TodoState> {
 						createdAt: now,
 						myDay: null,
 						myDayDismissed: null,
+						hasAttachments: false,
 						steps: task.steps.map((step) => ({ ...step, id: this.ids.next() })),
 					}).data,
 			);
@@ -529,6 +530,19 @@ export class TodoStore extends Observable<TodoState> {
 		}
 	}
 
+	noteAttachments(taskId: string, attached: boolean): void {
+		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
+		if (task === undefined || task.hasAttachments === attached) {
+			return;
+		}
+		void this.database.apply((snapshot) => ({
+			...snapshot,
+			tasks: snapshot.tasks.map((data) =>
+				data.id === taskId ? { ...data, hasAttachments: attached } : data,
+			),
+		}));
+	}
+
 	renameTask(taskId: string, title: string): void {
 		const trimmed = title.trim();
 		if (trimmed.length > 0) {
@@ -536,14 +550,10 @@ export class TodoStore extends Observable<TodoState> {
 		}
 	}
 
-	announceCompleted(): void {
-		this.sounds.playCompleted();
-	}
-
-	toggleCompleted(taskId: string, sound = true): void {
+	toggleCompleted(taskId: string): void {
 		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
 		if (task !== undefined) {
-			if (!task.completed && sound) {
+			if (!task.completed) {
 				this.sounds.playCompleted();
 			}
 			this.updateTask(taskId, { completed: !task.completed });

@@ -65,6 +65,44 @@ describe("AppSettings", () => {
 	});
 });
 
+describe("server defaults", () => {
+	const server = {
+		rowStyle: "compact",
+		microsoft: { intervalMinutes: 30 },
+		lists: { all: false, planned: false },
+		myDay: "nonsense",
+	};
+
+	it("applies until something is changed on this device", async () => {
+		const storage = new MemoryKeyValueStore();
+		const settings = new AppSettings(storage, server);
+		await settings.load();
+		expect(settings.get()).toEqual({
+			...DEFAULT_SETTINGS,
+			rowStyle: "compact",
+			microsoft: { ...DEFAULT_SETTINGS.microsoft, intervalMinutes: 30 },
+			lists: { ...DEFAULT_SETTINGS.lists, all: false, planned: false },
+		});
+	});
+
+	it("keeps only what was changed, so later server defaults still reach the rest", async () => {
+		const storage = new MemoryKeyValueStore();
+		const first = new AppSettings(storage, server);
+		first.showList("planned", true);
+		first.changeMicrosoft({ send: false });
+		expect(JSON.parse((await storage.get("atd.settings"))!)).toEqual({
+			lists: { planned: true },
+			microsoft: { send: false },
+		});
+		const later = new AppSettings(storage, { rowStyle: "cozy", lists: { completed: false } });
+		expect(later.get().lists.completed).toBe(false);
+		await later.load();
+		expect(later.get().rowStyle).toBe("cozy");
+		expect(later.get().lists).toEqual({ ...DEFAULT_SETTINGS.lists, completed: false });
+		expect(later.get().microsoft.send).toBe(false);
+	});
+});
+
 describe("My Day preferences", () => {
 	const today = "2026-11-19";
 	const task = (changes: Parameters<Task["with"]>[0]) => Task.create("t", "T", "x").with(changes);
