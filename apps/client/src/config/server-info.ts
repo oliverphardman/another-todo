@@ -37,6 +37,7 @@ export class ServerInfoLoader {
 					typeof body.maxUploadBytes === "number" && body.maxUploadBytes > 0
 						? body.maxUploadBytes
 						: UNADVERTISED_UPLOAD_BYTES,
+				defaultSettings: body.defaultSettings ?? null,
 			};
 		} catch {
 			throw new ServerUnreachableError(serverUrl);

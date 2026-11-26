@@ -117,6 +117,17 @@ variable "max_upload_mb" {
   }
 }
 
+variable "default_settings" {
+  type        = string
+  default     = ""
+  description = "JSON object of settings apps start with until someone changes them, such as {\"rowStyle\":\"compact\"}"
+
+  validation {
+    condition     = var.default_settings == "" || can(keys(jsondecode(var.default_settings)))
+    error_message = "default_settings must be a JSON object."
+  }
+}
+
 variable "api_logging_enabled" {
   type        = bool
   default     = false

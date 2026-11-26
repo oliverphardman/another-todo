@@ -117,6 +117,7 @@ describe("AppConfigReader", () => {
 			realtimeUrl: null,
 			signIn: null,
 			maxUploadBytes: 10485760,
+			defaultSettings: null,
 		} as const;
 		expect(
 			AppConfigReader.compose(build, "https://x", {
@@ -145,6 +146,7 @@ describe("AppConfigReader", () => {
 				realtimeUrl: null,
 				signIn: { url: "https://auth.example.com/", clientId: "app" },
 				maxUploadBytes: 10485760,
+				defaultSettings: null,
 			},
 		);
 		expect(config).toMatchObject({ authUrl: "https://auth.example.com", clientId: "app" });
@@ -158,6 +160,7 @@ describe("AppConfigReader", () => {
 			notice: "Hello",
 			signIn: null,
 			maxUploadBytes: 10485760,
+			defaultSettings: null,
 		} as const;
 		expect(
 			AppConfigReader.compose(build, "https://todo.example.com/", { ...base, realtimeUrl: null }),

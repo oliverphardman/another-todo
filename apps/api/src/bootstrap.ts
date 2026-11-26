@@ -6,6 +6,7 @@ import type { ChangeChannel } from "./application/change-channel";
 import type { DataStore } from "./application/data-store";
 import type { MediaStorage } from "./application/media-storage";
 import { ChangeNotifier } from "./application/change-notifier";
+import { DefaultSettings, type DefaultSettingsData } from "./application/default-settings";
 import { GroupService } from "./application/group-service";
 import { ListService } from "./application/list-service";
 import { AttachmentService } from "./application/attachment-service";
@@ -41,6 +42,7 @@ export interface ApiConfig {
 	readonly corsOrigins: readonly string[];
 	readonly notice: string | null;
 	readonly maxUploadBytes: number;
+	readonly defaultSettings: DefaultSettingsData;
 }
 
 export interface Services {
@@ -65,6 +67,7 @@ export function readConfig(env: Env, fallbackUrl?: string): ApiConfig {
 		corsOrigins: settings.list("CORS_ORIGINS"),
 		notice: settings.optional("SERVER_NOTICE"),
 		maxUploadBytes: UploadLimit.parse(settings.optional("MAX_UPLOAD_MB")),
+		defaultSettings: DefaultSettings.parse(settings.optional("DEFAULT_SETTINGS")),
 	};
 }
 
@@ -91,6 +94,7 @@ export function createApp(
 			realtimeUrl: realtime.endpoint,
 			signIn: identity.signIn,
 			maxUploadBytes: config.maxUploadBytes,
+			defaultSettings: config.defaultSettings,
 		}).router(),
 	);
 	if (identity.router !== null) {

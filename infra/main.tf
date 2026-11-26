@@ -464,6 +464,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       ENFORCED_USERNAME            = var.enforced_username
       SERVER_NOTICE                = var.server_notice
       MAX_UPLOAD_MB                = var.max_upload_mb
+      DEFAULT_SETTINGS             = var.default_settings
     }
   }
 

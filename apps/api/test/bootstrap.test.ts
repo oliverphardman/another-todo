@@ -8,6 +8,7 @@ describe("readConfig", () => {
 			corsOrigins: [],
 			notice: null,
 			maxUploadBytes: 10 * 1024 * 1024,
+			defaultSettings: {},
 		});
 	});
 

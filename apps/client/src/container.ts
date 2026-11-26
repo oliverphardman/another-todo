@@ -135,7 +135,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		overrides.filePicker ?? new ExpoFilePicker(),
 		config.maxUploadBytes,
 	);
-	const settings = new AppSettings(dataStore);
+	const settings = new AppSettings(dataStore, config.defaultSettings);
 	const store = new TodoStore(
 		database,
 		ids,

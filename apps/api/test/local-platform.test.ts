@@ -200,6 +200,7 @@ describe("enforced username", () => {
 			realtimeUrl: null,
 			signIn: null,
 			maxUploadBytes: 10485760,
+			defaultSettings: {},
 		});
 		const login = await fetch(`${app.base}/auth/login`, {
 			method: "POST",

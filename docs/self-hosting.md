@@ -33,12 +33,32 @@ Everything is an environment variable. Set them in your shell, in a `.env` file 
 | `CORS_ORIGINS`                                   | none                    | Comma-separated origins allowed to call the API from a browser, for a web app hosted somewhere else.                                                           |
 | `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`         | none                    | Turns on Sign in with Microsoft. See [azure-app-registration.md](azure-app-registration.md). Leave blank to disable it.                                        |
 | `AZURE_TENANT_ID`                                | `common`                | Which Microsoft accounts may sign in: `common`, `consumers`, `organizations` or a tenant id.                                                                   |
+| `DEFAULT_SETTINGS`                               | none                    | Settings apps start with until someone changes them. See below.                                                                                                |
 | `MAX_UPLOAD_MB`                                  | `10`                    | Largest file that can be attached to a task, in megabytes. Photos are also limited to 5 MB.                                                                    |
 | `MEDIA_PUBLIC_URL`                               | `PUBLIC_API_URL`        | Another address of this server to upload and download files through, such as `https://files.example.com`.                                                      |
 | `SECRET_KEY`                                     | generated and stored    | Key that signs sessions and photo links. Set it to share sessions between replicas.                                                                            |
 | `PORT`                                           | `3000`                  | Port the server listens on. With Docker Compose it is instead the port published on your machine; the container always listens on 3000.                         |
 | `DATA_DIR`                                       | `/data`                 | Where the database and photos are stored.                                                                                                                      |
 | `DATA_PROVIDER`, `MEDIA_PROVIDER`, `AUTH_PROVIDER`, `REALTIME_PROVIDER` | `sqlite`, `disk`, `password`, `websocket` | Which providers the server uses. See below.                                                                          |
+
+## Default settings
+
+`DEFAULT_SETTINGS` is a JSON object. Include only what you want to change; anything someone changes in an app wins on
+that device. This shows every setting with its built-in value:
+
+```json
+{
+	"rowStyle": "cozy",
+	"addTaskPosition": "top",
+	"microsoft": { "receive": true, "send": true, "intervalMinutes": 2 },
+	"lists": { "all": true, "important": true, "planned": true, "completed": true },
+	"myDay": { "yesterday": false, "dueToday": true }
+}
+```
+
+`rowStyle` is `cozy` or `compact`, `addTaskPosition` is `top` or `bottom`, and `intervalMinutes` is 1 to 1440. In a
+`.env` file, write it on one line in single quotes: `DEFAULT_SETTINGS='{"rowStyle":"compact"}'`. The server refuses
+to start if it contains anything else. Apps pick up a change the next time they start.
 
 ## Accounts
 

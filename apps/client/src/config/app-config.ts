@@ -14,6 +14,7 @@ export interface AppConfig {
 	readonly providers: readonly IdentityProvider[];
 	readonly notice: string | null;
 	readonly maxUploadBytes: number;
+	readonly defaultSettings: unknown;
 }
 
 export interface BuildConfig {
@@ -34,6 +35,7 @@ export interface ServerInfo {
 	readonly realtimeUrl: string | null;
 	readonly signIn: SignInSettings | null;
 	readonly maxUploadBytes: number;
+	readonly defaultSettings: unknown;
 }
 
 export interface RuntimeConfig {
@@ -71,6 +73,7 @@ export class AppConfigReader {
 			providers: info.authentication === "external" ? ["Microsoft"] : info.providers,
 			notice: info.notice,
 			maxUploadBytes: info.maxUploadBytes,
+			defaultSettings: info.defaultSettings,
 		};
 	}
 

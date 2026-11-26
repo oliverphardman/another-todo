@@ -25,6 +25,7 @@ describe("ServerInfoLoader", () => {
 			realtimeUrl: "wss://rt",
 			signIn: null,
 			maxUploadBytes: 25 * 1024 * 1024,
+			defaultSettings: null,
 		});
 		expect(urls).toEqual(["https://todo.example.com/config"]);
 	});
@@ -38,6 +39,14 @@ describe("ServerInfoLoader", () => {
 			reply({ authentication: "none", maxUploadBytes: advertised }),
 		);
 		expect((await loader.load("https://x")).maxUploadBytes).toBe(used);
+	});
+
+	it("passes on the server's default settings", async () => {
+		const defaultSettings = { rowStyle: "compact" };
+		const loader = new ServerInfoLoader(async () =>
+			reply({ authentication: "none", defaultSettings }),
+		);
+		expect((await loader.load("https://x")).defaultSettings).toEqual(defaultSettings);
 	});
 
 	it("keeps only the identity providers it knows", async () => {
@@ -56,6 +65,7 @@ describe("ServerInfoLoader", () => {
 			realtimeUrl: null,
 			signIn: null,
 			maxUploadBytes: 25 * 1024 * 1024,
+			defaultSettings: null,
 		});
 	});
 
