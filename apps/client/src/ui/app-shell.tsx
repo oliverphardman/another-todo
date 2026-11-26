@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -13,8 +13,11 @@ import { MenuBarSync } from "./menu-bar-sync";
 import { NoticeBanner } from "./notice-banner";
 import { ResizeHandle } from "./resize-handle";
 import { SlidingPane } from "./sliding-pane";
-import { SwipeArea } from "./swipe";
-import { ThemeOverride, useTheme } from "./theme-context";
+import { CenteredScreen } from "./centered-screen";
+import { DrawerLayout } from "./drawer-layout";
+import { KeyboardSafe } from "./keyboard-safe";
+import { ConsumedInsets } from "./safe-area";
+import { ThemeOverride } from "./theme-context";
 import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
 import { SignInScreen } from "./sign-in-screen";
@@ -32,21 +35,13 @@ function ThemedArea({ children }: { children: ReactNode }) {
 
 export function AppShell({ providers }: AppShellProps) {
 	const { auth } = useContainer();
-	const palette = useTheme();
 	const { t } = useI18n();
 	const status = useObservable(auth);
 	if (status === "loading") {
 		return (
-			<View
-				style={{
-					flex: 1,
-					alignItems: "center",
-					justifyContent: "center",
-					backgroundColor: palette.background,
-				}}
-			>
+			<CenteredScreen>
 				<AppText tone="onAccent">{t("app.loading")}</AppText>
-			</View>
+			</CenteredScreen>
 		);
 	}
 	if (status === "signedOut") {
@@ -56,12 +51,11 @@ export function AppShell({ providers }: AppShellProps) {
 		<ConfirmHost>
 			<ContextMenuHost>
 				<MenuBarSync />
-				<View style={{ flex: 1 }}>
-					<NoticeBanner />
-					<View style={{ flex: 1 }}>
+				<KeyboardSafe>
+					<NoticeBanner>
 						<MainLayout />
-					</View>
-				</View>
+					</NoticeBanner>
+				</KeyboardSafe>
 			</ContextMenuHost>
 		</ConfirmHost>
 	);
@@ -72,6 +66,7 @@ function MainLayout() {
 	useObservable(store);
 	const widths = useObservable(paneWidths);
 	const mode = useLayoutMode();
+	const { width } = useWindowDimensions();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
 	const { microsoft } = useContainer();
 	const microsoftStatus = useObservable(microsoft);
@@ -97,34 +92,38 @@ function MainLayout() {
 	const sidebarWidth = widths.sidebar ?? Layout.sidebarWidth(mode);
 	const detailWidth = widths.detail ?? Layout.detailWidth(mode);
 	if (mode === "compact") {
-		if (task !== null) {
-			return (
-				<SwipeArea onSwipe={(direction) => direction === "right" && closeDetail()}>
-					<ThemedArea>
-						<TaskDetailPane task={task} onClose={closeDetail} />
-					</ThemedArea>
-				</SwipeArea>
-			);
-		}
-		if (sidebarOpen) {
-			return (
-				<SwipeArea onSwipe={(direction) => direction === "left" && setSidebarOpen(false)}>
-					<Sidebar onSelected={() => setSidebarOpen(false)} />
-				</SwipeArea>
-			);
-		}
 		return (
-			<SwipeArea onSwipe={(direction) => direction === "right" && setSidebarOpen(true)}>
+			<DrawerLayout
+				width={width}
+				left={{
+					open: sidebarOpen,
+					onChange: setSidebarOpen,
+					opensBySwipe: true,
+					content: <Sidebar onSelected={() => setSidebarOpen(false)} />,
+				}}
+				right={{
+					open: task !== null,
+					onChange: closeDetail,
+					content:
+						lastTask.current === null ? null : (
+							<ThemedArea>
+								<TaskDetailPane task={lastTask.current} onClose={closeDetail} />
+							</ThemedArea>
+						),
+				}}
+			>
 				<ThemedArea>
 					<TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />
 				</ThemedArea>
-			</SwipeArea>
+			</DrawerLayout>
 		);
 	}
 	return (
 		<View style={{ flex: 1, flexDirection: "row" }}>
 			<View style={{ width: sidebarWidth }}>
-				<Sidebar onSelected={() => undefined} />
+				<ConsumedInsets edges={["right"]}>
+					<Sidebar onSelected={() => undefined} />
+				</ConsumedInsets>
 				<ResizeHandle
 					side="right"
 					width={sidebarWidth}
@@ -138,9 +137,11 @@ function MainLayout() {
 				/>
 			</View>
 			<View style={{ flex: 1 }}>
-				<ThemedArea>
-					<TaskListPane mode={mode} />
-				</ThemedArea>
+				<ConsumedInsets edges={task === null ? ["left"] : ["left", "right"]}>
+					<ThemedArea>
+						<TaskListPane mode={mode} />
+					</ThemedArea>
+				</ConsumedInsets>
 			</View>
 			<SlidingPane open={task !== null} width={detailWidth}>
 				<ResizeHandle
@@ -155,11 +156,13 @@ function MainLayout() {
 						void paneWidths.save();
 					}}
 				/>
-				<ThemedArea>
-					{lastTask.current === null ? null : (
-						<TaskDetailPane task={lastTask.current} onClose={closeDetail} />
-					)}
-				</ThemedArea>
+				<ConsumedInsets edges={["left"]}>
+					<ThemedArea>
+						{lastTask.current === null ? null : (
+							<TaskDetailPane task={lastTask.current} onClose={closeDetail} />
+						)}
+					</ThemedArea>
+				</ConsumedInsets>
 			</SlidingPane>
 		</View>
 	);

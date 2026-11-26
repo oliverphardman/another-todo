@@ -18,6 +18,8 @@ import { useObservable } from "./hooks";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { AddStepRow, StepRow } from "./step-list";
 import { FONT_FAMILY } from "./theme";
+import { insetPadding, useInsets } from "./safe-area";
+import { StatusBarTone } from "./status-bar-tone";
 import { useTheme } from "./theme-context";
 
 export interface TaskDetailPaneProps {
@@ -32,6 +34,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const files = useObservable(attachments);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
+	const insets = useInsets();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const [title, setTitle] = useState(task.title);
@@ -65,9 +68,10 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 			: t("detail.due", { when: i18n.dueLabel(task.dueDay, today) });
 	return (
 		<View
-			style={{ flex: 1, backgroundColor: palette.detail }}
+			style={[{ flex: 1, backgroundColor: palette.detail }, insetPadding(insets)]}
 			accessibilityLabel={t("task.details")}
 		>
+			<StatusBarTone foreground={palette.text} />
 			<ScrollView
 				contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 }}
 			>

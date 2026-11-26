@@ -2,6 +2,7 @@ import { useI18n } from "../i18n/i18n-context";
 import type { ReactNode } from "react";
 import { Image, Platform, View, useWindowDimensions } from "react-native";
 import { useTheme } from "./theme-context";
+import { SafeArea } from "./safe-area";
 
 export function PaneBackground({
 	imageUrl,
@@ -13,7 +14,11 @@ export function PaneBackground({
 	const palette = useTheme();
 	const { t } = useI18n();
 	if (imageUrl === null) {
-		return <View style={{ flex: 1, backgroundColor: palette.background }}>{children}</View>;
+		return (
+			<View style={{ flex: 1, backgroundColor: palette.background }}>
+				<SafeArea>{children}</SafeArea>
+			</View>
+		);
 	}
 	const { width, height } = useWindowDimensions();
 	return (
@@ -37,7 +42,9 @@ export function PaneBackground({
 						: { position: "absolute", top: 0, right: 0, width, height }
 				}
 			/>
-			<View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.28)" }}>{children}</View>
+			<View style={{ flex: 1, backgroundColor: "rgba(0, 0, 0, 0.28)" }}>
+				<SafeArea>{children}</SafeArea>
+			</View>
 		</View>
 	);
 }

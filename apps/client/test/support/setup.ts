@@ -40,6 +40,21 @@ vi.mock("expo-notifications", () => ({
 	AndroidImportance: { HIGH: 4 },
 }));
 vi.mock("expo-print", () => ({ printAsync: async () => undefined }));
+vi.mock("expo-status-bar", async () => {
+	const { createElement } = await import("react");
+	return {
+		StatusBar: ({ style }: { style: string }) =>
+			createElement("div", { "data-testid": "status-bar", "data-tone": style }),
+	};
+});
+vi.mock("react-native-safe-area-context", async () => {
+	const { createContext, createElement, Fragment } = await import("react");
+	return {
+		SafeAreaInsetsContext: createContext(null),
+		SafeAreaProvider: ({ children }: { children: unknown }) =>
+			createElement(Fragment, null, children as never),
+	};
+});
 vi.mock("expo-localization", () => ({
 	getLocales: vi.fn(() => [{ languageTag: "en-US" }]),
 }));

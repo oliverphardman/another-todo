@@ -15,6 +15,8 @@ import { PressableSurface } from "./pressable-surface";
 import { buildListContextMenu } from "./list-context-menu";
 import { usePrintList } from "./use-print-list";
 import { FONT_FAMILY } from "./theme";
+import { insetPadding, useInsets } from "./safe-area";
+import { StatusBarTone } from "./status-bar-tone";
 import { useTheme } from "./theme-context";
 
 const DRAG_THRESHOLD = 5;
@@ -37,6 +39,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const i18n = useI18n();
 	const { t } = i18n;
 	const palette = useTheme();
+	const insets = useInsets();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	const print = usePrintList();
@@ -179,9 +182,10 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		});
 	return (
 		<View
-			style={{ flex: 1, backgroundColor: palette.sidebar }}
+			style={[{ flex: 1, backgroundColor: palette.sidebar }, insetPadding(insets)]}
 			accessibilityLabel={t("sidebar.lists")}
 		>
+			<StatusBarTone foreground={palette.text} />
 			<View style={{ flexDirection: "row", alignItems: "center", padding: 16 }}>
 				<AppText size={18} weight="600" style={{ flex: 1, color: palette.accent }}>
 					{t("app.name")}

@@ -12,6 +12,7 @@ import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { SortChip } from "./sort-chip";
+import { StatusBarTone } from "./status-bar-tone";
 import { SyncBanner } from "./sync-banner";
 import { useContextMenuTrigger } from "./context-menu";
 import { buildListOptions } from "./list-options";
@@ -158,6 +159,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const compact = mode === "compact";
 	return (
 		<PaneBackground imageUrl={imageUrl}>
+			<StatusBarTone foreground={palette.onAccent} />
 			<SyncBanner />
 			<View
 				style={{

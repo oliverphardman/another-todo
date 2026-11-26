@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { View } from "react-native";
 import type { AppConfig } from "../config/app-config";
 import type { ServerSession } from "../config/server-session";
 import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
 import { BrandIntro } from "./brand-intro";
+import { CenteredScreen } from "./centered-screen";
 import { CredentialField } from "./credential-field";
 import { useObservable } from "./hooks";
 import { PressableSurface } from "./pressable-surface";
@@ -13,23 +13,6 @@ import { useTheme } from "./theme-context";
 export interface ServerGateProps {
 	readonly session: ServerSession;
 	readonly children: (config: AppConfig) => ReactNode;
-}
-
-function Frame({ children }: { children: ReactNode }) {
-	const palette = useTheme();
-	return (
-		<View
-			style={{
-				flex: 1,
-				alignItems: "center",
-				justifyContent: "center",
-				backgroundColor: palette.background,
-				padding: 24,
-			}}
-		>
-			{children}
-		</View>
-	);
 }
 
 function Action({ label, onPress }: { label: string; onPress: () => void }) {
@@ -60,7 +43,7 @@ function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: bool
 	const { t } = useI18n();
 	const [address, setAddress] = useState("");
 	return (
-		<Frame>
+		<CenteredScreen>
 			<BrandIntro>
 				<AppText tone="onAccent" style={{ marginBottom: 4, textAlign: "center" }}>
 					{t("server.prompt")}
@@ -81,7 +64,7 @@ function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: bool
 				) : null}
 				<Action label={t("server.connect")} onPress={() => void session.connect(address)} />
 			</BrandIntro>
-		</Frame>
+		</CenteredScreen>
 	);
 }
 
@@ -91,15 +74,15 @@ export function ServerGate({ session, children }: ServerGateProps) {
 	switch (state.status) {
 		case "resolving":
 			return (
-				<Frame>
+				<CenteredScreen>
 					<AppText tone="onAccent">{t("app.loading")}</AppText>
-				</Frame>
+				</CenteredScreen>
 			);
 		case "needsUrl":
 			return <UrlPrompt session={session} invalid={state.invalid} />;
 		case "unreachable":
 			return (
-				<Frame>
+				<CenteredScreen>
 					<AppText accessibilityRole="alert" tone="onAccent" style={{ textAlign: "center" }}>
 						{t("server.unreachable", { url: state.url })}
 					</AppText>
@@ -107,7 +90,7 @@ export function ServerGate({ session, children }: ServerGateProps) {
 					{session.enforced ? null : (
 						<Action label={t("server.change")} onPress={() => void session.change()} />
 					)}
-				</Frame>
+				</CenteredScreen>
 			);
 		case "ready":
 			return <>{children(state.config)}</>;

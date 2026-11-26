@@ -64,13 +64,13 @@ export default function App() {
 	return (
 		<SafeAreaProvider>
 			<ThemeProvider>
+				<StatusBar style="auto" />
 				<I18nProvider locale={locale}>
 					<AboutSync session={session} />
 					<ServerGate session={session}>
 						{(config) => <Application config={config} session={session} />}
 					</ServerGate>
 				</I18nProvider>
-				<StatusBar style="auto" />
 			</ThemeProvider>
 		</SafeAreaProvider>
 	);

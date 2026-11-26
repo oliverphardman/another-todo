@@ -8,6 +8,7 @@ import { MenuItem, MenuPanel } from "./menu";
 import { NativeMenu } from "./native-menu";
 import { Pointer } from "./pointer";
 import { useObservable } from "./hooks";
+import { useInsets, type Insets } from "./safe-area";
 import { useTheme } from "./theme-context";
 
 interface EntryBase {
@@ -63,10 +64,13 @@ export class MenuPlacement {
 		y: number,
 		window: { readonly width: number; readonly height: number },
 		entryCount: number,
+		insets: Insets = { top: 0, right: 0, bottom: 0, left: 0 },
 	): { readonly left: number; readonly top: number } {
+		const right = window.width - insets.right - WIDTH - MARGIN;
+		const bottom = window.height - insets.bottom - (entryCount * ROW + 16) - MARGIN;
 		return {
-			left: Math.max(MARGIN, Math.min(x, window.width - WIDTH - MARGIN)),
-			top: Math.max(MARGIN, Math.min(y, window.height - (entryCount * ROW + 16) - MARGIN)),
+			left: Math.max(insets.left + MARGIN, Math.min(x, right)),
+			top: Math.max(insets.top + MARGIN, Math.min(y, bottom)),
 		};
 	}
 }
@@ -142,7 +146,8 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 	const [panel, setPanel] = useState<ContextMenuEntry | null>(state.initialPanel ?? null);
 	const entries = stack[stack.length - 1]!;
 	const rows = panel === null ? entries.length : Math.max(entries.length, PANEL_ROWS);
-	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, rows);
+	const insets = useInsets();
+	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, rows, insets);
 	const finish = (action: () => void) => () => {
 		action();
 		onClose();

@@ -7,11 +7,6 @@ const browser = vi.hoisted(() => ({ maybeCompleteAuthSession: vi.fn() }));
 
 vi.mock("expo", () => expo);
 vi.mock("expo-web-browser", () => browser);
-vi.mock("react-native-safe-area-context", () => ({
-	SafeAreaProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-vi.mock("expo-status-bar", () => ({ StatusBar: () => <div data-testid="status-bar" /> }));
-
 import App from "../App";
 import { setViewport } from "./support/render-app";
 
@@ -47,7 +42,7 @@ describe("App", () => {
 		await waitFor(() => expect(screen.getByLabelText("Sign in")).toBeTruthy());
 		expect(screen.getByLabelText("Continue with Microsoft")).toBeTruthy();
 		expect(screen.getByLabelText("Change server")).toBeTruthy();
-		expect(screen.getByTestId("status-bar")).toBeTruthy();
+		expect(screen.getAllByTestId("status-bar")[0]!.dataset.tone).toBe("auto");
 		unmount();
 	});
 

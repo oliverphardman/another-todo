@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
+import { CenteredScreen } from "./centered-screen";
 import { useContainer } from "./container-context";
 import { CredentialField } from "./credential-field";
 import { Icon } from "./icon";
@@ -33,15 +33,7 @@ export function SignInScreen({ providers }: SignInScreenProps) {
 		auth.signInWithPassword({ username, password }).catch(() => setFailed(true));
 	};
 	return (
-		<View
-			style={{
-				flex: 1,
-				alignItems: "center",
-				justifyContent: "center",
-				backgroundColor: palette.background,
-				padding: 24,
-			}}
-		>
+		<CenteredScreen>
 			<Icon glyph="check" size={64} color={palette.onAccent} />
 			<AppText role="heading" size={32} weight="600" tone="onAccent" style={{ marginTop: 16 }}>
 				{t("app.name")}
@@ -106,6 +98,6 @@ export function SignInScreen({ providers }: SignInScreenProps) {
 					</AppText>
 				</PressableSurface>
 			)}
-		</View>
+		</CenteredScreen>
 	);
 }
