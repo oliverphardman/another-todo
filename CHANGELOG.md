@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.2](https://github.com/oliverphardman/another-todo/compare/v1.3.1...v1.3.2) (2026-11-26)
+
+
+### Fixes
+
+* **client:** return the sign-in redirect to the desktop apps ([ae066fa](https://github.com/oliverphardman/another-todo/commit/ae066fabf01129ea8b72fe464e32119232cc0e5d))
+* **client:** return the sign-in redirect to the desktop apps ([#15](https://github.com/oliverphardman/another-todo/issues/15)) ([c5a43e1](https://github.com/oliverphardman/another-todo/commit/c5a43e1be41030cdfdfd9927516fa72b38fbd49d))
+* let apps sign in to a Cognito server using only its address ([c08a324](https://github.com/oliverphardman/another-todo/commit/c08a324343c6aef7130acba2e87a3b037f400e1b))
+* let apps sign in to a Cognito server using only its address ([#13](https://github.com/oliverphardman/another-todo/issues/13)) ([83741af](https://github.com/oliverphardman/another-todo/commit/83741afabf7c8fe42dabf764929be5e9ceff0c8e))
+
 ## [1.3.1](https://github.com/oliverphardman/another-todo/compare/v1.3.0...v1.3.1) (2026-11-26)
 
 
