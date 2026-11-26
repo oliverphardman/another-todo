@@ -54,7 +54,9 @@ struct ReactNativeView: NSViewRepresentable {
   let factory: RCTReactNativeFactory
 
   func makeNSView(context: Context) -> NSView {
-    factory.rootViewFactory.view(withModuleName: "main")
+    let view = factory.rootViewFactory.view(withModuleName: "main")
+    (view as? RCTSurfaceHostingProxyRootView)?.backgroundColor = .windowBackgroundColor
+    return view
   }
 
   func updateNSView(_ nsView: NSView, context: Context) {}

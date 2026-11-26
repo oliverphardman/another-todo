@@ -42,4 +42,40 @@ describe("macOS native patches", () => {
 			source("react-native-macos", "Libraries/Text/TextInput/Singleline/RCTUITextField.mm"),
 		).toMatch(/- \(void\)selectAll:\(id\)sender\s*\{\s*\[self selectText:sender\];/);
 	});
+
+	it("keeps a single line field on one line and scrolls long text", () => {
+		const field = source(
+			"react-native-macos",
+			"Libraries/Text/TextInput/Singleline/RCTUITextField.mm",
+		);
+		expect(field).toContain("[self.cell setUsesSingleLineMode:YES];");
+		expect(field).toContain("[self.cell setScrollable:YES];");
+	});
+
+	it("places the caret where a field is clicked, including its padding", () => {
+		expect(
+			source("react-native-macos", "Libraries/Text/TextInput/Singleline/RCTUITextField.mm"),
+		).toMatch(/- \(void\)mouseDown:\(NSEvent \*\)event[\s\S]+?\[editor mouseDown:event\];/);
+	});
+
+	it("leaves the selection alone when an already focused field is focused again", () => {
+		expect(
+			source(
+				"react-native-macos",
+				"React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm",
+			),
+		).toMatch(/currentEditor\] != nil\) \{\s*return;\s*\}\s*NSWindow \*window/);
+	});
+
+	it("lets a password field receive what is typed into it", () => {
+		const field = source(
+			"react-native-macos",
+			"Libraries/Text/TextInput/Singleline/macOS/RCTUISecureTextField.mm",
+		);
+		expect(field).toContain(
+			"return (_adoptingFieldEditor && aClass == NSSecureTextField.class) || [super isKindOfClass:aClass];",
+		);
+		expect(field.match(/adoptingFieldEditor = YES;/g)).toHaveLength(2);
+		expect(field.match(/adoptingFieldEditor = NO;/g)).toHaveLength(2);
+	});
 });

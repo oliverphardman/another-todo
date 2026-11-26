@@ -2,6 +2,8 @@ import { TextField } from "./text-field";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
 
+export const CREDENTIAL_FIELD_WIDTH = 260;
+
 export interface CredentialFieldProps {
 	readonly label: string;
 	readonly value: string;
@@ -39,7 +41,7 @@ export function CredentialField({
 			keyboardType={kind === "url" ? "url" : "default"}
 			style={
 				{
-					minWidth: 260,
+					width: CREDENTIAL_FIELD_WIDTH,
 					marginTop: 12,
 					paddingVertical: 12,
 					paddingHorizontal: 12,
