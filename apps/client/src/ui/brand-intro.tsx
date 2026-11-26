@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Animated, Easing, View } from "react-native";
 import Svg, { Defs, LinearGradient, Path, Rect, Stop } from "react-native-svg";
 import { useI18n } from "../i18n/i18n-context";
@@ -47,16 +47,22 @@ function Check() {
 	);
 }
 
-export function BrandIntro({ children }: { children: ReactNode }) {
+export interface BrandIntroProps {
+	readonly children: ReactNode;
+	readonly animate?: boolean;
+}
+
+export function BrandIntro({ children, animate = true }: BrandIntroProps) {
 	const { t } = useI18n();
-	const [done, setDone] = useState(false);
-	const steps = useRef({
-		tile: new Animated.Value(0),
-		check: new Animated.Value(0),
-		title: new Animated.Value(0),
-		prompt: new Animated.Value(0),
-	}).current;
+	const [done, setDone] = useState(!animate);
+	const [steps] = useState(() => {
+		const start = () => new Animated.Value(animate ? 0 : 1);
+		return { tile: start(), check: start(), title: start(), prompt: start() };
+	});
 	useEffect(() => {
+		if (!animate) {
+			return;
+		}
 		const step = (value: Animated.Value, duration: number, easing: (at: number) => number) =>
 			Animated.timing(value, { toValue: 1, duration, easing, useNativeDriver: false });
 		const brand = Animated.sequence([
@@ -71,7 +77,7 @@ export function BrandIntro({ children }: { children: ReactNode }) {
 			}
 		});
 		return () => brand.stop();
-	}, [steps]);
+	}, [animate, steps]);
 	const between = (value: Animated.Value, from: number, to: number) =>
 		value.interpolate({ inputRange: [0, 1], outputRange: [from, to] });
 	return (

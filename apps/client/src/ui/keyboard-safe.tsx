@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Keyboard, KeyboardAvoidingView, type ViewStyle } from "react-native";
 
-function useKeyboardShown(): boolean {
+export function useKeyboardShown(): boolean {
 	const [shown, setShown] = useState(false);
 	useEffect(() => {
 		const subscriptions = [

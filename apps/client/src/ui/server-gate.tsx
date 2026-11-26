@@ -3,40 +3,15 @@ import type { AppConfig } from "../config/app-config";
 import type { ServerSession } from "../config/server-session";
 import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
+import { BrandButton } from "./brand-button";
 import { BrandIntro } from "./brand-intro";
 import { CenteredScreen } from "./centered-screen";
 import { CredentialField } from "./credential-field";
 import { useObservable } from "./hooks";
-import { PressableSurface } from "./pressable-surface";
-import { useTheme } from "./theme-context";
 
 export interface ServerGateProps {
 	readonly session: ServerSession;
 	readonly children: (config: AppConfig) => ReactNode;
-}
-
-function Action({ label, onPress }: { label: string; onPress: () => void }) {
-	const palette = useTheme();
-	return (
-		<PressableSurface
-			accessibilityRole="button"
-			accessibilityLabel={label}
-			onPress={onPress}
-			style={{
-				alignItems: "center",
-				paddingVertical: 12,
-				paddingHorizontal: 20,
-				borderRadius: 4,
-				marginTop: 12,
-				minWidth: 260,
-				backgroundColor: palette.surface,
-			}}
-		>
-			<AppText weight="600" style={{ color: palette.accent }}>
-				{label}
-			</AppText>
-		</PressableSurface>
-	);
 }
 
 function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: boolean }) {
@@ -62,7 +37,7 @@ function UrlPrompt({ session, invalid }: { session: ServerSession; invalid: bool
 						{t("server.invalid")}
 					</AppText>
 				) : null}
-				<Action label={t("server.connect")} onPress={() => void session.connect(address)} />
+				<BrandButton label={t("server.connect")} onPress={() => void session.connect(address)} />
 			</BrandIntro>
 		</CenteredScreen>
 	);
@@ -86,9 +61,9 @@ export function ServerGate({ session, children }: ServerGateProps) {
 					<AppText accessibilityRole="alert" tone="onAccent" style={{ textAlign: "center" }}>
 						{t("server.unreachable", { url: state.url })}
 					</AppText>
-					<Action label={t("server.retry")} onPress={() => void session.retry()} />
+					<BrandButton label={t("server.retry")} onPress={() => void session.retry()} />
 					{session.enforced ? null : (
-						<Action label={t("server.change")} onPress={() => void session.change()} />
+						<BrandButton label={t("server.change")} onPress={() => void session.change()} />
 					)}
 				</CenteredScreen>
 			);

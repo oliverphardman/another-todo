@@ -11,7 +11,7 @@ function renderField() {
 			<NewListField onSubmit={onSubmit} onCancel={onCancel} />
 		</ThemeProvider>,
 	);
-	return { onSubmit, onCancel, field: screen.getByLabelText("New list") };
+	return { onSubmit, onCancel, field: screen.getByLabelText("New List") };
 }
 
 describe("NewListField", () => {

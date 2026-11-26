@@ -136,7 +136,7 @@ describe("DrawerLayout", () => {
 		});
 		await act(async () => setViewport(400));
 		const showLists = await screen.findByLabelText("Show lists");
-		expect(screen.getByLabelText("Task details")).toBeTruthy();
+		expect(await screen.findByLabelText("Task details")).toBeTruthy();
 		expect(showLists.closest("[aria-hidden=true]")).not.toBeNull();
 	});
 

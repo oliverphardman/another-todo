@@ -7,6 +7,7 @@ import type {
 	IdentityProvider,
 	PasswordCredentials,
 } from "./authorization-server";
+import type { Profile } from "./profile";
 import type { TokenRepository } from "./token-repository";
 import type { TokenSet } from "./token-set";
 
@@ -25,6 +26,10 @@ export class AuthenticationService extends Observable<AuthStatus> implements Tok
 		readonly automatic = false,
 	) {
 		super("loading");
+	}
+
+	get profile(): Profile | null {
+		return this.tokens?.profile ?? null;
 	}
 
 	async restore(): Promise<void> {
@@ -77,6 +82,7 @@ export class AuthenticationService extends Observable<AuthStatus> implements Tok
 			await this.adopt({
 				...refreshed,
 				refreshToken: refreshed.refreshToken ?? tokens.refreshToken,
+				profile: refreshed.profile ?? tokens.profile,
 			});
 			return refreshed.accessToken;
 		} catch {

@@ -8,7 +8,12 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon, type IconGlyph } from "./icon";
-import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
+import { AccountHeader } from "./account-header";
+import { NewListField } from "./new-list-field";
+import { SidebarColors } from "./sidebar-colors";
+import { sidebarMetrics, type SidebarMetrics } from "./sidebar-metrics";
+import { useLogOut } from "./use-log-out";
+import { useTouchReorder } from "./use-touch-reorder";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
@@ -17,7 +22,7 @@ import { usePrintList } from "./use-print-list";
 import { FONT_FAMILY } from "./theme";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
-import { useTheme } from "./theme-context";
+import { useIsDark, useTheme } from "./theme-context";
 
 const DRAG_THRESHOLD = 5;
 
@@ -25,8 +30,8 @@ const GLYPHS: Record<IconName, IconGlyph> = {
 	myDay: "sun",
 	important: "star",
 	planned: "calendar",
-	all: "all",
-	tasks: "home",
+	all: "infinity",
+	tasks: "homeCheck",
 	list: "list",
 };
 
@@ -35,13 +40,15 @@ export interface SidebarProps {
 }
 
 export function Sidebar({ onSelected }: SidebarProps) {
-	const { store, auth, microsoft } = useContainer();
+	const { store, microsoft } = useContainer();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const palette = useTheme();
 	const insets = useInsets();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
+	const dark = useIsDark();
+	const metrics = sidebarMetrics();
 	const print = usePrintList();
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
@@ -76,7 +83,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		return entries;
 	});
 	const custom = store.orderedLists();
-	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
+	const [pointerDrag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);
 	const beginDrag = (listId: string, event: unknown) => {
 		const groupKey = state.lists.find((list) => list.id === listId)?.groupId ?? "";
@@ -110,6 +117,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		window.addEventListener("mousemove", move);
 		window.addEventListener("mouseup", end);
 	};
+	const groupOf = (id: string) => state.lists.find((list) => list.id === id)?.groupId ?? null;
+	const siblingsOf = (listId: string) =>
+		custom.filter((list) => list.id !== listId && list.groupId === groupOf(listId));
+	const touch = useTouchReorder({
+		siblingsOf: (listId) => siblingsOf(listId).map((list) => list.id),
+		onDrop: (listId, index) => store.moveList(listId, index),
+	});
+	const drag = touch.drag ?? pointerDrag;
 	const customViews = state.views.filter((view): view is CustomListView => view.isCustomList);
 	const knownGroups = new Set(state.groups.map((group) => group.id));
 	const ungrouped = customViews.filter(
@@ -123,6 +138,12 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			view={view}
 			selected={state.selectedViewId === view.id}
 			count={store.taskCount(view)}
+			iconColor={SidebarColors.icon(
+				view.id,
+				store.settingsFor(view.id).theme,
+				palette.sidebar,
+				dark,
+			)}
 			indented={indented}
 			onPress={() => {
 				if (dragged.current) {
@@ -134,6 +155,17 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			}}
 			marker={markerFor(view.id)}
 			onDragStart={(event) => beginDrag(view.id, event)}
+			reorder={
+				touch.enabled && view.isCustomList
+					? {
+							ref: touch.register(view.id),
+							lifted: touch.lifted === view.id,
+							offset: touch.drag?.id === view.id ? touch.drag.offset : 0,
+							lift: () => touch.lift(view.id),
+							release: () => touch.release(view.id),
+						}
+					: null
+			}
 			buildMenu={() => listEntries(view.id)}
 			hasMenu={view.isCustomList}
 		/>
@@ -142,10 +174,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		if (drag === null) {
 			return null;
 		}
-		const groupOf = (id: string) => state.lists.find((list) => list.id === id)?.groupId ?? null;
-		const others = custom.filter(
-			(list) => list.id !== drag.id && list.groupId === groupOf(drag.id),
-		);
+		const others = siblingsOf(drag.id);
 		if (others[drag.index]?.id === viewId) {
 			return "before";
 		}
@@ -186,32 +215,20 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			accessibilityLabel={t("sidebar.lists")}
 		>
 			<StatusBarTone foreground={palette.text} />
-			<View style={{ flexDirection: "row", alignItems: "center", padding: 16 }}>
-				<AppText size={18} weight="600" style={{ flex: 1, color: palette.accent }}>
-					{t("app.name")}
-				</AppText>
-				{auth.automatic ? null : (
-					<PressableSurface
-						accessibilityRole="button"
-						accessibilityLabel={t("signOut.button")}
-						onPress={() => void auth.signOut()}
-						hoverColor={palette.sidebarHover}
-						style={{ padding: 8, borderRadius: 4 }}
-					>
-						<Icon glyph="signOut" color={palette.textSecondary} />
-					</PressableSurface>
-				)}
-			</View>
+			<AccountHeader>
+				<HeaderAction kind={metrics.headerAction} />
+			</AccountHeader>
 			<View
 				style={{
 					flexDirection: "row",
 					alignItems: "center",
-					marginHorizontal: 12,
-					marginBottom: 8,
-					paddingHorizontal: 10,
-					height: 36,
-					borderRadius: 4,
-					backgroundColor: palette.surface,
+					margin: 12,
+					paddingHorizontal: 12,
+					height: metrics.searchHeight,
+					borderRadius: metrics.searchHeight / 2,
+					borderWidth: 1,
+					borderColor: palette.border,
+					backgroundColor: palette.sidebarField,
 				}}
 			>
 				<Icon glyph="search" size={16} color={palette.textSecondary} />
@@ -232,8 +249,9 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							flex: 1,
 							marginLeft: 8,
 							fontFamily: FONT_FAMILY,
-							fontSize: 14,
+							fontSize: metrics.fontSize,
 							color: palette.text,
+							padding: 0,
 							outlineStyle: "none",
 						} as object
 					}
@@ -248,64 +266,64 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					</PressableSurface>
 				)}
 			</View>
-			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-				{builtIns.map((view) => renderRow(view, false))}
-				{ungrouped.length === 0 && state.groups.length === 0 ? null : (
-					<View
-						style={{
-							height: 1,
-							backgroundColor: palette.border,
-							marginVertical: 8,
-							marginHorizontal: 16,
-						}}
-					/>
-				)}
-				{ungrouped.map((view) => renderRow(view, false))}
-				{state.groups.map((group) => {
-					const members = customViews.filter((view) => view.list.groupId === group.id);
-					const open = !collapsed.has(group.id);
-					return (
-						<View key={group.id}>
-							<GroupHeader
-								group={group}
-								open={open}
-								count={members.length}
-								renaming={state.renamingGroupId === group.id}
-								onToggle={() =>
-									setCollapsed((previous) => {
-										const next = new Set(previous);
-										if (next.has(group.id)) {
-											next.delete(group.id);
-										} else {
-											next.add(group.id);
-										}
-										return next;
-									})
-								}
-								onRename={(name) => {
-									store.renameGroup(group.id, name);
-									store.stopRenamingGroup();
-								}}
-								buildMenu={() => groupEntries(group.id)}
-							/>
-							{open ? members.map((view) => renderRow(view, true)) : null}
-						</View>
-					);
-				})}
-				<PressableSurface
-					accessibilityLabel={t("sidebar.blank")}
-					onContextMenu={blankMenu.onContextMenu}
-					onLongPress={blankMenu.onLongPress}
-					style={{ flexGrow: 1, minHeight: 24 }}
-				/>
-			</ScrollView>
-			<View
-				style={{
-					borderTopWidth: 1,
-					borderTopColor: palette.border,
-					padding: 8,
-				}}
+			<ScrollView
+				keyboardShouldPersistTaps="handled"
+				scrollEnabled={touch.lifted === null}
+				contentContainerStyle={{ flexGrow: 1 }}
 			>
+				<View style={{ flexGrow: 1 }} {...touch.panHandlers}>
+					{builtIns.map((view) => renderRow(view, false))}
+					{ungrouped.length === 0 && state.groups.length === 0 ? null : (
+						<View
+							style={{
+								height: 1,
+								backgroundColor: palette.border,
+								marginVertical: 8,
+								marginHorizontal: 16,
+							}}
+						/>
+					)}
+					{ungrouped.map((view) => renderRow(view, false))}
+					{state.groups.map((group) => {
+						const members = customViews.filter((view) => view.list.groupId === group.id);
+						const open = !collapsed.has(group.id);
+						return (
+							<View key={group.id}>
+								<GroupHeader
+									group={group}
+									open={open}
+									count={members.length}
+									renaming={state.renamingGroupId === group.id}
+									onToggle={() =>
+										setCollapsed((previous) => {
+											const next = new Set(previous);
+											if (next.has(group.id)) {
+												next.delete(group.id);
+											} else {
+												next.add(group.id);
+											}
+											return next;
+										})
+									}
+									onRename={(name) => {
+										store.renameGroup(group.id, name);
+										store.stopRenamingGroup();
+									}}
+									buildMenu={() => groupEntries(group.id)}
+								/>
+								{open ? members.map((view) => renderRow(view, true)) : null}
+							</View>
+						);
+					})}
+					<PressableSurface
+						accessibilityLabel={t("sidebar.blank")}
+						onContextMenu={blankMenu.onContextMenu}
+						onLongPress={blankMenu.onLongPress}
+						style={{ flexGrow: 1, minHeight: 24 }}
+					/>
+				</View>
+			</ScrollView>
+			<View style={{ paddingHorizontal: 6, paddingVertical: 8 }}>
 				{creating ? (
 					<NewListField
 						onSubmit={(name) => {
@@ -322,31 +340,35 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityLabel={t("sidebar.createList")}
 							onPress={() => setCreating(true)}
 							hoverColor={palette.sidebarHover}
+							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								flex: 1,
 								flexDirection: "row",
 								alignItems: "center",
-								minHeight: SIDEBAR_ROW_HEIGHT,
+								minHeight: metrics.rowHeight,
 								paddingHorizontal: 10,
 							}}
 						>
-							<Icon glyph="plus" color={palette.accent} />
-							<AppText style={{ marginLeft: 14 }}>{t("sidebar.newList")}</AppText>
+							<Icon glyph="plus" size={metrics.iconSize} color={palette.text} />
+							<AppText size={metrics.fontSize} style={{ marginLeft: 12 }}>
+								{t("sidebar.newList")}
+							</AppText>
 						</PressableSurface>
 						<PressableSurface
 							accessibilityRole="button"
 							accessibilityLabel={t("sidebar.createGroup")}
 							onPress={() => store.newGroup(t("group.new"))}
 							hoverColor={palette.sidebarHover}
+							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
-								minHeight: SIDEBAR_ROW_HEIGHT,
-								minWidth: SIDEBAR_ROW_HEIGHT,
+								minHeight: metrics.rowHeight,
+								minWidth: metrics.rowHeight,
 								alignItems: "center",
 								justifyContent: "center",
 								borderRadius: 4,
 							}}
 						>
-							<Icon glyph="newGroup" color={palette.accent} />
+							<Icon glyph="newGroup" size={metrics.iconSize} color={palette.text} />
 						</PressableSurface>
 					</View>
 				)}
@@ -355,41 +377,88 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	);
 }
 
+function HeaderAction({ kind }: { kind: SidebarMetrics["headerAction"] }) {
+	const { auth } = useContainer();
+	const { t } = useI18n();
+	const palette = useTheme();
+	const logOut = useLogOut();
+	const actions = {
+		logOut: logOut === null ? null : { label: t("account.logOut"), run: logOut },
+		signOut: auth.automatic ? null : { label: t("signOut.button"), run: () => void auth.signOut() },
+	};
+	const action = kind === null ? null : actions[kind];
+	if (action === null) {
+		return null;
+	}
+	return (
+		<PressableSurface
+			accessibilityRole="button"
+			accessibilityLabel={action.label}
+			onPress={action.run}
+			hoverColor={palette.sidebarHover}
+			android_ripple={{ color: palette.ripple, borderless: true }}
+			style={{ padding: 8, borderRadius: 4 }}
+		>
+			<Icon glyph="signOut" color={palette.textSecondary} />
+		</PressableSurface>
+	);
+}
+
 interface SidebarRowProps {
 	readonly view: TaskView;
 	readonly selected: boolean;
 	readonly count: number;
+	readonly iconColor: string;
 	readonly onPress: () => void;
 	readonly buildMenu: () => ContextMenuEntry[];
 	readonly hasMenu: boolean;
 	readonly indented: boolean;
 	readonly marker: "before" | "after" | null;
 	readonly onDragStart: (event: unknown) => void;
+	readonly reorder: RowReorder | null;
+}
+
+interface RowReorder {
+	readonly ref: (row: View | null) => void;
+	readonly lifted: boolean;
+	readonly offset: number;
+	readonly lift: () => void;
+	readonly release: () => boolean;
 }
 
 function SidebarRow({
 	view,
 	selected,
 	count,
+	iconColor,
 	onPress,
 	buildMenu,
 	hasMenu,
 	indented,
 	marker,
 	onDragStart,
+	reorder,
 }: SidebarRowProps) {
 	const i18n = useI18n();
 	const { t } = i18n;
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("ctx.listMenu"), buildMenu);
+	const metrics = sidebarMetrics();
 	return (
 		<PressableSurface
+			ref={reorder?.ref}
 			accessibilityRole="button"
 			accessibilityLabel={i18n.viewTitle(view)}
 			accessibilityState={{ selected }}
 			onPress={onPress}
 			onContextMenu={hasMenu ? menu.onContextMenu : undefined}
-			onLongPress={hasMenu ? menu.onLongPress : undefined}
+			onLongPress={reorder?.lift ?? (hasMenu ? menu.onLongPress : undefined)}
+			onPressOut={(event) => {
+				if (reorder?.release() === true) {
+					menu.onContextMenu(event);
+				}
+			}}
+			android_ripple={{ color: palette.ripple, foreground: true }}
 			hoverColor={palette.sidebarHover}
 			{...(hasMenu
 				? ({
@@ -406,21 +475,36 @@ function SidebarRow({
 				alignItems: "center",
 				paddingLeft: indented ? 36 : 16,
 				paddingRight: 16,
-				paddingVertical: 11,
+				minHeight: metrics.rowHeight,
 				borderTopWidth: 2,
 				borderTopColor: marker === "before" ? palette.accent : "transparent",
 				borderBottomWidth: 2,
 				borderBottomColor: marker === "after" ? palette.accent : "transparent",
 				backgroundColor: selected ? palette.sidebarSelected : undefined,
+				...(reorder?.lifted === true
+					? {
+							backgroundColor: palette.sidebarHover,
+							transform: [{ translateY: reorder.offset }],
+							zIndex: 1,
+							elevation: 4,
+						}
+					: {}),
 			}}
 		>
 			<Icon
 				glyph={
 					view.isCustomList && (view as CustomListView).list.shared ? "people" : GLYPHS[view.icon]
 				}
-				color={palette.accent}
+				size={metrics.iconSize}
+				strokeWidth={metrics.strokeWidth}
+				color={iconColor}
 			/>
-			<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
+			<AppText
+				size={metrics.fontSize}
+				style={{ flex: 1, marginLeft: 12 }}
+				weight={selected ? "600" : "400"}
+				numberOfLines={1}
+			>
 				{i18n.viewTitle(view)}
 			</AppText>
 			{count === 0 ? null : (
@@ -454,6 +538,7 @@ function GroupHeader({
 	const { t } = useI18n();
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("group.menu"), buildMenu);
+	const metrics = sidebarMetrics();
 	const [text, setText] = useState(group.name);
 	return (
 		<PressableSurface
@@ -464,16 +549,17 @@ function GroupHeader({
 			onContextMenu={menu.onContextMenu}
 			onLongPress={menu.onLongPress}
 			hoverColor={palette.sidebarHover}
+			android_ripple={{ color: palette.ripple, foreground: true }}
 			style={{
 				flexDirection: "row",
 				alignItems: "center",
 				paddingHorizontal: 16,
-				paddingVertical: 11,
+				minHeight: metrics.rowHeight,
 			}}
 		>
 			<Icon glyph={open ? "chevronDown" : "chevronRight"} size={16} color={palette.textSecondary} />
 			<View style={{ marginLeft: 10 }}>
-				<Icon glyph="group" color={palette.accent} />
+				<Icon glyph="group" size={metrics.iconSize} color={palette.textSecondary} />
 			</View>
 			{renaming ? (
 				<TextField
@@ -496,7 +582,7 @@ function GroupHeader({
 					}
 				/>
 			) : (
-				<AppText style={{ flex: 1, marginLeft: 14 }} weight="600">
+				<AppText size={metrics.fontSize} style={{ flex: 1, marginLeft: 12 }} weight="600">
 					{group.name}
 				</AppText>
 			)}

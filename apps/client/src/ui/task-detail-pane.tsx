@@ -18,6 +18,7 @@ import { useObservable } from "./hooks";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { AddStepRow, StepRow } from "./step-list";
 import { FONT_FAMILY } from "./theme";
+import { useKeyboardShown } from "./keyboard-safe";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
 import { useTheme } from "./theme-context";
@@ -40,6 +41,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const [title, setTitle] = useState(task.title);
 	const [note, setNote] = useState(task.note);
 	const [noteFocused, setNoteFocused] = useState(false);
+	const keyboardShown = useKeyboardShown();
 	const [picking, setPicking] = useState(false);
 	const [pickingReminder, setPickingReminder] = useState(false);
 	const [pickingRepeat, setPickingRepeat] = useState(false);
@@ -73,6 +75,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		>
 			<StatusBarTone foreground={palette.text} />
 			<ScrollView
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 }}
 			>
 				<DetailCard>
@@ -236,8 +239,8 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					))}
 					<ActionRow
 						glyph="paperclip"
-						label={files.busy === "uploading" ? t("attachment.uploading") : t("detail.file")}
-						onPress={files.busy === "uploading" ? undefined : () => void attachments.add()}
+						label={t("detail.file")}
+						onPress={() => void attachments.add()}
 					/>
 					{files.error === null ? null : (
 						<AppText
@@ -277,39 +280,41 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					/>
 				</DetailCard>
 			</ScrollView>
-			<View
-				style={{
-					flexDirection: "row",
-					alignItems: "center",
-					justifyContent: "space-between",
-					minHeight: DETAIL_ROW_HEIGHT + 8,
-					marginHorizontal: 16,
-					borderTopWidth: 1,
-					borderTopColor: palette.border,
-				}}
-			>
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={t("task.closeDetails")}
-					onPress={onClose}
-					hoverColor={palette.surfaceHover}
-					style={{ padding: 8, borderRadius: 4 }}
+			{keyboardShown ? null : (
+				<View
+					style={{
+						flexDirection: "row",
+						alignItems: "center",
+						justifyContent: "space-between",
+						minHeight: DETAIL_ROW_HEIGHT + 8,
+						marginHorizontal: 16,
+						borderTopWidth: 1,
+						borderTopColor: palette.border,
+					}}
 				>
-					<Icon glyph="panelClose" size={20} color={palette.textSecondary} strokeWidth={1.3} />
-				</PressableSurface>
-				<AppText size={13} tone="secondary">
-					{i18n.createdLabel(task.createdAt, store.now)}
-				</AppText>
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={t("task.delete")}
-					onPress={() => void deleteTasks([task.id])}
-					hoverColor={palette.surfaceHover}
-					style={{ padding: 8, borderRadius: 4 }}
-				>
-					<Icon glyph="trash" size={20} color={palette.textSecondary} strokeWidth={1.3} />
-				</PressableSurface>
-			</View>
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={t("task.closeDetails")}
+						onPress={onClose}
+						hoverColor={palette.surfaceHover}
+						style={{ padding: 8, borderRadius: 4 }}
+					>
+						<Icon glyph="panelClose" size={20} color={palette.textSecondary} strokeWidth={1.3} />
+					</PressableSurface>
+					<AppText size={13} tone="secondary">
+						{i18n.createdLabel(task.createdAt, store.now)}
+					</AppText>
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={t("task.delete")}
+						onPress={() => void deleteTasks([task.id])}
+						hoverColor={palette.surfaceHover}
+						style={{ padding: 8, borderRadius: 4 }}
+					>
+						<Icon glyph="trash" size={20} color={palette.textSecondary} strokeWidth={1.3} />
+					</PressableSurface>
+				</View>
+			)}
 		</View>
 	);
 }

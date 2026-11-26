@@ -37,6 +37,7 @@ const session = vi.hoisted(() => {
 
 vi.mock("expo-auth-session", () => session);
 
+import { DesktopMicrosoftAuthorizer } from "../src/microsoft/desktop-microsoft-authorizer";
 import { ExpoMicrosoftAuthorizer } from "../src/microsoft/expo-microsoft-authorizer";
 import { ExpoMicrosoftAuthorizer as MacAuthorizer } from "../src/microsoft/expo-microsoft-authorizer.macos";
 import { ExpoMicrosoftAuthorizer as WindowsAuthorizer } from "../src/microsoft/expo-microsoft-authorizer.windows";
@@ -445,12 +446,15 @@ describe("Microsoft authorizers", () => {
 		});
 	});
 
-	it("is unavailable on desktop", async () => {
-		for (const Unavailable of [UnavailableMicrosoftAuthorizer, MacAuthorizer, WindowsAuthorizer]) {
-			const instance = new Unavailable();
-			expect(instance.available).toBe(false);
-			expect(await instance.authorize()).toBeNull();
-			await expect(instance.refresh()).rejects.toThrow("not available");
-		}
+	it("signs in through the system browser on desktop", () => {
+		expect(MacAuthorizer).toBe(DesktopMicrosoftAuthorizer);
+		expect(WindowsAuthorizer).toBe(DesktopMicrosoftAuthorizer);
+	});
+
+	it("can be unavailable", async () => {
+		const unavailable = new UnavailableMicrosoftAuthorizer();
+		expect(unavailable.available).toBe(false);
+		expect(await unavailable.authorize()).toBeNull();
+		await expect(unavailable.refresh()).rejects.toThrow("not available");
 	});
 });

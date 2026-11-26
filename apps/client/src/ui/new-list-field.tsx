@@ -3,10 +3,9 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 import { TextField } from "./text-field";
 import { Icon } from "./icon";
+import { sidebarMetrics } from "./sidebar-metrics";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
-
-export const SIDEBAR_ROW_HEIGHT = 44;
 
 export interface NewListFieldProps {
 	readonly onSubmit: (name: string) => void;
@@ -18,6 +17,7 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 	const { t } = useI18n();
 	const [name, setName] = useState("");
 	const finished = useRef(false);
+	const metrics = sidebarMetrics();
 	const finish = () => {
 		if (finished.current) {
 			return;
@@ -34,11 +34,11 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 			style={{
 				flexDirection: "row",
 				alignItems: "center",
-				minHeight: SIDEBAR_ROW_HEIGHT,
+				minHeight: metrics.rowHeight,
 				paddingHorizontal: 10,
 			}}
 		>
-			<Icon glyph="plus" color={palette.accent} />
+			<Icon glyph="plus" size={metrics.iconSize} color={palette.text} />
 			<TextField
 				autoFocus
 				accessibilityLabel={t("sidebar.newList")}
@@ -57,10 +57,10 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 				style={
 					{
 						flex: 1,
-						marginLeft: 14,
+						marginLeft: 12,
 						padding: 0,
 						fontFamily: FONT_FAMILY,
-						fontSize: 14,
+						fontSize: metrics.fontSize,
 						color: palette.text,
 						outlineStyle: "none",
 					} as object

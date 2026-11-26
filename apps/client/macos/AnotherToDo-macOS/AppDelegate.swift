@@ -10,7 +10,9 @@ struct AnotherToDoApp: App {
   var body: some Scene {
     Window("Another To Do", id: "main") {
       ReactNativeView(factory: appDelegate.reactNativeFactory)
+        .ignoresSafeArea()
     }
+    .windowStyle(.hiddenTitleBar)
     .defaultSize(width: 1280, height: 720)
   }
 }
@@ -63,7 +65,9 @@ struct ReactNativeView: NSViewRepresentable {
   let factory: RCTReactNativeFactory
 
   func makeNSView(context: Context) -> NSView {
-    factory.rootViewFactory.view(withModuleName: "main")
+    let view = factory.rootViewFactory.view(withModuleName: "main")
+    (view as? RCTSurfaceHostingProxyRootView)?.backgroundColor = .windowBackgroundColor
+    return view
   }
 
   func updateNSView(_ nsView: NSView, context: Context) {}

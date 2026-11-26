@@ -4,6 +4,7 @@ import { Observable } from "../state/observable";
 import { AppText } from "./app-text";
 import { DialogKeys } from "./dialog-keys";
 import { useObservable } from "./hooks";
+import { useBackHandler } from "./use-back-handler";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 import { useI18n } from "../i18n/i18n-context";
@@ -58,6 +59,13 @@ export function ConfirmHost({ children }: { children: ReactNode }) {
 		}),
 		[controller],
 	);
+	useBackHandler(() => {
+		if (controller.get() === null) {
+			return false;
+		}
+		controller.answer(false);
+		return true;
+	});
 	return (
 		<ConfirmContext.Provider value={controller}>
 			<View style={{ flex: 1 }}>

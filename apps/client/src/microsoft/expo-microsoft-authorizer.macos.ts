@@ -1,1 +1,1 @@
-export { UnavailableMicrosoftAuthorizer as ExpoMicrosoftAuthorizer } from "./unavailable-microsoft-authorizer";
+export { DesktopMicrosoftAuthorizer as ExpoMicrosoftAuthorizer } from "./desktop-microsoft-authorizer";

@@ -1,4 +1,5 @@
 import type { KeyValueStore } from "../storage/key-value-store";
+import { Profiles } from "./profile";
 import type { TokenSet } from "./token-set";
 
 const TOKEN_KEY = "atd.tokens";
@@ -18,6 +19,7 @@ export class TokenRepository {
 					accessToken: parsed.accessToken,
 					refreshToken: parsed.refreshToken ?? null,
 					expiresAt: parsed.expiresAt,
+					profile: Profiles.of(parsed.profile?.name, parsed.profile?.email),
 				};
 			}
 		} catch {

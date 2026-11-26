@@ -3,6 +3,7 @@ import { AuthenticationService } from "../src/auth/authentication-service";
 import { TokenRepository } from "../src/auth/token-repository";
 import { DueDay } from "../src/domain/due-day";
 import { LinkRepository } from "../src/microsoft/microsoft-links";
+import { MicrosoftIdentity } from "../src/microsoft/microsoft-identity";
 import { MicrosoftSession } from "../src/microsoft/microsoft-session";
 import { MicrosoftSyncEngine } from "../src/microsoft/microsoft-sync-engine";
 import { MicrosoftSyncService } from "../src/microsoft/microsoft-sync-service";
@@ -257,6 +258,27 @@ describe("MicrosoftSyncService", () => {
 		await other.auth.signIn();
 		await other.service.start();
 		expect(other.service.get()).toBe("idle");
+	});
+
+	it("recognizes Microsoft accounts of both Cognito and self-hosted servers", () => {
+		for (const username of ["Microsoft_abc", "microsoft_abc"]) {
+			expect(MicrosoftIdentity.isMicrosoftAccount(microsoftAccessToken(username))).toBe(true);
+		}
+		const selfHosted = (sub: unknown) => `h.${btoa(JSON.stringify({ sub }))}.s`;
+		expect(MicrosoftIdentity.isMicrosoftAccount(selfHosted("microsoft:123"))).toBe(true);
+		expect(MicrosoftIdentity.isMicrosoftAccount(selfHosted("admin"))).toBe(false);
+		expect(MicrosoftIdentity.isMicrosoftAccount(selfHosted(7))).toBe(false);
+		expect(MicrosoftIdentity.isMicrosoftAccount("opaque")).toBe(false);
+	});
+
+	it("returns to idle when the Microsoft sign-in fails", async () => {
+		const { service, auth, authorizer, dataStore } = serviceSetup();
+		await auth.signIn();
+		await service.start();
+		vi.spyOn(authorizer, "authorize").mockRejectedValueOnce(new Error("refused"));
+		await service.accept();
+		expect(service.get()).toBe("idle");
+		expect(await dataStore.get("atd.msPrefs")).toBeNull();
 	});
 
 	it("connects after consent, syncs, stores the decision and syncs again on a schedule", async () => {

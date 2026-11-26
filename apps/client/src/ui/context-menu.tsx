@@ -8,6 +8,7 @@ import { MenuItem, MenuPanel } from "./menu";
 import { NativeMenu } from "./native-menu";
 import { Pointer } from "./pointer";
 import { useObservable } from "./hooks";
+import { useBackHandler } from "./use-back-handler";
 import { useInsets, type Insets } from "./safe-area";
 import { useTheme } from "./theme-context";
 
@@ -76,10 +77,19 @@ export class MenuPlacement {
 }
 
 export class NativeMenuRunner {
-	static async run(controller: ContextMenuController, state: ContextMenuState): Promise<void> {
+	static async run(
+		controller: ContextMenuController,
+		state: ContextMenuState,
+		cancelLabel: string,
+	): Promise<void> {
 		let key: string | null;
 		try {
-			key = await NativeMenu.bridge.show(NativeMenu.items(state.entries), state.x, state.y);
+			key = await NativeMenu.bridge.show({
+				items: NativeMenu.items(state.entries),
+				x: state.x,
+				y: state.y,
+				cancelLabel,
+			});
 		} catch {
 			controller.open(state);
 			return;
@@ -110,6 +120,7 @@ export function useContextMenuTrigger(
 	build: () => readonly ContextMenuEntry[],
 ): ContextMenuTrigger {
 	const controller = useContext(ContextMenuContext);
+	const { t } = useI18n();
 	const show = (event: unknown) => {
 		Pointer.suppressDefault(event);
 		const at = Pointer.position(event);
@@ -118,7 +129,7 @@ export function useContextMenuTrigger(
 			controller.open({ ...at, label, entries });
 			return;
 		}
-		void NativeMenuRunner.run(controller, { ...at, label, entries });
+		void NativeMenuRunner.run(controller, { ...at, label, entries }, t("dialog.cancel"));
 	};
 	return { onContextMenu: show, onLongPress: Platform.OS === "web" ? undefined : show };
 }
@@ -148,6 +159,14 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 	const rows = panel === null ? entries.length : Math.max(entries.length, PANEL_ROWS);
 	const insets = useInsets();
 	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, rows, insets);
+	useBackHandler(() => {
+		if (panel === null && stack.length > 1) {
+			setStack(stack.slice(0, -1));
+		} else {
+			onClose();
+		}
+		return true;
+	});
 	const finish = (action: () => void) => () => {
 		action();
 		onClose();

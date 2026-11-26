@@ -112,6 +112,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 		}
 		return drag.index >= others.length && others[others.length - 1]?.id === taskId ? "after" : null;
 	};
+	const compact = mode === "compact";
 	const row = (task: Task) => (
 		<TaskRow
 			marker={markerFor(task.id)}
@@ -141,7 +142,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			}}
 			buildMenu={() => {
 				const inSelection = state.selectedTaskIds.includes(task.id);
-				if (!inSelection) {
+				if (!inSelection && !compact) {
 					store.selectTask(task.id);
 				}
 				return buildTaskMenu(
@@ -156,7 +157,6 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const addBar = (
 		<AddTaskBar placeholder={t("task.add")} onSubmit={(text) => store.addTask(text)} />
 	);
-	const compact = mode === "compact";
 	return (
 		<PaneBackground imageUrl={imageUrl}>
 			<StatusBarTone foreground={palette.onAccent} />
@@ -223,6 +223,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			</View>
 			<SortChip />
 			<ScrollView
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{
 					flexGrow: 1,
 					paddingHorizontal: 16,

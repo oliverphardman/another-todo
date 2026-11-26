@@ -28,6 +28,14 @@ describe("sign-in with a username and password", () => {
 		expect(app.container.auth.get()).toBe("signedIn");
 	});
 
+	it("opens with the same mark, name and prompt as the server screen", async () => {
+		await start("password");
+		expect(screen.getByRole("img", { name: "Another To Do" })).toBeTruthy();
+		expect(screen.getByRole("heading", { name: "Another To Do" })).toBeTruthy();
+		expect(screen.getByText("Enter your username and password")).toBeTruthy();
+		expect(screen.getByLabelText("Username").closest("[aria-hidden=true]")).toBeNull();
+	});
+
 	it("explains a refusal and signs in with the Enter key", async () => {
 		const app = await start("password");
 		app.authorizationServer.authorize = async () => {

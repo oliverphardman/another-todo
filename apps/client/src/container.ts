@@ -10,6 +10,7 @@ import type { ShareGateway } from "./shares/share-gateway";
 import { ExpoMicrosoftAuthorizer } from "./microsoft/expo-microsoft-authorizer";
 import { GraphTodoGateway, type GraphFetcher } from "./microsoft/graph-todo-gateway";
 import type { MicrosoftAuthorizer } from "./microsoft/microsoft-authorizer";
+import { UnavailableMicrosoftAuthorizer } from "./microsoft/unavailable-microsoft-authorizer";
 import { LinkRepository } from "./microsoft/microsoft-links";
 import { MicrosoftSession } from "./microsoft/microsoft-session";
 import { MicrosoftSyncEngine } from "./microsoft/microsoft-sync-engine";
@@ -143,11 +144,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		clock,
 	);
 	const authorizer =
-		overrides.microsoftAuthorizer ??
-		new ExpoMicrosoftAuthorizer(
-			{ clientId: config.microsoftClientId, scheme: config.scheme },
-			clock,
-		);
+		overrides.microsoftAuthorizer ?? createMicrosoftAuthorizer(config, overrides.platform, clock);
 	const microsoftSession = new MicrosoftSession(tokenStore, authorizer, clock);
 	const microsoftLinks = new LinkRepository(dataStore);
 	const microsoft = new MicrosoftSyncService(
@@ -194,6 +191,20 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			overrides.sockets ?? ((url) => new WebSocket(url) as SocketLike),
 		),
 	};
+}
+
+function createMicrosoftAuthorizer(
+	config: AppConfig,
+	platform: string,
+	clock: Clock,
+): MicrosoftAuthorizer {
+	if (platform === "web" && config.authentication !== "external") {
+		return new UnavailableMicrosoftAuthorizer();
+	}
+	return new ExpoMicrosoftAuthorizer(
+		{ clientId: config.microsoftClientId, scheme: config.scheme },
+		clock,
+	);
 }
 
 function createAuthorizationServer(

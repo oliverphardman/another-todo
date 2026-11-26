@@ -1,16 +1,16 @@
 import * as AuthSession from "expo-auth-session";
 import type { Clock } from "../domain/ports";
 import type { MicrosoftAuthorizer, MicrosoftTokens } from "./microsoft-authorizer";
+import { MICROSOFT_ENDPOINTS, MICROSOFT_SCOPES } from "./microsoft-endpoints";
 
 export interface ExpoMicrosoftConfig {
 	readonly clientId: string;
 	readonly scheme: string;
 }
 
-const SCOPES = ["openid", "offline_access", "Tasks.ReadWrite"];
 const DISCOVERY: AuthSession.DiscoveryDocument = {
-	authorizationEndpoint: "https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize",
-	tokenEndpoint: "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
+	authorizationEndpoint: MICROSOFT_ENDPOINTS.authorization,
+	tokenEndpoint: MICROSOFT_ENDPOINTS.token,
 };
 
 export class ExpoMicrosoftAuthorizer implements MicrosoftAuthorizer {
@@ -29,7 +29,7 @@ export class ExpoMicrosoftAuthorizer implements MicrosoftAuthorizer {
 		const request = new AuthSession.AuthRequest({
 			clientId: this.config.clientId,
 			redirectUri: this.redirectUri,
-			scopes: SCOPES,
+			scopes: [...MICROSOFT_SCOPES],
 			usePKCE: true,
 			responseType: AuthSession.ResponseType.Code,
 			extraParams: { prompt: "select_account" },
@@ -52,7 +52,7 @@ export class ExpoMicrosoftAuthorizer implements MicrosoftAuthorizer {
 
 	async refresh(refreshToken: string): Promise<MicrosoftTokens> {
 		const response = await AuthSession.refreshAsync(
-			{ clientId: this.config.clientId, refreshToken, scopes: SCOPES },
+			{ clientId: this.config.clientId, refreshToken, scopes: [...MICROSOFT_SCOPES] },
 			DISCOVERY,
 		);
 		return this.toTokens(response);

@@ -11,9 +11,16 @@ export interface NativeMenuItem {
 	readonly children?: readonly NativeMenuItem[];
 }
 
+export interface NativeMenuRequest {
+	readonly items: readonly NativeMenuItem[];
+	readonly x: number;
+	readonly y: number;
+	readonly cancelLabel: string;
+}
+
 export interface NativeMenuBridge {
 	isAvailable(): boolean;
-	show(items: readonly NativeMenuItem[], x: number, y: number): Promise<string | null>;
+	show(request: NativeMenuRequest): Promise<string | null>;
 }
 
 export class NativeMenu {
