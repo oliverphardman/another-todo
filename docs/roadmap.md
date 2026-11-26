@@ -33,6 +33,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Right-click on a list: Rename List, Print List, Delete List; the standalone Rename and trash buttons are removed and the same options are in the list options menu (Create Group and Share List are built)
 - [x] Right-click on a task (long press on touch): Add to My Day, Mark as Important, Mark as Completed, Due Today, Due Tomorrow, Pick a date, Create New List from This Task, Move Task to..., Delete Task
 - [x] Context menus, including right-click and the meatball menu, are native on desktop (Windows, macOS): NativeMenu bridge in the client, an Objective-C module for macOS and a Win32 module for Windows; neither has been built or run on a device yet
+- [x] Context menus and the list options button are native on Android (a popup menu) and iOS (an action sheet); iOS has not been run
 
 ## 5. Real time
 
