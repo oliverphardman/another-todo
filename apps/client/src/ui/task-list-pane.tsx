@@ -223,6 +223,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			</View>
 			<SortChip />
 			<ScrollView
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{
 					flexGrow: 1,
 					paddingHorizontal: 16,

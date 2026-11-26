@@ -73,6 +73,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		>
 			<StatusBarTone foreground={palette.text} />
 			<ScrollView
+				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 16 }}
 			>
 				<DetailCard>

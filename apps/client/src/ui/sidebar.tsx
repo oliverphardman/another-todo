@@ -258,7 +258,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					</PressableSurface>
 				)}
 			</View>
-			<ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
 				{builtIns.map((view) => renderRow(view, false))}
 				{ungrouped.length === 0 && state.groups.length === 0 ? null : (
 					<View
