@@ -62,6 +62,15 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [ ] Publish the container image to a registry
 - [ ] A generic OpenID Connect auth provider
 
+## 7. Settings
+
+- [x] A settings window, opened from the menu bar on macOS and from a gear elsewhere, with logging out at the bottom
+- [x] Cozy or compact rows with a live preview, and the add task bar at the top or bottom
+- [x] Choose whether to receive from and send to Microsoft To Do, and how often
+- [x] Show or hide the All, Important, Planned and Completed lists
+- [x] My Day can show yesterday's unfinished tasks and can leave out tasks that are only due today
+- [ ] Sync settings between devices
+
 ## Dependencies
 
 - Reordering lists needs an order field on lists

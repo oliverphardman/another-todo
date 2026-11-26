@@ -1,11 +1,19 @@
 import { DueDay } from "./due-day";
 import type { MessageKey } from "../i18n/en-us";
+import {
+	DEFAULT_SETTINGS,
+	type AppSettingsState,
+	type MyDayPreferences,
+	type OptionalList,
+} from "../state/app-settings";
 import type { Task, TaskChanges } from "./task";
 import type { TodoList } from "./todo-list";
 
-export type IconName = "myDay" | "important" | "planned" | "all" | "tasks" | "list";
+export type IconName = "myDay" | "important" | "planned" | "all" | "completed" | "tasks" | "list";
 
 export type TaskOrder = "newest" | "due";
+
+export type ViewPreferences = Pick<AppSettingsState, "lists" | "myDay">;
 
 export abstract class TaskView {
 	abstract readonly id: string;
@@ -18,11 +26,16 @@ export abstract class TaskView {
 	readonly showsMyDay: boolean = true;
 	readonly showsDate: boolean = false;
 	readonly allowsAdding: boolean = true;
+	readonly separatesCompleted: boolean = true;
 	get canEditList(): boolean {
 		return false;
 	}
 
 	abstract matches(task: Task, today: string): boolean;
+
+	carriesOver(_task: Task, _today: string): boolean {
+		return false;
+	}
 
 	defaultsForNewTask(_today: string): TaskChanges {
 		return {};
@@ -37,8 +50,21 @@ export class MyDayView extends TaskView {
 	override readonly showsMyDay = false;
 	override readonly showsDate = true;
 
+	constructor(private readonly preferences: MyDayPreferences = DEFAULT_SETTINGS.myDay) {
+		super();
+	}
+
 	matches(task: Task, today: string): boolean {
-		return task.isInMyDay(today);
+		return task.isInMyDay(today, this.preferences.dueToday);
+	}
+
+	override carriesOver(task: Task, today: string): boolean {
+		return (
+			this.preferences.yesterday &&
+			!task.completed &&
+			!this.matches(task, today) &&
+			task.data.myDay === DueDay.add(today, -1)
+		);
 	}
 
 	override defaultsForNewTask(today: string): TaskChanges {
@@ -85,6 +111,19 @@ export class AllTasksView extends TaskView {
 
 	matches(): boolean {
 		return true;
+	}
+}
+
+export class CompletedView extends TaskView {
+	readonly id = "completed";
+	readonly title = "Completed";
+	readonly titleKey = "view.completed";
+	readonly icon = "completed";
+	override readonly allowsAdding = false;
+	override readonly separatesCompleted = false;
+
+	matches(task: Task): boolean {
+		return task.completed;
 	}
 }
 
@@ -155,12 +194,21 @@ export class ViewCatalog {
 		return [...lists].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
 	}
 
-	static build(lists: readonly TodoList[]): TaskView[] {
+	static build(
+		lists: readonly TodoList[],
+		{ lists: shown, myDay }: ViewPreferences = DEFAULT_SETTINGS,
+	): TaskView[] {
+		const optional: Record<OptionalList, TaskView> = {
+			important: new ImportantView(),
+			planned: new PlannedView(),
+			all: new AllTasksView(),
+			completed: new CompletedView(),
+		};
 		return [
-			new MyDayView(),
-			new ImportantView(),
-			new PlannedView(),
-			new AllTasksView(),
+			new MyDayView(myDay),
+			...(["important", "planned", "all", "completed"] as const)
+				.filter((id) => shown[id])
+				.map((id) => optional[id]),
 			new DefaultListView(),
 			...ViewCatalog.ordered(lists).map((list) => new CustomListView(list)),
 		];

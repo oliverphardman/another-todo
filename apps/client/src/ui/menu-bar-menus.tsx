@@ -11,29 +11,40 @@ export interface MenuBarContext {
 	readonly print: () => void;
 	readonly deleteTasks: (taskIds: readonly string[]) => void;
 	readonly logOut: (() => void) | null;
+	readonly openSettings: () => void;
 }
 
 export class MenuBarMenus {
 	static build(context: MenuBarContext): ContextMenuEntry[] {
 		const { t } = context.i18n;
-		const account: ContextMenuEntry[] =
-			context.logOut === null
-				? []
-				: [
-						MenuBarMenus.menu("app", t("app.name"), [
-							{
-								kind: "action",
-								key: "log-out",
-								glyph: "signOut",
-								label: t("account.logOut"),
-								onPress: context.logOut,
-							},
-						]),
-					];
 		return [
-			...account,
+			MenuBarMenus.menu("app", t("app.name"), MenuBarMenus.app(context)),
 			MenuBarMenus.menu("task", t("menubar.task"), MenuBarMenus.task(context)),
 			MenuBarMenus.menu("list", t("menubar.list"), MenuBarMenus.list(context)),
+		];
+	}
+
+	private static app({ i18n, logOut, openSettings }: MenuBarContext): ContextMenuEntry[] {
+		const settings: ContextMenuEntry = {
+			kind: "action",
+			key: "settings",
+			glyph: "settings",
+			label: i18n.t("settings.menu"),
+			shortcut: ",",
+			onPress: openSettings,
+		};
+		if (logOut === null) {
+			return [settings];
+		}
+		return [
+			settings,
+			{
+				kind: "action",
+				key: "log-out",
+				glyph: "signOut",
+				label: i18n.t("account.logOut"),
+				onPress: logOut,
+			},
 		];
 	}
 

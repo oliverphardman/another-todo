@@ -4,6 +4,7 @@ import { useI18n } from "../i18n/i18n-context";
 import { useContainer } from "./container-context";
 import { useContextMenuController, type ContextMenuEntry } from "./context-menu";
 import { useObservable } from "./hooks";
+import { useSettingsController } from "./settings-host";
 import { MenuBar } from "./menu-bar";
 import { MenuBarMenus } from "./menu-bar-menus";
 import { NativeMenu } from "./native-menu";
@@ -21,11 +22,19 @@ export function MenuBarSync() {
 	const deleteTasks = useDeleteTasks();
 	const print = usePrintList();
 	const logOut = useLogOut();
+	const settings = useSettingsController();
 	const controller = useContextMenuController();
 	const { width } = useWindowDimensions();
 	const bridge = MenuBar.bridge;
 	const menus = bridge.isAvailable()
-		? MenuBarMenus.build({ store, i18n, print, deleteTasks, logOut })
+		? MenuBarMenus.build({
+				store,
+				i18n,
+				print,
+				deleteTasks,
+				logOut,
+				openSettings: () => settings.open(),
+			})
 		: [];
 	const items = NativeMenu.items(menus);
 	const shown = JSON.stringify(items);

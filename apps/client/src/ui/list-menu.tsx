@@ -94,13 +94,15 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 						/>
 					) : null}
 					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
-					<MenuItem
-						glyph="check"
-						label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
-						onPress={finish(() =>
-							store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
-						)}
-					/>
+					{view.separatesCompleted ? (
+						<MenuItem
+							glyph="check"
+							label={settings.hideCompleted ? t("menu.showCompleted") : t("menu.hideCompleted")}
+							onPress={finish(() =>
+								store.updateSettings(view.id, { hideCompleted: !settings.hideCompleted }),
+							)}
+						/>
+					) : null}
 					{view.isCustomList ? (
 						<>
 							<MenuDivider />

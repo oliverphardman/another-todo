@@ -10,6 +10,8 @@ export type IconGlyph =
 	| "duplicate"
 	| "print"
 	| "rename"
+	| "settings"
+	| "tick"
 	| "addPerson"
 	| "people"
 	| "group"
@@ -89,6 +91,10 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	addPerson: {
 		d: "M15.5 11.5a3.5 4 0 1 0 0-8 3.5 4 0 0 0 0 8zM11 15h9a1.5 1.5 0 0 1 1.5 1.5c0 2.5-2.7 4-6 4s-6-1.5-6-4A1.5 1.5 0 0 1 11 15zM5 8v7M1.5 11.5h7",
 	},
+	settings: {
+		d: "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM10.3 3h3.4l.5 2.4 1.7 1 2.3-.8 1.7 3-1.8 1.6v2.6l1.8 1.6-1.7 3-2.3-.8-1.7 1-.5 2.4h-3.4l-.5-2.4-1.7-1-2.3.8-1.7-3 1.8-1.6v-2.6L4.1 8.6l1.7-3 2.3.8 1.7-1z",
+	},
+	tick: { d: "M5 12.5l4.5 4.5L19 7.5" },
 	rename: {
 		d: "M9 7H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h4M15 7h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4M12 4v16M10 4h4M10 20h4",
 	},

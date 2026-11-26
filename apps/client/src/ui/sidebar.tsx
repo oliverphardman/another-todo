@@ -11,8 +11,8 @@ import { Icon, type IconGlyph } from "./icon";
 import { AccountHeader } from "./account-header";
 import { NewListField } from "./new-list-field";
 import { SidebarColors } from "./sidebar-colors";
-import { sidebarMetrics, type SidebarMetrics } from "./sidebar-metrics";
-import { useLogOut } from "./use-log-out";
+import { sidebarMetrics } from "./sidebar-metrics";
+import { useSettingsController } from "./settings-host";
 import { useTouchReorder } from "./use-touch-reorder";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
@@ -31,6 +31,7 @@ const GLYPHS: Record<IconName, IconGlyph> = {
 	important: "star",
 	planned: "calendar",
 	all: "infinity",
+	completed: "check",
 	tasks: "homeCheck",
 	list: "list",
 };
@@ -215,9 +216,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			accessibilityLabel={t("sidebar.lists")}
 		>
 			<StatusBarTone foreground={palette.text} />
-			<AccountHeader>
-				<HeaderAction kind={metrics.headerAction} />
-			</AccountHeader>
+			<AccountHeader>{metrics.headerAction === null ? null : <SettingsButton />}</AccountHeader>
 			<View
 				style={{
 					flexDirection: "row",
@@ -377,29 +376,20 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	);
 }
 
-function HeaderAction({ kind }: { kind: SidebarMetrics["headerAction"] }) {
-	const { auth } = useContainer();
+function SettingsButton() {
 	const { t } = useI18n();
 	const palette = useTheme();
-	const logOut = useLogOut();
-	const actions = {
-		logOut: logOut === null ? null : { label: t("account.logOut"), run: logOut },
-		signOut: auth.automatic ? null : { label: t("signOut.button"), run: () => void auth.signOut() },
-	};
-	const action = kind === null ? null : actions[kind];
-	if (action === null) {
-		return null;
-	}
+	const settings = useSettingsController();
 	return (
 		<PressableSurface
 			accessibilityRole="button"
-			accessibilityLabel={action.label}
-			onPress={action.run}
+			accessibilityLabel={t("settings.title")}
+			onPress={() => settings.open()}
 			hoverColor={palette.sidebarHover}
 			android_ripple={{ color: palette.ripple, borderless: true }}
 			style={{ padding: 8, borderRadius: 4 }}
 		>
-			<Icon glyph="signOut" color={palette.textSecondary} />
+			<Icon glyph="settings" color={palette.textSecondary} />
 		</PressableSurface>
 	);
 }

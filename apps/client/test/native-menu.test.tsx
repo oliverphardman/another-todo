@@ -177,6 +177,12 @@ describe("bridges", () => {
 });
 
 describe("native menu icons", () => {
+	it("gives a macOS menu item its keyboard shortcut", () => {
+		const source = readFileSync("macos/AnotherToDoMenu/AnotherToDoMenu.mm", "utf8");
+		expect(source).toContain('keyEquivalent:item[@"shortcut"] ?: @""');
+		expect(source).toContain("NSInteger afterAbout = MIN(2, application.numberOfItems);");
+	});
+
 	it("hands the macOS menu each icon as a template image", () => {
 		const source = readFileSync("macos/AnotherToDoMenu/AnotherToDoMenu.mm", "utf8");
 		expect(source).toContain('[self illustrate:entry markup:item[@"icon"]];');

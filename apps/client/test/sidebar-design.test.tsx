@@ -88,13 +88,14 @@ describe("SidebarColors", () => {
 
 describe("sidebarMetrics", () => {
 	it.each([
-		["macos", null],
-		["windows", "signOut"],
-		["web", "signOut"],
-		["ios", "logOut"],
-		["android", "logOut"],
-	])("gives the header of the %s sidebar the %s action", (platform, action) => {
-		expect(sidebarMetrics(platform).headerAction).toBe(action);
+		["macos", null, "logOut"],
+		["windows", "settings", "signOut"],
+		["web", "settings", "signOut"],
+		["ios", "settings", "logOut"],
+		["android", "settings", "logOut"],
+	])("gives the %s app its header button and account action", (platform, header, account) => {
+		expect(sidebarMetrics(platform).headerAction).toBe(header);
+		expect(sidebarMetrics(platform).accountAction).toBe(account);
 	});
 
 	it("is denser for pointer platforms than for touch", () => {

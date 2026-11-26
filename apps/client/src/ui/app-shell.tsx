@@ -12,6 +12,7 @@ import { ContextMenuHost } from "./context-menu";
 import { MenuBarSync } from "./menu-bar-sync";
 import { NoticeBanner } from "./notice-banner";
 import { ResizeHandle } from "./resize-handle";
+import { SettingsHost } from "./settings-host";
 import { SlidingPane } from "./sliding-pane";
 import { CenteredScreen } from "./centered-screen";
 import { DrawerLayout } from "./drawer-layout";
@@ -51,12 +52,14 @@ export function AppShell({ providers }: AppShellProps) {
 	return (
 		<ConfirmHost>
 			<ContextMenuHost>
-				<MenuBarSync />
-				<KeyboardSafe>
-					<NoticeBanner>
-						<MainLayout />
-					</NoticeBanner>
-				</KeyboardSafe>
+				<SettingsHost>
+					<MenuBarSync />
+					<KeyboardSafe>
+						<NoticeBanner>
+							<MainLayout />
+						</NoticeBanner>
+					</KeyboardSafe>
+				</SettingsHost>
 			</ContextMenuHost>
 		</ConfirmHost>
 	);

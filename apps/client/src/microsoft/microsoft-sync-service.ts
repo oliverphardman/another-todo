@@ -1,4 +1,5 @@
 import type { AuthenticationService } from "../auth/authentication-service";
+import type { AppSettings, MicrosoftPreferences } from "../state/app-settings";
 import type { Connectivity } from "../state/connectivity";
 import { Observable } from "../state/observable";
 import type { KeyValueStore } from "../storage/key-value-store";
@@ -12,9 +13,11 @@ export type MicrosoftSyncStatus =
 	"unavailable" | "idle" | "offered" | "connected" | "syncing" | "failed";
 
 const PREFS_KEY = "atd.msPrefs";
-const INTERVAL_MS = 120_000;
+const MINUTE_MS = 60_000;
 
 type Decision = "enabled" | "declined";
+
+export type MicrosoftEligibility = "eligible" | "signInRequired" | "unsupported";
 
 export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 	private timer: ReturnType<typeof setInterval> | null = null;
@@ -28,13 +31,31 @@ export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 		private readonly links: LinkRepository,
 		private readonly preferences: KeyValueStore,
 		private readonly connectivity: Connectivity,
+		private readonly settings: AppSettings,
 	) {
 		super(authorizer.available ? "idle" : "unavailable");
+		let applied = settings.get().microsoft;
+		settings.subscribe(() => {
+			const next = settings.get().microsoft;
+			const previous = applied;
+			applied = next;
+			this.apply(previous, next);
+		});
 	}
 
 	get connected(): boolean {
 		const status = this.get();
 		return status === "connected" || status === "syncing" || status === "failed";
+	}
+
+	async eligibility(): Promise<MicrosoftEligibility> {
+		if (this.connected) {
+			return "eligible";
+		}
+		if (!MicrosoftIdentity.isMicrosoftAccount(await this.auth.getAccessToken())) {
+			return "signInRequired";
+		}
+		return this.authorizer.available ? "eligible" : "unsupported";
 	}
 
 	async start(): Promise<void> {
@@ -78,6 +99,10 @@ export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 			this.set("idle");
 			return;
 		}
+		const { receive, send } = this.settings.get().microsoft;
+		if (!receive && !send) {
+			this.settings.changeMicrosoft({ receive: true, send: true });
+		}
 		await this.session.adopt(tokens);
 		await this.preferences.set(PREFS_KEY, "enabled");
 		this.set("connected");
@@ -99,13 +124,14 @@ export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 	}
 
 	async syncNow(): Promise<void> {
-		if (!this.connected || this.running || !this.connectivity.isOnline()) {
+		const { receive, send } = this.settings.get().microsoft;
+		if (!this.connected || this.running || !this.connectivity.isOnline() || !(receive || send)) {
 			return;
 		}
 		this.running = true;
 		this.set("syncing");
 		try {
-			await this.engine.run();
+			await this.engine.run({ receive, send });
 			this.set("connected");
 		} catch {
 			this.set("failed");
@@ -116,6 +142,16 @@ export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 
 	private schedule(): void {
 		this.stop();
-		this.timer = setInterval(() => void this.syncNow(), INTERVAL_MS);
+		const { intervalMinutes } = this.settings.get().microsoft;
+		this.timer = setInterval(() => void this.syncNow(), intervalMinutes * MINUTE_MS);
+	}
+
+	private apply(previous: MicrosoftPreferences, next: MicrosoftPreferences): void {
+		if (this.timer !== null && previous.intervalMinutes !== next.intervalMinutes) {
+			this.schedule();
+		}
+		if (previous.receive !== next.receive || previous.send !== next.send) {
+			void this.syncNow();
+		}
 	}
 }

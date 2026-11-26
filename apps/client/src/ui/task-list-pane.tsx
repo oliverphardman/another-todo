@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
@@ -28,6 +28,7 @@ import type { LayoutMode } from "./theme";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
 import { TaskRow } from "./task-row";
+import { rowMetrics } from "./row-metrics";
 
 export interface TaskListPaneProps {
 	readonly mode: LayoutMode;
@@ -35,17 +36,18 @@ export interface TaskListPaneProps {
 }
 
 const DRAG_THRESHOLD = 5;
-const ROW_PITCH = 54;
 const COMPLETED_GAP = 40;
 
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
-	const { store } = useContainer();
+	const { store, settings } = useContainer();
+	const { rowStyle, addTaskPosition } = useObservable(settings);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
 	const state = useObservable(store);
 	const [showDone, setShowDone] = useState(true);
+	const [showYesterday, setShowYesterday] = useState(true);
 	const [panel, setPanel] = useState<ListPanel | null>(null);
 	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
@@ -56,7 +58,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	useEffect(() => {
 		setPanel(null);
 	}, [view.id]);
-	const { open, done } = store.visibleTasks();
+	const { open, yesterday, done } = store.visibleTasks();
 	const today = store.today;
 	const subtitleFor = (task: Task): string | null => {
 		const parts = [
@@ -64,7 +66,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			task.steps.length === 0
 				? null
 				: t("task.stepsProgress", { done: task.stepsCompleted, total: task.steps.length }),
-			view.showsMyDay && task.isInMyDay(today) ? t("task.myDayTag") : null,
+			view.showsMyDay && store.isInMyDay(task) ? t("task.myDayTag") : null,
 			task.dueDay === null ? null : i18n.dueLabel(task.dueDay, today),
 			task.repeat === null ? null : i18n.repeatLabel(task.repeat),
 		].filter((part): part is string => part !== null);
@@ -115,13 +117,21 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const compact = mode === "compact";
 	const row = (task: Task) => (
 		<TaskRow
+			rowStyle={rowStyle}
 			marker={markerFor(task.id)}
-			onDragStart={manualOrder && !task.completed ? (event) => beginDrag(task.id, event) : null}
+			onDragStart={
+				manualOrder && open.includes(task) && !task.completed
+					? (event) => beginDrag(task.id, event)
+					: null
+			}
 			key={task.id}
 			task={task}
 			subtitle={subtitleFor(task)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
-			travel={Math.max(0, open.length - 1 - open.indexOf(task)) * ROW_PITCH + COMPLETED_GAP}
+			travel={
+				Math.max(0, open.length - 1 - open.indexOf(task)) * rowMetrics(rowStyle).pitch +
+				COMPLETED_GAP
+			}
 			selected={state.selectedTaskIds.includes(task.id)}
 			onToggleCompleted={(silent) => store.toggleCompleted(task.id, !silent)}
 			onCompleting={() => store.announceCompleted()}
@@ -235,35 +245,36 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					onPress={() => store.selectTask(null)}
 					style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
 				/>
-				{view.allowsAdding ? addBar : null}
+				{view.allowsAdding && addTaskPosition === "top" ? addBar : null}
 				{open.map(row)}
+				{yesterday.length === 0 ? null : (
+					<TaskSection
+						title={t("list.yesterday")}
+						toggleLabel={
+							showYesterday ? t("list.hideYesterdaySection") : t("list.showYesterdaySection")
+						}
+						expanded={showYesterday}
+						onToggle={() => setShowYesterday((value) => !value)}
+					>
+						{yesterday.map(row)}
+					</TaskSection>
+				)}
 				{done.length === 0 ? null : (
-					<View style={{ marginTop: 12 }}>
-						<PressableSurface
-							accessibilityRole="button"
-							accessibilityLabel={
-								showDone ? t("list.hideCompletedSection") : t("list.showCompletedSection")
-							}
-							onPress={() => setShowDone((value) => !value)}
-							style={{
-								flexDirection: "row",
-								alignItems: "center",
-								paddingVertical: 8,
-							}}
-						>
-							<Icon
-								glyph={showDone ? "chevronDown" : "chevronRight"}
-								size={16}
-								color={palette.onAccent}
-							/>
-							<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
-								{t("list.completed", { count: done.length })}
-							</AppText>
-						</PressableSurface>
-						{showDone ? done.map(row) : null}
-					</View>
+					<TaskSection
+						title={t("list.completed", { count: done.length })}
+						toggleLabel={showDone ? t("list.hideCompletedSection") : t("list.showCompletedSection")}
+						expanded={showDone}
+						onToggle={() => setShowDone((value) => !value)}
+					>
+						{done.map(row)}
+					</TaskSection>
 				)}
 			</ScrollView>
+			{view.allowsAdding && addTaskPosition === "bottom" ? (
+				<View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: compact ? 8 : 16 }}>
+					{addBar}
+				</View>
+			) : null}
 			{panel === null ? null : (
 				<ListMenu
 					panel={panel}
@@ -273,6 +284,42 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				/>
 			)}
 		</PaneBackground>
+	);
+}
+
+function TaskSection({
+	title,
+	toggleLabel,
+	expanded,
+	onToggle,
+	children,
+}: {
+	readonly title: string;
+	readonly toggleLabel: string;
+	readonly expanded: boolean;
+	readonly onToggle: () => void;
+	readonly children: ReactNode;
+}) {
+	const palette = useTheme();
+	return (
+		<View style={{ marginTop: 12 }}>
+			<PressableSurface
+				accessibilityRole="button"
+				accessibilityLabel={toggleLabel}
+				onPress={onToggle}
+				style={{ flexDirection: "row", alignItems: "center", paddingVertical: 8 }}
+			>
+				<Icon
+					glyph={expanded ? "chevronDown" : "chevronRight"}
+					size={16}
+					color={palette.onAccent}
+				/>
+				<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
+					{title}
+				</AppText>
+			</PressableSurface>
+			{expanded ? children : null}
+		</View>
 	);
 }
 

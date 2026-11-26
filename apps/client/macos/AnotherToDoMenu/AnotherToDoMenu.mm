@@ -72,7 +72,9 @@ RCT_EXPORT_MODULE()
       [menu addItem:[NSMenuItem separatorItem]];
       continue;
     }
-    NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @"" action:nil keyEquivalent:@""];
+    NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @""
+                                                   action:nil
+                                            keyEquivalent:item[@"shortcut"] ?: @""];
     entry.enabled = ![item[@"disabled"] boolValue];
     entry.state = [item[@"checked"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
     if (item[@"icon"] != nil) {
@@ -214,10 +216,12 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
     }
   }
   if (application.numberOfItems > 0 && _appItems.firstObject.menu != application) {
-    NSInteger quit = application.numberOfItems - 1;
     for (NSMenuItem *item in _appItems) {
       [item.menu removeItem:item];
-      [application insertItem:item atIndex:quit++];
+    }
+    NSInteger afterAbout = MIN(2, application.numberOfItems);
+    for (NSMenuItem *item in _appItems) {
+      [application insertItem:item atIndex:afterAbout++];
     }
   }
   for (NSMenuItem *item in _menuBarItems) {

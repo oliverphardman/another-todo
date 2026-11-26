@@ -11,6 +11,20 @@ import {
 	type RemoteTodo,
 } from "./remote-todo";
 
+export interface SyncDirection {
+	readonly receive: boolean;
+	readonly send: boolean;
+}
+
+const BOTH_WAYS: SyncDirection = { receive: true, send: true };
+
+interface SyncRun {
+	readonly direction: SyncDirection;
+	readonly previous: Links;
+	readonly lists: Record<string, ListLink>;
+	readonly tasks: Record<string, TaskLink>;
+}
+
 export class MicrosoftSyncEngine {
 	constructor(
 		private readonly store: TodoStore,
@@ -20,101 +34,135 @@ export class MicrosoftSyncEngine {
 		private readonly clock: Clock,
 	) {}
 
-	async run(): Promise<void> {
-		const lists: Record<string, ListLink> = {};
-		const tasks: Record<string, TaskLink> = {};
-		const previous = await this.repository.load();
+	async run(direction: SyncDirection = BOTH_WAYS): Promise<void> {
+		const run: SyncRun = {
+			direction,
+			previous: await this.repository.load(),
+			lists: {},
+			tasks: {},
+		};
 		const remoteLists = await this.remote.lists();
 		for (const remoteList of remoteLists) {
-			const link = await this.syncList(remoteList, previous);
-			if (link !== null) {
-				lists[remoteList.id] = link;
-				await this.syncTasks(remoteList, link.local, previous, tasks);
+			const link = await this.syncList(remoteList, run);
+			if (link === null) {
+				continue;
+			}
+			run.lists[remoteList.id] = link;
+			if (this.hasLocalList(link.local)) {
+				await this.syncTasks(remoteList, link.local, run);
+			} else {
+				this.retainTasks(remoteList.id, run);
 			}
 		}
-		this.removeListsDeletedRemotely(remoteLists, previous);
-		await this.createRemoteLists(lists, tasks, previous);
-		await this.repository.save({ lists, tasks });
+		this.removeListsDeletedRemotely(remoteLists, run);
+		if (direction.send) {
+			await this.createRemoteLists(run);
+		}
+		await this.repository.save({ lists: run.lists, tasks: run.tasks });
 	}
 
-	private async syncList(remoteList: RemoteList, previous: Links): Promise<ListLink | null> {
+	private hasLocalList(listId: string | null): boolean {
+		return listId === null || this.store.get().lists.some((list) => list.id === listId);
+	}
+
+	private retainTasks(remoteListId: string, { previous, tasks }: SyncRun): void {
+		for (const [remoteId, link] of Object.entries(previous.tasks)) {
+			if (link.list === remoteListId) {
+				tasks[remoteId] = link;
+			}
+		}
+	}
+
+	private async syncList(
+		remoteList: RemoteList,
+		{ direction, previous }: SyncRun,
+	): Promise<ListLink | null> {
 		const link = previous.lists[remoteList.id];
 		if (link === undefined) {
-			return {
-				local: remoteList.isDefault ? null : this.store.importList(remoteList.name),
-				name: remoteList.name,
-			};
+			if (remoteList.isDefault) {
+				return { local: null, name: remoteList.name };
+			}
+			return direction.receive
+				? { local: this.store.importList(remoteList.name), name: remoteList.name }
+				: null;
 		}
 		if (link.local === null) {
 			return { local: null, name: remoteList.name };
 		}
 		const local = this.store.get().lists.find((list) => list.id === link.local);
 		if (local === undefined) {
+			if (!direction.send) {
+				return link;
+			}
 			await this.remote.deleteList(remoteList.id);
 			return null;
 		}
-		if (remoteList.name !== link.name) {
+		if (direction.receive && remoteList.name !== link.name) {
 			this.store.renameList(local.id, remoteList.name);
 			return { local: local.id, name: remoteList.name };
 		}
-		if (local.name !== link.name) {
+		if (direction.send && local.name !== link.name) {
 			await this.remote.renameList(remoteList.id, local.name);
 			return { local: local.id, name: local.name };
 		}
 		return link;
 	}
 
-	private removeListsDeletedRemotely(remoteLists: readonly RemoteList[], previous: Links): void {
+	private removeListsDeletedRemotely(remoteLists: readonly RemoteList[], run: SyncRun): void {
 		const present = new Set(remoteLists.map((list) => list.id));
-		for (const [remoteId, link] of Object.entries(previous.lists)) {
-			if (!present.has(remoteId) && link.local !== null) {
+		for (const [remoteId, link] of Object.entries(run.previous.lists)) {
+			if (present.has(remoteId) || link.local === null) {
+				continue;
+			}
+			if (run.direction.receive) {
 				this.store.deleteList(link.local);
+			} else if (this.hasLocalList(link.local)) {
+				run.lists[remoteId] = link;
+				this.retainTasks(remoteId, run);
 			}
 		}
 	}
 
-	private async createRemoteLists(
-		lists: Record<string, ListLink>,
-		tasks: Record<string, TaskLink>,
-		previous: Links,
-	): Promise<void> {
+	private async createRemoteLists(run: SyncRun): Promise<void> {
 		const known = new Set([
-			...Object.values(lists).map((link) => link.local),
-			...Object.values(previous.lists).map((link) => link.local),
+			...Object.values(run.lists).map((link) => link.local),
+			...Object.values(run.previous.lists).map((link) => link.local),
 		]);
 		for (const local of this.store
 			.get()
 			.lists.filter((list) => list.owned && !known.has(list.id))) {
 			const created = await this.remote.createList(local.name);
-			const link: ListLink = { local: local.id, name: local.name };
-			lists[created.id] = link;
-			await this.syncTasks(created, local.id, previous, tasks);
+			run.lists[created.id] = { local: local.id, name: local.name };
+			await this.syncTasks(created, local.id, run);
 		}
 	}
 
 	private async syncTasks(
 		remoteList: RemoteList,
 		localListId: string | null,
-		previous: Links,
-		tasks: Record<string, TaskLink>,
+		run: SyncRun,
 	): Promise<void> {
+		const { direction, previous, tasks } = run;
 		const remoteTasks = await this.remote.tasks(remoteList.id);
 		const present = new Set(remoteTasks.map((task) => task.id));
 		for (const remoteTask of remoteTasks) {
-			const link = await this.syncTask(
-				remoteList.id,
-				localListId,
-				remoteTask,
-				previous.tasks[remoteTask.id],
-			);
+			const link = await this.syncTask(remoteList.id, localListId, remoteTask, run);
 			if (link !== null) {
 				tasks[remoteTask.id] = link;
 			}
 		}
 		for (const [remoteId, link] of Object.entries(previous.tasks)) {
-			if (link.list === remoteList.id && !present.has(remoteId)) {
-				this.store.deleteTask(link.local);
+			if (link.list !== remoteList.id || present.has(remoteId)) {
+				continue;
 			}
+			if (direction.receive) {
+				this.store.deleteTask(link.local);
+			} else if (this.store.get().tasks.some((task) => task.id === link.local)) {
+				tasks[remoteId] = link;
+			}
+		}
+		if (!direction.send) {
+			return;
 		}
 		const linked = new Set(
 			Object.values(tasks)
@@ -147,26 +195,33 @@ export class MicrosoftSyncEngine {
 		remoteListId: string,
 		localListId: string | null,
 		remoteTask: RemoteTask,
-		link: TaskLink | undefined,
+		{ direction, previous }: SyncRun,
 	): Promise<TaskLink | null> {
+		const link = previous.tasks[remoteTask.id];
 		const remoteContent = MicrosoftSyncEngine.remoteContent(remoteTask);
 		const remoteSnapshot = TaskSnapshot.of(remoteContent);
 		if (link === undefined) {
+			if (!direction.receive) {
+				return null;
+			}
 			const created = this.import(remoteContent, localListId);
 			return { list: remoteListId, local: created, base: remoteSnapshot };
 		}
 		const local = this.store.get().tasks.find((task) => task.id === link.local);
 		if (local === undefined) {
+			if (!direction.send) {
+				return link;
+			}
 			await this.remote.deleteTask(remoteListId, remoteTask.id);
 			return null;
 		}
-		if (remoteSnapshot !== link.base) {
+		if (direction.receive && remoteSnapshot !== link.base) {
 			this.store.updateTask(local.id, this.changes(remoteContent, local));
 			return { ...link, base: remoteSnapshot };
 		}
 		const localContent = MicrosoftSyncEngine.contentOf(local);
 		const localSnapshot = TaskSnapshot.of(localContent);
-		if (localSnapshot !== link.base) {
+		if (direction.send && localSnapshot !== link.base) {
 			await this.remote.updateTask(remoteListId, remoteTask, localContent);
 			return { ...link, base: localSnapshot };
 		}

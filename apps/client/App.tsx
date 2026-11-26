@@ -30,9 +30,11 @@ function Application({ config, session }: { config: AppConfig; session: ServerSe
 		[config, session],
 	);
 	useEffect(() => {
-		void Promise.all([container.database.load(), container.paneWidths.load()]).then(() =>
-			container.auth.restore(),
-		);
+		void Promise.all([
+			container.database.load(),
+			container.paneWidths.load(),
+			container.settings.load(),
+		]).then(() => container.auth.restore());
 		container.sync.start();
 		container.photos.start();
 		container.realtime.start();

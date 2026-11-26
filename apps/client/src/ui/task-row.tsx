@@ -7,6 +7,8 @@ import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useContainer } from "./container-context";
+import type { RowStyle } from "../state/app-settings";
+import { rowMetrics } from "./row-metrics";
 import { useTheme } from "./theme-context";
 
 export interface TaskRowProps {
@@ -15,6 +17,7 @@ export interface TaskRowProps {
 	readonly overdue: boolean;
 	readonly travel: number;
 	readonly selected: boolean;
+	readonly rowStyle: RowStyle;
 	readonly onToggleCompleted: (silent?: boolean) => void;
 	readonly onCompleting: () => void;
 	readonly onToggleImportant: () => void;
@@ -30,6 +33,7 @@ export function TaskRow({
 	overdue,
 	travel,
 	selected,
+	rowStyle,
 	onToggleCompleted,
 	onCompleting,
 	onToggleImportant,
@@ -42,6 +46,7 @@ export function TaskRow({
 	const { t } = useI18n();
 	const menu = useContextMenuTrigger(t("ctx.taskMenu"), buildMenu);
 	const { motion } = useContainer();
+	const metrics = rowMetrics(rowStyle);
 	const [completing, setCompleting] = useState(false);
 	const fill = useRef(new Animated.Value(0)).current;
 	const slide = useRef(new Animated.Value(0)).current;
@@ -95,8 +100,8 @@ export function TaskRow({
 					borderBottomColor: marker === "after" ? palette.accent : "transparent",
 					backgroundColor: selected ? palette.accentSoft : palette.surface,
 					borderRadius: 4,
-					marginBottom: 2,
-					minHeight: 52,
+					marginBottom: metrics.gap,
+					minHeight: metrics.height,
 				}}
 			>
 				<PressableSurface
@@ -106,7 +111,7 @@ export function TaskRow({
 					onPress={toggle}
 					onContextMenu={menu.onContextMenu}
 					onLongPress={menu.onLongPress}
-					style={{ padding: 14, cursor: "default" as never }}
+					style={{ ...metrics.control, cursor: "default" as never }}
 				>
 					{task.completed ? (
 						<CheckedCircle size={22} color={palette.accent} />
@@ -128,7 +133,7 @@ export function TaskRow({
 					onPress={onSelect}
 					onContextMenu={menu.onContextMenu}
 					onLongPress={menu.onLongPress}
-					style={{ flex: 1, paddingVertical: 8, cursor: "default" as never }}
+					style={{ flex: 1, paddingVertical: metrics.textPadding, cursor: "default" as never }}
 				>
 					<AppText
 						size={15}
@@ -149,7 +154,7 @@ export function TaskRow({
 					onPress={onToggleImportant}
 					onContextMenu={menu.onContextMenu}
 					onLongPress={menu.onLongPress}
-					style={{ padding: 14, cursor: "default" as never }}
+					style={{ ...metrics.control, cursor: "default" as never }}
 				>
 					<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
 				</PressableSurface>

@@ -62,7 +62,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 		task.remindAt !== null && Date.parse(task.remindAt) > store.now.getTime()
 			? task.remindAt
 			: null;
-	const inMyDay = task.isInMyDay(today);
+	const inMyDay = store.isInMyDay(task);
 	const overdue = task.dueDay !== null && DueDay.isOverdue(task.dueDay, today) && !task.completed;
 	const dueLabel =
 		task.dueDay === null

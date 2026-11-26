@@ -6,7 +6,8 @@ export interface SidebarMetrics {
 	readonly iconSize: number;
 	readonly searchHeight: number;
 	readonly strokeWidth: number;
-	readonly headerAction: "logOut" | "signOut" | null;
+	readonly headerAction: "settings" | null;
+	readonly accountAction: "logOut" | "signOut";
 }
 
 const TOUCH: SidebarMetrics = {
@@ -15,10 +16,11 @@ const TOUCH: SidebarMetrics = {
 	iconSize: 20,
 	searchHeight: 38,
 	strokeWidth: 1.6,
-	headerAction: "logOut",
+	headerAction: "settings",
+	accountAction: "logOut",
 };
 
-const WEB: SidebarMetrics = { ...TOUCH, headerAction: "signOut" };
+const WEB: SidebarMetrics = { ...TOUCH, accountAction: "signOut" };
 
 const WINDOWS: SidebarMetrics = {
 	rowHeight: 28,
@@ -26,10 +28,11 @@ const WINDOWS: SidebarMetrics = {
 	iconSize: 16,
 	searchHeight: 28,
 	strokeWidth: 2,
-	headerAction: "signOut",
+	headerAction: "settings",
+	accountAction: "signOut",
 };
 
-const MACOS: SidebarMetrics = { ...WINDOWS, headerAction: null };
+const MACOS: SidebarMetrics = { ...WINDOWS, headerAction: null, accountAction: "logOut" };
 
 const BY_PLATFORM: Readonly<Record<string, SidebarMetrics>> = {
 	macos: MACOS,
