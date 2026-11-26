@@ -30,6 +30,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     reactNativeFactory = factory
     super.init()
   }
+
+  func applicationDidFinishLaunching(_ notification: Notification) {
+    NSAppleEventManager.shared().setEventHandler(
+      RCTLinkingManager.self,
+      andSelector: NSSelectorFromString("getUrlEventHandler:withReplyEvent:"),
+      forEventClass: AEEventClass(kInternetEventClass),
+      andEventID: AEEventID(kAEGetURL)
+    )
+  }
 }
 
 // MARK: - React Native Delegate

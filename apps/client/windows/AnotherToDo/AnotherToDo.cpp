@@ -7,6 +7,7 @@
 #include "AutolinkedNativeModules.g.h"
 
 #include "NativeModules.h"
+#include "DeepLinks.h"
 #include "NativeMenu.h"
 #include "NativeReminders.h"
 
@@ -23,6 +24,17 @@ struct CompReactPackageProvider
 _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR /* commandLine */, int showCmd) {
   // Initialize WinRT
   winrt::init_apartment(winrt::apartment_type::single_threaded);
+
+  auto activation{AnotherToDoLinks::Lifecycle::AppInstance::GetCurrent().GetActivatedEventArgs()};
+  auto mainInstance{AnotherToDoLinks::Lifecycle::AppInstance::FindOrRegisterForKey(L"main")};
+  if (!mainInstance.IsCurrent()) {
+    AnotherToDoLinks::Redirect(mainInstance, activation);
+    return 0;
+  }
+  AnotherToDoLinks::RegisterScheme();
+  auto links{std::make_shared<AnotherToDoLinks::LinkRelay>()};
+  mainInstance.Activated(
+      [links](auto const &, AnotherToDoLinks::Lifecycle::AppActivationArguments const &args) { links->Receive(args); });
 
   // Enable per monitor DPI scaling
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -41,6 +53,11 @@ _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR 
   RegisterAutolinkedNativeModulePackages(settings.PackageProviders());
   // Register any native modules defined within this app project
   settings.PackageProviders().Append(winrt::make<CompReactPackageProvider>());
+
+  settings.InstanceCreated(
+      [links](auto const &, winrt::Microsoft::ReactNative::InstanceCreatedEventArgs const &args) {
+        links->Connect(args.Context());
+      });
 
 #if BUNDLE
   // Load the JS bundle from a file (not Metro):
@@ -74,6 +91,7 @@ _Use_decl_annotations_ int CALLBACK WinMain(HINSTANCE instance, HINSTANCE, PSTR 
   auto appWindow{reactNativeWin32App.AppWindow()};
   appWindow.Title(L"Another To Do");
   appWindow.Resize({1000, 1000});
+  links->Show(winrt::Microsoft::UI::GetWindowFromWindowId(appWindow.Id()));
 
   // Get the ReactViewOptions so we can set the initial RN component to load
   auto viewOptions{reactNativeWin32App.ReactViewOptions()};
