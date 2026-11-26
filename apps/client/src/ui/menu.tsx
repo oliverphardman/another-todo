@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import type { ReactNode } from "react";
-import { Pressable, View, type ViewStyle } from "react-native";
+import { Platform, Pressable, View, type AccessibilityRole, type ViewStyle } from "react-native";
 import { AppText } from "./app-text";
 import { Icon, type IconGlyph } from "./icon";
 import { PressableSurface } from "./pressable-surface";
@@ -69,6 +69,13 @@ export interface MenuItemProps {
 	readonly disabled?: boolean;
 }
 
+export function menuItemRole(radio: boolean): AccessibilityRole {
+	if (!radio) {
+		return "menuitem";
+	}
+	return Platform.OS === "web" ? ("menuitemradio" as AccessibilityRole) : "radio";
+}
+
 export function MenuItem({
 	glyph,
 	label,
@@ -82,7 +89,7 @@ export function MenuItem({
 	const color = danger ? palette.danger : disabled ? palette.textSecondary : palette.text;
 	return (
 		<PressableSurface
-			accessibilityRole={(selected === undefined ? "menuitem" : "menuitemradio") as never}
+			accessibilityRole={menuItemRole(selected !== undefined)}
 			accessibilityLabel={label}
 			aria-checked={selected}
 			disabled={disabled}
