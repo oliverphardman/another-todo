@@ -26,7 +26,6 @@ export type ContextMenuEntry =
 			readonly danger?: boolean;
 			readonly disabled?: boolean;
 			readonly checked?: boolean;
-			readonly shortcut?: string;
 	  })
 	| (EntryBase & { readonly kind: "submenu"; readonly entries: readonly ContextMenuEntry[] })
 	| (EntryBase & { readonly kind: "panel"; readonly render: (close: () => void) => ReactNode });

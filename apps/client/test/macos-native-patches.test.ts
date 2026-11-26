@@ -10,6 +10,12 @@ const source = (library: string, path: string) =>
 	);
 
 describe("macOS native patches", () => {
+	it("measures the resizable window, so focusing Settings keeps the main window's layout", () => {
+		expect(source("react-native-macos", "React/CoreModules/RCTDeviceInfo.mm")).toContain(
+			"(candidate.styleMask & NSWindowStyleMaskResizable) != 0",
+		);
+	});
+
 	it("lets SVG views draw themselves so icons appear", () => {
 		expect(source("react-native-svg", "apple/Elements/RNSVGSvgView.mm")).toMatch(
 			/- \(BOOL\)wantsUpdateLayer\s*\{\s*return NO;/,

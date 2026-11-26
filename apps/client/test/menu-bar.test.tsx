@@ -130,7 +130,7 @@ describe("the menu bar", () => {
 	it("offers no way to log out of a locked server that needs no sign in", async () => {
 		const app = await renderApp({ config: { authentication: "none" } });
 		stop = app.stop;
-		expect(bar.menu("Another To Do").map((item) => item.label)).toEqual(["Settings…"]);
+		expect(bar.shown.map((item) => item.key)).toEqual(["task", "list"]);
 	});
 
 	it("logs out to the server prompt, asking first when changes would be lost", async () => {
@@ -139,7 +139,7 @@ describe("the menu bar", () => {
 			server: { enforced: false, change: async () => undefined, logOut },
 		});
 		stop = app.stop;
-		expect(bar.menu("Another To Do").map((item) => item.label)).toEqual(["Settings…", "Log Out"]);
+		expect(bar.menu("Another To Do").map((item) => item.label)).toEqual(["Log Out"]);
 		const reset = vi.spyOn(app.container.reminders, "reset");
 		const signOut = vi.spyOn(app.container.auth, "signOut");
 		act(() => {
@@ -187,16 +187,6 @@ describe("the menu bar", () => {
 		act(() => app.container.store.select("completed"));
 		expect(bar.labels("List")).toContain("Print List");
 		expect(bar.labels("List")).not.toContain("Hide Completed Tasks");
-	});
-
-	it("opens settings, with the usual keyboard shortcut", async () => {
-		await start();
-		expect(bar.menu("Another To Do")[0]).toEqual(
-			expect.objectContaining({ key: "app/settings", shortcut: "," }),
-		);
-		expect(screen.queryByRole("dialog")).toBeNull();
-		await bar.choose("app/settings");
-		expect(screen.getByRole("dialog", { name: "Settings" })).toBeTruthy();
 	});
 
 	it("clears the menus when the app goes away", async () => {

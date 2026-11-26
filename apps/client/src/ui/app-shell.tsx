@@ -10,6 +10,7 @@ import { Layout } from "./theme";
 import { ConfirmHost, useConfirm } from "./confirm";
 import { ContextMenuHost } from "./context-menu";
 import { MenuBarSync } from "./menu-bar-sync";
+import { NativeSettingsSync } from "./native-settings-sync";
 import { NoticeBanner } from "./notice-banner";
 import { ResizeHandle } from "./resize-handle";
 import { SettingsHost } from "./settings-host";
@@ -54,6 +55,7 @@ export function AppShell({ providers }: AppShellProps) {
 			<ContextMenuHost>
 				<SettingsHost>
 					<MenuBarSync />
+					<NativeSettingsSync />
 					<KeyboardSafe>
 						<NoticeBanner>
 							<MainLayout />

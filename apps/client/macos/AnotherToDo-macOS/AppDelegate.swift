@@ -14,6 +14,10 @@ struct AnotherToDoApp: App {
     }
     .windowStyle(.hiddenTitleBar)
     .defaultSize(width: 1280, height: 720)
+
+    Settings {
+      SettingsView()
+    }
   }
 }
 
@@ -30,6 +34,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
+    _ = SettingsStore.shared
     super.init()
   }
 

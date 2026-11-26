@@ -72,9 +72,7 @@ RCT_EXPORT_MODULE()
       [menu addItem:[NSMenuItem separatorItem]];
       continue;
     }
-    NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @""
-                                                   action:nil
-                                            keyEquivalent:item[@"shortcut"] ?: @""];
+    NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @"" action:nil keyEquivalent:@""];
     entry.enabled = ![item[@"disabled"] boolValue];
     entry.state = [item[@"checked"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
     if (item[@"icon"] != nil) {
@@ -131,9 +129,6 @@ RCT_EXPORT_METHOD(setMenuBar:(NSArray *)menus)
       for (NSMenuItem *entry in entries.itemArray.copy) {
         [entries removeItem:entry];
         [_appItems addObject:entry];
-      }
-      if (_appItems.count > 0) {
-        [_appItems addObject:[NSMenuItem separatorItem]];
       }
       continue;
     }
@@ -201,6 +196,14 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
   [credits appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:[self creditAttributes]]];
 }
 
+- (NSInteger)indexAfterSettingsIn:(NSMenu *)application
+{
+  NSInteger settings = [application.itemArray indexOfObjectPassingTest:^BOOL(NSMenuItem *item, NSUInteger index, BOOL *stop) {
+    return [item.keyEquivalent isEqualToString:@","];
+  }];
+  return settings == NSNotFound ? MIN(2, application.numberOfItems) : settings + 1;
+}
+
 - (void)installMenuBar
 {
   NSMenu *bar = NSApp.mainMenu;
@@ -219,9 +222,9 @@ RCT_EXPORT_METHOD(setAbout:(NSDictionary *)details)
     for (NSMenuItem *item in _appItems) {
       [item.menu removeItem:item];
     }
-    NSInteger afterAbout = MIN(2, application.numberOfItems);
+    NSInteger position = [self indexAfterSettingsIn:application];
     for (NSMenuItem *item in _appItems) {
-      [application insertItem:item atIndex:afterAbout++];
+      [application insertItem:item atIndex:position++];
     }
   }
   for (NSMenuItem *item in _menuBarItems) {

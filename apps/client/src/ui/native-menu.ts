@@ -10,7 +10,6 @@ export interface NativeMenuItem {
 	readonly destructive?: boolean;
 	readonly checked?: boolean;
 	readonly icon?: string;
-	readonly shortcut?: string;
 	readonly children?: readonly NativeMenuItem[];
 }
 
@@ -63,7 +62,6 @@ export class NativeMenu {
 					disabled: entry.disabled === true,
 					destructive: entry.danger === true,
 					checked: entry.checked === true,
-					...(entry.shortcut === undefined ? {} : { shortcut: entry.shortcut }),
 					...artwork,
 				},
 			];

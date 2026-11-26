@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Task } from "../domain/task";
 import { useI18n } from "../i18n/i18n-context";
-import type { MessageKey } from "../i18n/en-us";
-import type { MicrosoftEligibility } from "../microsoft/microsoft-sync-service";
-import { AppSettings, OPTIONAL_LISTS } from "../state/app-settings";
+import { OPTIONAL_LISTS } from "../state/app-settings";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { PressableSurface } from "./pressable-surface";
 import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-controls";
-import { sidebarMetrics } from "./sidebar-metrics";
+import { useAccountAction, useMicrosoftSettings, type SyncDirectionKey } from "./settings-state";
 import { TaskRow } from "./task-row";
 import { TextField } from "./text-field";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
-import { useLogOut } from "./use-log-out";
 
 export function AppearanceSection() {
 	const { settings } = useContainer();
@@ -83,52 +79,23 @@ function RowPreview() {
 	);
 }
 
-const MICROSOFT_NOTES: Readonly<Record<MicrosoftEligibility, MessageKey | null>> = {
-	eligible: null,
-	signInRequired: "settings.msSignIn",
-	unsupported: "settings.msUnsupported",
-};
-
 export function MicrosoftSection() {
-	const { settings, microsoft } = useContainer();
 	const { t } = useI18n();
-	const preferences = useObservable(settings).microsoft;
-	const status = useObservable(microsoft);
-	const [eligibility, setEligibility] = useState<MicrosoftEligibility | null>(null);
-	useEffect(() => {
-		let current = true;
-		void microsoft.eligibility().then((result) => {
-			if (current) {
-				setEligibility(result);
-			}
-		});
-		return () => {
-			current = false;
-		};
-	}, [microsoft, status]);
-	const disabled = eligibility !== "eligible";
-	const note = eligibility === null ? null : MICROSOFT_NOTES[eligibility];
-	const connected = microsoft.connected;
-	const direction = (key: "receive" | "send", label: string) => (
+	const microsoft = useMicrosoftSettings();
+	const disabled = !microsoft.enabled;
+	const direction = (key: SyncDirectionKey, label: string) => (
 		<Checkbox
 			label={label}
-			checked={connected && preferences[key]}
+			checked={microsoft[key]}
 			disabled={disabled}
-			onChange={(checked) => {
-				if (connected) {
-					settings.changeMicrosoft({ [key]: checked });
-					return;
-				}
-				settings.changeMicrosoft({ receive: key === "receive", send: key === "send" });
-				void microsoft.accept();
-			}}
+			onChange={(checked) => microsoft.setDirection(key, checked)}
 		/>
 	);
 	return (
 		<SettingsSection title={t("settings.microsoft")}>
-			{note === null ? null : (
+			{microsoft.note === null ? null : (
 				<AppText size={13} tone="secondary" style={{ marginBottom: 4 }}>
-					{t(note)}
+					{t(microsoft.note)}
 				</AppText>
 			)}
 			{direction("receive", t("settings.msReceive"))}
@@ -144,11 +111,9 @@ export function MicrosoftSection() {
 				<AppText size={14}>{t("settings.msEvery")}</AppText>
 				<NumberField
 					label={t("settings.msInterval")}
-					value={preferences.intervalMinutes}
+					value={microsoft.intervalMinutes}
 					disabled={disabled}
-					onCommit={(minutes) =>
-						settings.changeMicrosoft({ intervalMinutes: AppSettings.minutes(minutes) })
-					}
+					onCommit={microsoft.setInterval}
 				/>
 				<AppText size={14}>{t("settings.msMinutes")}</AppText>
 			</View>
@@ -231,15 +196,8 @@ export function MyDaySection() {
 }
 
 export function AccountSection() {
-	const { auth } = useContainer();
-	const { t } = useI18n();
 	const palette = useTheme();
-	const logOut = useLogOut();
-	const actions = {
-		logOut: logOut === null ? null : { label: t("account.logOut"), run: logOut },
-		signOut: auth.automatic ? null : { label: t("signOut.button"), run: () => void auth.signOut() },
-	};
-	const action = actions[sidebarMetrics().accountAction];
+	const action = useAccountAction();
 	if (action === null) {
 		return null;
 	}
