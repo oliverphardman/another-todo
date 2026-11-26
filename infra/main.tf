@@ -275,6 +275,7 @@ resource "aws_cognito_identity_provider" "microsoft" {
 
   attribute_mapping = {
     email    = "email"
+    name     = "name"
     username = "sub"
   }
 }

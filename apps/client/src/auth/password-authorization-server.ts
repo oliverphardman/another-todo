@@ -5,6 +5,7 @@ import type {
 	PasswordCredentials,
 } from "./authorization-server";
 import type { BrowserSession } from "./browser-session";
+import { Profiles } from "./profile";
 import type { TokenSet } from "./token-set";
 
 export class InvalidCredentialsError extends Error {}
@@ -39,7 +40,10 @@ export class PasswordAuthorizationServer implements AuthorizationServer {
 			throw new InvalidCredentialsError();
 		}
 		const body = (await response.json()) as { accessToken: string; expiresIn: number };
-		return this.tokenSet(body.accessToken, body.expiresIn);
+		return {
+			...this.tokenSet(body.accessToken, body.expiresIn),
+			profile: Profiles.of(credentials.username, null),
+		};
 	}
 
 	async refresh(): Promise<TokenSet> {

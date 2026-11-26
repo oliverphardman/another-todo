@@ -4,6 +4,7 @@ import {
 	type DesktopOAuthDependencies,
 	type OAuthTokenResponse,
 } from "./desktop-oauth-flow";
+import { Profiles } from "./profile";
 import type { TokenSet } from "./token-set";
 
 export interface DesktopAuthorizationConfig {
@@ -56,6 +57,7 @@ export class DesktopAuthorizationServer implements AuthorizationServer {
 			accessToken: response.access_token,
 			refreshToken: response.refresh_token ?? null,
 			expiresAt: this.config.now() + (response.expires_in ?? 3600) * 1000,
+			profile: Profiles.fromIdToken(response.id_token),
 		};
 	}
 }

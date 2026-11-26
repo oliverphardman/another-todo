@@ -8,7 +8,10 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon, type IconGlyph } from "./icon";
-import { NewListField, SIDEBAR_ROW_HEIGHT } from "./new-list-field";
+import { AccountHeader } from "./account-header";
+import { NewListField } from "./new-list-field";
+import { SidebarColors } from "./sidebar-colors";
+import { sidebarMetrics } from "./sidebar-metrics";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
@@ -17,7 +20,7 @@ import { usePrintList } from "./use-print-list";
 import { FONT_FAMILY } from "./theme";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
-import { useTheme } from "./theme-context";
+import { useIsDark, useTheme } from "./theme-context";
 
 const DRAG_THRESHOLD = 5;
 
@@ -25,8 +28,8 @@ const GLYPHS: Record<IconName, IconGlyph> = {
 	myDay: "sun",
 	important: "star",
 	planned: "calendar",
-	all: "all",
-	tasks: "home",
+	all: "infinity",
+	tasks: "homeCheck",
 	list: "list",
 };
 
@@ -42,6 +45,8 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const insets = useInsets();
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
+	const dark = useIsDark();
+	const metrics = sidebarMetrics();
 	const print = usePrintList();
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
@@ -123,6 +128,12 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			view={view}
 			selected={state.selectedViewId === view.id}
 			count={store.taskCount(view)}
+			iconColor={SidebarColors.icon(
+				view.id,
+				store.settingsFor(view.id).theme,
+				palette.sidebar,
+				dark,
+			)}
 			indented={indented}
 			onPress={() => {
 				if (dragged.current) {
@@ -186,11 +197,8 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			accessibilityLabel={t("sidebar.lists")}
 		>
 			<StatusBarTone foreground={palette.text} />
-			<View style={{ flexDirection: "row", alignItems: "center", padding: 16 }}>
-				<AppText size={18} weight="600" style={{ flex: 1, color: palette.accent }}>
-					{t("app.name")}
-				</AppText>
-				{auth.automatic ? null : (
+			<AccountHeader>
+				{auth.automatic || !metrics.signOutInHeader ? null : (
 					<PressableSurface
 						accessibilityRole="button"
 						accessibilityLabel={t("signOut.button")}
@@ -201,17 +209,18 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						<Icon glyph="signOut" color={palette.textSecondary} />
 					</PressableSurface>
 				)}
-			</View>
+			</AccountHeader>
 			<View
 				style={{
 					flexDirection: "row",
 					alignItems: "center",
-					marginHorizontal: 12,
-					marginBottom: 8,
-					paddingHorizontal: 10,
-					height: 36,
-					borderRadius: 4,
-					backgroundColor: palette.surface,
+					margin: 12,
+					paddingHorizontal: 12,
+					height: metrics.searchHeight,
+					borderRadius: metrics.searchHeight / 2,
+					borderWidth: 1,
+					borderColor: palette.border,
+					backgroundColor: palette.sidebarField,
 				}}
 			>
 				<Icon glyph="search" size={16} color={palette.textSecondary} />
@@ -232,8 +241,9 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							flex: 1,
 							marginLeft: 8,
 							fontFamily: FONT_FAMILY,
-							fontSize: 14,
+							fontSize: metrics.fontSize,
 							color: palette.text,
+							padding: 0,
 							outlineStyle: "none",
 						} as object
 					}
@@ -299,13 +309,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					style={{ flexGrow: 1, minHeight: 24 }}
 				/>
 			</ScrollView>
-			<View
-				style={{
-					borderTopWidth: 1,
-					borderTopColor: palette.border,
-					padding: 8,
-				}}
-			>
+			<View style={{ paddingHorizontal: 6, paddingVertical: 8 }}>
 				{creating ? (
 					<NewListField
 						onSubmit={(name) => {
@@ -326,12 +330,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 								flex: 1,
 								flexDirection: "row",
 								alignItems: "center",
-								minHeight: SIDEBAR_ROW_HEIGHT,
+								minHeight: metrics.rowHeight,
 								paddingHorizontal: 10,
 							}}
 						>
-							<Icon glyph="plus" color={palette.accent} />
-							<AppText style={{ marginLeft: 14 }}>{t("sidebar.newList")}</AppText>
+							<Icon glyph="plus" size={metrics.iconSize} color={palette.text} />
+							<AppText size={metrics.fontSize} style={{ marginLeft: 12 }}>
+								{t("sidebar.newList")}
+							</AppText>
 						</PressableSurface>
 						<PressableSurface
 							accessibilityRole="button"
@@ -339,14 +345,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							onPress={() => store.newGroup(t("group.new"))}
 							hoverColor={palette.sidebarHover}
 							style={{
-								minHeight: SIDEBAR_ROW_HEIGHT,
-								minWidth: SIDEBAR_ROW_HEIGHT,
+								minHeight: metrics.rowHeight,
+								minWidth: metrics.rowHeight,
 								alignItems: "center",
 								justifyContent: "center",
 								borderRadius: 4,
 							}}
 						>
-							<Icon glyph="newGroup" color={palette.accent} />
+							<Icon glyph="newGroup" size={metrics.iconSize} color={palette.text} />
 						</PressableSurface>
 					</View>
 				)}
@@ -359,6 +365,7 @@ interface SidebarRowProps {
 	readonly view: TaskView;
 	readonly selected: boolean;
 	readonly count: number;
+	readonly iconColor: string;
 	readonly onPress: () => void;
 	readonly buildMenu: () => ContextMenuEntry[];
 	readonly hasMenu: boolean;
@@ -371,6 +378,7 @@ function SidebarRow({
 	view,
 	selected,
 	count,
+	iconColor,
 	onPress,
 	buildMenu,
 	hasMenu,
@@ -382,6 +390,7 @@ function SidebarRow({
 	const { t } = i18n;
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("ctx.listMenu"), buildMenu);
+	const metrics = sidebarMetrics();
 	return (
 		<PressableSurface
 			accessibilityRole="button"
@@ -406,7 +415,7 @@ function SidebarRow({
 				alignItems: "center",
 				paddingLeft: indented ? 36 : 16,
 				paddingRight: 16,
-				paddingVertical: 11,
+				minHeight: metrics.rowHeight,
 				borderTopWidth: 2,
 				borderTopColor: marker === "before" ? palette.accent : "transparent",
 				borderBottomWidth: 2,
@@ -418,9 +427,16 @@ function SidebarRow({
 				glyph={
 					view.isCustomList && (view as CustomListView).list.shared ? "people" : GLYPHS[view.icon]
 				}
-				color={palette.accent}
+				size={metrics.iconSize}
+				strokeWidth={metrics.strokeWidth}
+				color={iconColor}
 			/>
-			<AppText style={{ flex: 1, marginLeft: 14 }} weight={selected ? "600" : "400"}>
+			<AppText
+				size={metrics.fontSize}
+				style={{ flex: 1, marginLeft: 12 }}
+				weight={selected ? "600" : "400"}
+				numberOfLines={1}
+			>
 				{i18n.viewTitle(view)}
 			</AppText>
 			{count === 0 ? null : (
@@ -454,6 +470,7 @@ function GroupHeader({
 	const { t } = useI18n();
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("group.menu"), buildMenu);
+	const metrics = sidebarMetrics();
 	const [text, setText] = useState(group.name);
 	return (
 		<PressableSurface
@@ -468,12 +485,12 @@ function GroupHeader({
 				flexDirection: "row",
 				alignItems: "center",
 				paddingHorizontal: 16,
-				paddingVertical: 11,
+				minHeight: metrics.rowHeight,
 			}}
 		>
 			<Icon glyph={open ? "chevronDown" : "chevronRight"} size={16} color={palette.textSecondary} />
 			<View style={{ marginLeft: 10 }}>
-				<Icon glyph="group" color={palette.accent} />
+				<Icon glyph="group" size={metrics.iconSize} color={palette.textSecondary} />
 			</View>
 			{renaming ? (
 				<TextField
@@ -496,7 +513,7 @@ function GroupHeader({
 					}
 				/>
 			) : (
-				<AppText style={{ flex: 1, marginLeft: 14 }} weight="600">
+				<AppText size={metrics.fontSize} style={{ flex: 1, marginLeft: 12 }} weight="600">
 					{group.name}
 				</AppText>
 			)}

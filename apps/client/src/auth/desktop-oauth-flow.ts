@@ -19,6 +19,7 @@ export interface DesktopOAuthDependencies {
 export interface OAuthTokenResponse {
 	readonly access_token: string;
 	readonly refresh_token?: string;
+	readonly id_token?: string;
 	readonly expires_in?: number;
 }
 

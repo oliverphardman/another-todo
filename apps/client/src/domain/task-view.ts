@@ -79,7 +79,7 @@ export class PlannedView extends TaskView {
 
 export class AllTasksView extends TaskView {
 	readonly id = "all";
-	readonly title = "All tasks";
+	readonly title = "All";
 	readonly titleKey = "view.all";
 	readonly icon = "all";
 

@@ -1,15 +1,12 @@
+import { JwtClaims } from "../auth/jwt-claims";
+
 export class MicrosoftIdentity {
 	static isMicrosoftAccount(accessToken: string): boolean {
-		try {
-			const payload = accessToken.split(".")[1]!.replace(/-/g, "+").replace(/_/g, "/");
-			const claims = JSON.parse(atob(payload)) as { username?: unknown; sub?: unknown };
-			return (
-				MicrosoftIdentity.startsWith(claims.username, "microsoft_") ||
-				MicrosoftIdentity.startsWith(claims.sub, "microsoft:")
-			);
-		} catch {
-			return false;
-		}
+		const claims = JwtClaims.read(accessToken);
+		return (
+			MicrosoftIdentity.startsWith(claims.username, "microsoft_") ||
+			MicrosoftIdentity.startsWith(claims.sub, "microsoft:")
+		);
 	}
 
 	private static startsWith(claim: unknown, prefix: string): boolean {

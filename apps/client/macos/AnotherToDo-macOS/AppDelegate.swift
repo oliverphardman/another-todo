@@ -10,7 +10,9 @@ struct AnotherToDoApp: App {
   var body: some Scene {
     Window("Another To Do", id: "main") {
       ReactNativeView(factory: appDelegate.reactNativeFactory)
+        .ignoresSafeArea()
     }
+    .windowStyle(.hiddenTitleBar)
     .defaultSize(width: 1280, height: 720)
   }
 }

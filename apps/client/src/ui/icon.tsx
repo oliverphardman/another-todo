@@ -30,6 +30,8 @@ export type IconGlyph =
 	| "calendar"
 	| "home"
 	| "all"
+	| "infinity"
+	| "homeCheck"
 	| "list"
 	| "menu"
 	| "back"
@@ -102,6 +104,10 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	calendar: { d: "M5 5h14v15H5zM5 10h14M9 3v4M15 3v4" },
 	home: { d: "M4 11l8-7 8 7M6 10v10h12V10" },
 	all: { d: "M4 7h16M4 12h16M4 17h16" },
+	infinity: {
+		d: "M12 12c-1.7-2.4-3.4-3.8-5.4-3.8a3.8 3.8 0 0 0 0 7.6c2 0 3.7-1.4 5.4-3.8zm0 0c1.7 2.4 3.4 3.8 5.4 3.8a3.8 3.8 0 0 0 0-7.6c-2 0-3.7 1.4-5.4 3.8z",
+	},
+	homeCheck: { d: "M4 11l8-7 8 7M6 10v10h12V10M9 14.5l2.2 2.2 4-4.2" },
 	list: { d: "M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" },
 	menu: { d: "M4 7h16M4 12h16M4 17h16" },
 	back: { d: "M15 5l-7 7 7 7" },

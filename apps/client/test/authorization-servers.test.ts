@@ -62,6 +62,7 @@ describe("PasswordAuthorizationServer", () => {
 			accessToken: "t",
 			refreshToken: null,
 			expiresAt: 61_000,
+			profile: { name: credentials.username, email: null },
 		});
 		expect(calls[0]!.url).toBe("https://todo.example.com/auth/login");
 		expect(calls[0]!.init?.body).toBe(JSON.stringify(credentials));

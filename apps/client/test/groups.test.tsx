@@ -152,7 +152,7 @@ describe("groups in the sidebar", () => {
 });
 
 describe("creating groups without a list", () => {
-	it("creates and names a group from the small button next to New list", async () => {
+	it("creates and names a group from the small button next to New List", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create group"));
 		const field = screen.getByLabelText("Group name");

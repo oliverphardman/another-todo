@@ -1,5 +1,6 @@
 import * as AuthSession from "expo-auth-session";
 import type { AuthorizationServer, IdentityProvider } from "./authorization-server";
+import { Profiles } from "./profile";
 import type { TokenSet } from "./token-set";
 
 export interface ExpoAuthorizationConfig {
@@ -78,6 +79,7 @@ export class ExpoAuthorizationServer implements AuthorizationServer {
 			accessToken: response.accessToken,
 			refreshToken: response.refreshToken ?? null,
 			expiresAt: this.config.now() + (response.expiresIn ?? 3600) * 1000,
+			profile: Profiles.fromIdToken(response.idToken),
 		};
 	}
 }

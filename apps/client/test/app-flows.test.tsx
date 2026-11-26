@@ -53,7 +53,7 @@ describe("signed out", () => {
 describe("expanded layout", () => {
 	it("shows the sidebar, an empty list and the smart views", async () => {
 		await start();
-		for (const name of ["My Day", "Important", "Planned", "All tasks", "Tasks"]) {
+		for (const name of ["My Day", "Important", "Planned", "All", "Tasks"]) {
 			expect(screen.getByLabelText(name)).toBeTruthy();
 		}
 		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
@@ -428,7 +428,7 @@ describe("expanded layout", () => {
 	it("focuses the new list field as soon as it appears so the user can type straight away", async () => {
 		await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const field = screen.getByLabelText("New list");
+		const field = screen.getByLabelText("New List");
 		expect(document.activeElement).toBe(field);
 		expect(screen.queryByLabelText("Create a new list")).toBeNull();
 	});
@@ -436,11 +436,11 @@ describe("expanded layout", () => {
 	it("cancels the new list field with Escape or by leaving it empty", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		fireEvent.keyDown(screen.getByLabelText("New list"), { key: "Escape" });
+		fireEvent.keyDown(screen.getByLabelText("New List"), { key: "Escape" });
 		expect(screen.getByLabelText("Create a new list")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		fireEvent.keyDown(screen.getByLabelText("New list"), { key: "a" });
-		fireEvent.blur(screen.getByLabelText("New list"));
+		fireEvent.keyDown(screen.getByLabelText("New List"), { key: "a" });
+		fireEvent.blur(screen.getByLabelText("New List"));
 		expect(screen.getByLabelText("Create a new list")).toBeTruthy();
 		expect(app.container.store.get().lists).toEqual([]);
 	});
@@ -448,7 +448,7 @@ describe("expanded layout", () => {
 	it("creates the list once even when submitting also blurs the field", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const field = screen.getByLabelText("New list");
+		const field = screen.getByLabelText("New List");
 		fireEvent.change(field, { target: { value: "Once" } });
 		fireEvent.keyDown(field, { key: "Enter" });
 		fireEvent.blur(field);
@@ -458,7 +458,7 @@ describe("expanded layout", () => {
 	it("keeps what was typed when the field loses focus", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const field = screen.getByLabelText("New list");
+		const field = screen.getByLabelText("New List");
 		fireEvent.change(field, { target: { value: "Kept" } });
 		fireEvent.blur(field);
 		expect(app.container.store.get().lists.map((list) => list.name)).toEqual(["Kept"]);
@@ -468,7 +468,7 @@ describe("expanded layout", () => {
 	it("creates, renames and deletes lists", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Groceries" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		expect(screen.getByRole("heading", { name: "Groceries" })).toBeTruthy();
@@ -496,7 +496,7 @@ describe("expanded layout", () => {
 		expect(screen.queryByRole("menu")).toBeNull();
 		expect(screen.queryByLabelText("Rename list")).toBeNull();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Garden" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		fireEvent.click(screen.getByLabelText("My Day"));
@@ -545,7 +545,7 @@ describe("expanded layout", () => {
 		await start();
 		addTask("Counted");
 		expect(screen.getAllByLabelText("1 open")).toHaveLength(3);
-		fireEvent.click(screen.getByLabelText("All tasks"));
+		fireEvent.click(screen.getByLabelText("All"));
 		expect(screen.getByText("Tasks · My Day")).toBeTruthy();
 	});
 
@@ -644,7 +644,7 @@ describe("compact layout", () => {
 		await start({ width: 400 });
 		fireEvent.click(screen.getByLabelText("Show lists"));
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Mobile list" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		expect(screen.getByRole("heading", { name: "Mobile list" })).toBeTruthy();
@@ -865,7 +865,7 @@ describe("list options menu", () => {
 	it("duplicates a custom list and keeps the option out of built-in views", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Groceries" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		addTask("Milk");
@@ -882,7 +882,7 @@ describe("list options menu", () => {
 	it("prints a custom list without a date line", async () => {
 		const app = await start();
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Groceries" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		addTask("Eggs");
@@ -946,7 +946,7 @@ describe("change theme", () => {
 		fireEvent.click(screen.getByLabelText("Periwinkle theme"));
 		expect(app.container.store.settingsFor("tasks").theme).toBeNull();
 		fireEvent.click(screen.getByLabelText("Close menu"));
-		fireEvent.click(screen.getByLabelText("All tasks"));
+		fireEvent.click(screen.getByLabelText("All"));
 		openTheme();
 		expect(screen.getByLabelText("Peach theme").getAttribute("aria-checked")).toBe("true");
 		fireEvent.click(screen.getByLabelText("Close menu"));
@@ -1205,7 +1205,7 @@ describe("task context menu", () => {
 	it("moves the task to another list through a submenu and can go back", async () => {
 		const app = await withTasks(["Solo"]);
 		fireEvent.click(screen.getByLabelText("Create a new list"));
-		const name = screen.getByLabelText("New list");
+		const name = screen.getByLabelText("New List");
 		fireEvent.change(name, { target: { value: "Work" } });
 		fireEvent.keyDown(name, { key: "Enter" });
 		fireEvent.click(screen.getByLabelText("Tasks"));

@@ -10,4 +10,9 @@ describe("macOS window", () => {
 			"(view as? RCTSurfaceHostingProxyRootView)?.backgroundColor = .windowBackgroundColor",
 		);
 	});
+
+	it("runs the content under a hidden title bar so the sidebar fills the window height", () => {
+		expect(delegate).toContain(".windowStyle(.hiddenTitleBar)");
+		expect(delegate).toContain(".ignoresSafeArea()");
+	});
 });
