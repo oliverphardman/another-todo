@@ -81,7 +81,7 @@ export function createApp(
 	const { identity, media, realtime } = platform;
 	const app = express();
 	app.disable("x-powered-by");
-	app.use(new CorsPolicy(config.corsOrigins).middleware());
+	app.use(new CorsPolicy([...config.corsOrigins, new URL(config.publicUrl).origin]).middleware());
 	app.use(new DiscoveryController(identity.issuer ?? config.publicUrl, config.publicUrl).router());
 	app.use(
 		new ConfigController({

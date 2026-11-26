@@ -34,6 +34,7 @@ Everything is an environment variable. Set them in your shell, in a `.env` file 
 | `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`         | none                    | Turns on Sign in with Microsoft. See [azure-app-registration.md](azure-app-registration.md). Leave blank to disable it.                                        |
 | `AZURE_TENANT_ID`                                | `common`                | Which Microsoft accounts may sign in: `common`, `consumers`, `organizations` or a tenant id.                                                                   |
 | `MAX_UPLOAD_MB`                                  | `10`                    | Largest file that can be attached to a task, in megabytes. Photos are also limited to 5 MB.                                                                    |
+| `MEDIA_PUBLIC_URL`                               | `PUBLIC_API_URL`        | Another address of this server to upload and download files through, such as `https://files.example.com`.                                                      |
 | `SECRET_KEY`                                     | generated and stored    | Key that signs sessions and photo links. Set it to share sessions between replicas.                                                                            |
 | `PORT`                                           | `3000`                  | Port the server listens on. With Docker Compose it is instead the port published on your machine; the container always listens on 3000.                         |
 | `DATA_DIR`                                       | `/data`                 | Where the database and photos are stored.                                                                                                                      |
@@ -72,6 +73,9 @@ todo.example.com {
 ```
 
 Then set `PUBLIC_API_URL=https://todo.example.com`.
+
+Uploaded files are served by the same server under `/media`, so they already use your domain. To give them their own
+subdomain, proxy it to the same port and set `MEDIA_PUBLIC_URL=https://files.example.com`.
 
 ## Swapping providers
 

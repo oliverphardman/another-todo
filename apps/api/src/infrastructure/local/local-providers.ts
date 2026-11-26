@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { SystemClock } from "../../application/ports";
 import { publicUrlOf } from "../../listen-address";
 import { Settings } from "../../composition/env";
+import { MediaAddress } from "../../composition/media-address";
 import type { Env, Identity, Media, Realtime } from "../../composition/platform";
 import type { ProviderRegistry } from "../../composition/provider-registry";
 import { DiskMediaRoutes, DiskMediaStorage } from "./disk-media";
@@ -37,7 +38,12 @@ function sqlite(env: Env): SqliteDataStore {
 function disk(env: Env, publicUrl: string): Media {
 	const jwt = jwtOf(env);
 	const clock = new SystemClock();
-	const storage = new DiskMediaStorage(join(directoryOf(env), "media"), publicUrl, jwt, clock);
+	const storage = new DiskMediaStorage(
+		join(directoryOf(env), "media"),
+		MediaAddress.from(env)?.href.replace(/\/+$/, "") ?? publicUrl,
+		jwt,
+		clock,
+	);
 	return { storage, router: new DiskMediaRoutes(storage, jwt, clock).router() };
 }
 

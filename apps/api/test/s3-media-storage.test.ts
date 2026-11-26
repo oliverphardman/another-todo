@@ -56,6 +56,19 @@ describe("S3MediaStorage", () => {
 		expect(options).toEqual({ expiresIn: 3600 });
 	});
 
+	it("publishes its links on another address without changing what was signed", async () => {
+		presign.getSignedUrl.mockResolvedValue(
+			"https://bucket.s3.us-east-1.amazonaws.com/u/1?X-Amz-Signature=abc%2F1",
+		);
+		const storage = new S3MediaStorage(client, "bucket", "https://files.example.com");
+		expect(await storage.downloadUrl("u/1")).toBe(
+			"https://files.example.com/u/1?X-Amz-Signature=abc%2F1",
+		);
+		expect((await storage.createUpload("u/1", "image/png", 10)).url).toBe(
+			"https://files.example.com/",
+		);
+	});
+
 	it("deletes objects", async () => {
 		await new S3MediaStorage(client, "bucket").remove("u/1");
 		const [command] = send.mock.calls[0]!;
