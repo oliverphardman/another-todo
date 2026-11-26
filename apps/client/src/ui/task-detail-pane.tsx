@@ -1,7 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
 import { Linking, ScrollView, View } from "react-native";
-import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -16,8 +15,8 @@ import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
 import { useDeleteTasks } from "./use-delete-tasks";
+import { TaskNoteField, TaskTitleField } from "./task-fields";
 import { AddStepRow, StepRow } from "./step-list";
-import { FONT_FAMILY } from "./theme";
 import { useKeyboardShown } from "./keyboard-safe";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
@@ -38,15 +37,11 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const insets = useInsets();
 	const i18n = useI18n();
 	const { t } = i18n;
-	const [title, setTitle] = useState(task.title);
-	const [note, setNote] = useState(task.note);
-	const [noteFocused, setNoteFocused] = useState(false);
 	const keyboardShown = useKeyboardShown();
 	const [picking, setPicking] = useState(false);
 	const [pickingReminder, setPickingReminder] = useState(false);
 	const [pickingRepeat, setPickingRepeat] = useState(false);
 	useEffect(() => {
-		setTitle(task.title);
 		setPicking(false);
 		setPickingReminder(false);
 		setPickingRepeat(false);
@@ -54,9 +49,6 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	useEffect(() => {
 		void attachments.show(task.id);
 	}, [attachments, task.id]);
-	useEffect(() => {
-		setNote(task.note);
-	}, [task.id, task.note]);
 	const today = store.today;
 	const reminder =
 		task.remindAt !== null && Date.parse(task.remindAt) > store.now.getTime()
@@ -93,25 +85,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 								<Icon glyph="circle" size={22} color={palette.accent} strokeWidth={1.3} />
 							)}
 						</PressableSurface>
-						<TextField
-							accessibilityLabel={t("task.title")}
-							value={title}
-							onChangeText={setTitle}
-							onBlur={() => store.renameTask(task.id, title)}
-							onSubmitEditing={() => store.renameTask(task.id, title)}
-							style={
-								{
-									flex: 1,
-									minWidth: 0,
-									fontFamily: FONT_FAMILY,
-									fontSize: 17,
-									fontWeight: "600",
-									color: palette.text,
-									paddingVertical: 12,
-									outlineStyle: "none",
-								} as object
-							}
-						/>
+						<TaskTitleField key={task.id} task={task} />
 						<PressableSurface
 							accessibilityRole="button"
 							accessibilityLabel={
@@ -253,31 +227,7 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					)}
 				</DetailCard>
 				<DetailCard>
-					<TextField
-						multiline
-						spellCheck={noteFocused}
-						onFocus={() => setNoteFocused(true)}
-						accessibilityLabel={t("detail.note")}
-						placeholder={t("detail.addNote")}
-						placeholderTextColor={palette.textSecondary}
-						value={note}
-						onChangeText={setNote}
-						onBlur={() => {
-							setNoteFocused(false);
-							store.setNote(task.id, note);
-						}}
-						style={
-							{
-								minHeight: 72,
-								padding: 16,
-								fontFamily: FONT_FAMILY,
-								fontSize: 14,
-								color: palette.text,
-								outlineStyle: "none",
-								textAlignVertical: "top",
-							} as object
-						}
-					/>
+					<TaskNoteField key={task.id} task={task} />
 				</DetailCard>
 			</ScrollView>
 			{keyboardShown ? null : (
