@@ -22,7 +22,7 @@ describe("AttachmentService", () => {
 			{
 				key: created.attachment.storageKey,
 				contentType: "application/pdf",
-				maxBytes: 25 * 1024 * 1024,
+				maxBytes: 10 * 1024 * 1024,
 			},
 		]);
 		expect(JSON.stringify(created.attachment.toView(created.url))).not.toContain("ownerId");
@@ -41,7 +41,7 @@ describe("AttachmentService", () => {
 			{ ...input, size: 0 },
 			{ ...input, size: 1.5 },
 			{ ...input, size: "big" },
-			{ ...input, size: 25 * 1024 * 1024 + 1 },
+			{ ...input, size: 10 * 1024 * 1024 + 1 },
 		];
 		for (const value of bad) {
 			await expect(attachments.create("u", task.id, value)).rejects.toThrow(ValidationError);

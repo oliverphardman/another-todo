@@ -31,6 +31,7 @@ export const TEST_CONFIG: ApiConfig = {
 	publicUrl: "https://api.example.com",
 	corsOrigins: [TEST_ORIGIN],
 	notice: null,
+	maxUploadBytes: 25 * 1024 * 1024,
 };
 
 export const TEST_TABLES = {

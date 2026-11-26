@@ -651,7 +651,8 @@
 										"providers",
 										"notice",
 										"realtimeUrl",
-										"signIn"
+										"signIn",
+										"maxUploadBytes"
 									],
 									"properties": {
 										"authentication": {
@@ -678,6 +679,10 @@
 										"realtimeUrl": {
 											"type": "string",
 											"nullable": true
+										},
+										"maxUploadBytes": {
+											"type": "integer",
+											"description": "The largest file the server accepts; photos are also limited to 5 MB"
 										},
 										"signIn": {
 											"type": "object",
@@ -1788,8 +1793,7 @@
 					},
 					"size": {
 						"type": "integer",
-						"minimum": 1,
-						"maximum": 26214400
+						"minimum": 1
 					}
 				}
 			},

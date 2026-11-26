@@ -1232,6 +1232,8 @@ export interface operations {
                         providers: "Microsoft"[];
                         notice: string | null;
                         realtimeUrl: string | null;
+                        /** @description The largest file the server accepts; photos are also limited to 5 MB */
+                        maxUploadBytes: number;
                         /** @description Where an app signs in when authentication is external */
                         signIn: {
                             url: string;

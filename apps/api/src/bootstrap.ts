@@ -10,6 +10,7 @@ import { GroupService } from "./application/group-service";
 import { ListService } from "./application/list-service";
 import { AttachmentService } from "./application/attachment-service";
 import { PhotoService } from "./application/photo-service";
+import { DEFAULT_MAX_UPLOAD_BYTES, UploadLimit } from "./application/upload-limit";
 import { SystemClock, UuidGenerator } from "./application/ports";
 import { SharedAccess } from "./application/shared-access";
 import { ShareService } from "./application/share-service";
@@ -39,6 +40,7 @@ export interface ApiConfig {
 	readonly publicUrl: string;
 	readonly corsOrigins: readonly string[];
 	readonly notice: string | null;
+	readonly maxUploadBytes: number;
 }
 
 export interface Services {
@@ -62,6 +64,7 @@ export function readConfig(env: Env, fallbackUrl?: string): ApiConfig {
 		publicUrl,
 		corsOrigins: settings.list("CORS_ORIGINS"),
 		notice: settings.optional("SERVER_NOTICE"),
+		maxUploadBytes: UploadLimit.parse(settings.optional("MAX_UPLOAD_MB")),
 	};
 }
 
@@ -87,6 +90,7 @@ export function createApp(
 			notice: config.notice,
 			realtimeUrl: realtime.endpoint,
 			signIn: identity.signIn,
+			maxUploadBytes: config.maxUploadBytes,
 		}).router(),
 	);
 	if (identity.router !== null) {
@@ -135,11 +139,19 @@ export function createServices(
 	storage: MediaStorage,
 	channel: ChangeChannel,
 	directory: UserDirectory,
+	maxUploadBytes: number = DEFAULT_MAX_UPLOAD_BYTES,
 ): Services {
 	const access = new SharedAccess(data.shares);
 	const ids = new UuidGenerator();
 	const clock = new SystemClock();
-	const attachments = new AttachmentService(data.attachments, data.tasks, storage, ids, clock);
+	const attachments = new AttachmentService(
+		data.attachments,
+		data.tasks,
+		storage,
+		ids,
+		clock,
+		maxUploadBytes,
+	);
 	return {
 		tasks: new TaskService(data.tasks, data.lists, access, ids, clock, attachments),
 		lists: new ListService(
@@ -156,7 +168,7 @@ export function createServices(
 		shares: new ShareService(data.shares, data.lists, access, directory, clock),
 		groups: new GroupService(data.groups, data.lists, ids, clock),
 		settings: new ViewSettingsService(data.settings, data.photos, clock),
-		photos: new PhotoService(data.photos, data.settings, storage, ids, clock),
+		photos: new PhotoService(data.photos, data.settings, storage, ids, clock, maxUploadBytes),
 		notifier: new ChangeNotifier(channel, access),
 	};
 }
@@ -173,6 +185,7 @@ export function createApplication(
 			platform.media.storage,
 			platform.realtime.channel,
 			platform.identity.directory,
+			config.maxUploadBytes,
 		),
 		platform,
 		web,

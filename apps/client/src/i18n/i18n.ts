@@ -4,9 +4,10 @@ import type { MessageKey } from "./en-us";
 import { CATALOGS, DEFAULT_LOCALE } from "./locales";
 import { PluralRule } from "./plural-rule";
 
-export type LocalizedText = { readonly key: MessageKey } | { readonly message: string };
-
 export type MessageParams = Readonly<Record<string, string | number>>;
+
+export type LocalizedText =
+	{ readonly key: MessageKey; readonly params?: MessageParams } | { readonly message: string };
 
 type PluralBase = {
 	[K in MessageKey]: K extends `${infer Base}_one` ? Base : never;
@@ -83,7 +84,7 @@ export class I18n {
 	}
 
 	text(value: LocalizedText): string {
-		return "key" in value ? this.t(value.key) : value.message;
+		return "key" in value ? this.t(value.key, value.params) : value.message;
 	}
 
 	dueLabel(day: string, today: string): string {

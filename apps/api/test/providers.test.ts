@@ -158,6 +158,7 @@ describe("public configuration", () => {
 			notice: null,
 			realtimeUrl: null,
 			signIn: null,
+			maxUploadBytes: 26214400,
 		});
 	});
 });
@@ -222,6 +223,7 @@ describe("mounted provider routers", () => {
 			notice: "Shared",
 			realtimeUrl: "wss://rt.example.com/dev",
 			signIn: { url: "https://auth.example.com", clientId: "app" },
+			maxUploadBytes: 26214400,
 		});
 		const discovery = await (await fetch(`${base}/.well-known/oauth-protected-resource`)).json();
 		expect(discovery.authorization_servers).toEqual([TEST_CONFIG.publicUrl]);

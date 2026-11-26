@@ -154,7 +154,11 @@ describe("PhotoLibrary", () => {
 		expect(library.get().error).toEqual({ key: "photo.errorUnreadable" });
 		picker.next = { ...base, contentType: "image/png", size: 6 * 1024 * 1024 };
 		await library.upload();
-		expect(library.get().error).toEqual({ key: "photo.errorSize" });
+		expect(library.get().error).toEqual({ key: "photo.errorSize", params: { size: 5 } });
+		picker.next = { ...base, contentType: "image/png", size: 2 * 1024 * 1024 };
+		const capped = new PhotoLibrary(gateway, picker, new StubAuth(), 1024 * 1024);
+		await capped.upload();
+		expect(capped.get().error).toEqual({ key: "photo.errorSize", params: { size: 1 } });
 		expect(gateway.calls).toEqual([]);
 	});
 

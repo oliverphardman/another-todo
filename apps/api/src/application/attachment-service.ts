@@ -4,8 +4,7 @@ import { NotFoundError, ValidationError } from "../domain/errors";
 import type { TaskRepository } from "../domain/task-repository";
 import type { Clock, IdGenerator } from "./ports";
 import type { MediaStorage, MediaUpload } from "./media-storage";
-
-export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
+import { DEFAULT_MAX_UPLOAD_BYTES } from "./upload-limit";
 
 export interface AttachmentInput {
 	readonly name?: unknown;
@@ -33,6 +32,7 @@ export class AttachmentService implements AttachmentPurger {
 		private readonly storage: MediaStorage,
 		private readonly ids: IdGenerator,
 		private readonly clock: Clock,
+		private readonly maxBytes: number = DEFAULT_MAX_UPLOAD_BYTES,
 	) {}
 
 	async create(
@@ -44,13 +44,13 @@ export class AttachmentService implements AttachmentPurger {
 		const attachment = Attachment.create(
 			ownerId,
 			this.ids.next(),
-			{ taskId, ...AttachmentService.details(input) },
+			{ taskId, ...this.details(input) },
 			this.clock.now(),
 		);
 		const upload = await this.storage.createUpload(
 			attachment.storageKey,
 			attachment.contentType,
-			MAX_ATTACHMENT_BYTES,
+			this.maxBytes,
 		);
 		await this.attachments.save(attachment);
 		return {
@@ -100,7 +100,7 @@ export class AttachmentService implements AttachmentPurger {
 		}
 	}
 
-	private static details(input: AttachmentInput): {
+	private details(input: AttachmentInput): {
 		name: string;
 		contentType: string;
 		size: number;
@@ -112,13 +112,8 @@ export class AttachmentService implements AttachmentPurger {
 		if (typeof contentType !== "string" || contentType.length === 0 || contentType.length > 127) {
 			throw new ValidationError("contentType must be 1 to 127 characters");
 		}
-		if (
-			typeof size !== "number" ||
-			!Number.isInteger(size) ||
-			size < 1 ||
-			size > MAX_ATTACHMENT_BYTES
-		) {
-			throw new ValidationError(`size must be between 1 and ${MAX_ATTACHMENT_BYTES} bytes`);
+		if (typeof size !== "number" || !Number.isInteger(size) || size < 1 || size > this.maxBytes) {
+			throw new ValidationError(`size must be between 1 and ${this.maxBytes} bytes`);
 		}
 		return { name: name.trim(), contentType, size };
 	}

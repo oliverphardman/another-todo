@@ -7,6 +7,7 @@ export interface PublicConfig {
 	readonly notice: string | null;
 	readonly realtimeUrl: string | null;
 	readonly signIn: SignIn | null;
+	readonly maxUploadBytes: number;
 }
 
 export class ConfigController {

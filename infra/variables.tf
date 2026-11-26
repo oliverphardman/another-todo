@@ -106,6 +106,17 @@ variable "server_notice" {
   description = "Notice the clients show to everyone using this server"
 }
 
+variable "max_upload_mb" {
+  type        = number
+  default     = 10
+  description = "Largest file the API accepts, in megabytes (photos are also limited to 5 MB)"
+
+  validation {
+    condition     = var.max_upload_mb >= 1 && var.max_upload_mb <= 1024 && floor(var.max_upload_mb) == var.max_upload_mb
+    error_message = "max_upload_mb must be a whole number from 1 to 1024."
+  }
+}
+
 variable "api_logging_enabled" {
   type        = bool
   default     = false

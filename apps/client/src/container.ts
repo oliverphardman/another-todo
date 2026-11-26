@@ -124,6 +124,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 			),
 		overrides.photoPicker ?? new ExpoPhotoPicker(),
 		auth,
+		config.maxUploadBytes,
 	);
 	const attachments = new TaskAttachments(
 		overrides.attachmentGateway ??
@@ -132,6 +133,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 				overrides.fetcher,
 			),
 		overrides.filePicker ?? new ExpoFilePicker(),
+		config.maxUploadBytes,
 	);
 	const settings = new AppSettings(dataStore);
 	const store = new TodoStore(

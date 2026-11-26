@@ -462,6 +462,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       PUBLIC_API_URL               = "https://${local.api_domain}"
       ENFORCED_USERNAME            = var.enforced_username
       SERVER_NOTICE                = var.server_notice
+      MAX_UPLOAD_MB                = var.max_upload_mb
     }
   }
 
