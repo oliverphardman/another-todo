@@ -48,8 +48,8 @@ export class TaskAttachments extends Observable<TaskAttachmentsState> {
 	}
 
 	async add(): Promise<void> {
-		const taskId = this.get().taskId;
-		if (taskId === null) {
+		const { taskId, busy } = this.get();
+		if (taskId === null || busy === "uploading") {
 			return;
 		}
 		this.set({ ...this.get(), busy: "uploading", error: null });

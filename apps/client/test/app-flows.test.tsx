@@ -334,18 +334,23 @@ describe("expanded layout", () => {
 		open.mockRestore();
 	});
 
-	it("shows the file row as busy while an upload is in progress", async () => {
+	it("leaves the Add file row as it is while a file is being chosen or uploaded", async () => {
 		const app = await start();
 		addTask("Slow");
 		fireEvent.click(screen.getByLabelText("Open Slow"));
 		let finish: (value: null) => void = () => undefined;
-		app.filePicker.pick = () => new Promise((resolve) => (finish = resolve));
+		const pick = vi.fn(() => new Promise<null>((resolve) => (finish = resolve)));
+		app.filePicker.pick = pick;
 		await act(async () => {
 			fireEvent.click(screen.getByLabelText("Add file"));
 		});
-		expect(screen.getByLabelText("Uploading…").getAttribute("aria-disabled")).toBe("true");
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Add file"));
+		});
+		expect(screen.queryByText(/Uploading/)).toBeNull();
+		expect(screen.getByLabelText("Add file").getAttribute("aria-disabled")).not.toBe("true");
+		expect(pick).toHaveBeenCalledTimes(1);
 		await act(async () => finish(null));
-		expect(screen.getByLabelText("Add file")).toBeTruthy();
 	});
 
 	it("adds, completes, renames and deletes steps", async () => {

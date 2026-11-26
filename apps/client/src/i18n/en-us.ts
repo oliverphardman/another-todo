@@ -86,7 +86,6 @@ export const EN_US = {
 	"detail.file": "Add file",
 	"attachment.open": "Open {name}",
 	"attachment.remove": "Remove {name}",
-	"attachment.uploading": "Uploading…",
 	"attachment.bytes": "{size} B",
 	"attachment.kilobytes": "{size} KB",
 	"attachment.megabytes": "{size} MB",

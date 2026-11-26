@@ -236,8 +236,8 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					))}
 					<ActionRow
 						glyph="paperclip"
-						label={files.busy === "uploading" ? t("attachment.uploading") : t("detail.file")}
-						onPress={files.busy === "uploading" ? undefined : () => void attachments.add()}
+						label={t("detail.file")}
+						onPress={() => void attachments.add()}
 					/>
 					{files.error === null ? null : (
 						<AppText
