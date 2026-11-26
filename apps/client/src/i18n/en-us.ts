@@ -253,6 +253,8 @@ export const EN_US = {
 	"list.showYesterdaySection": "Show yesterday's tasks",
 	"list.hideYesterdaySection": "Hide yesterday's tasks",
 	"settings.title": "Settings",
+	"task.noteTag": "Note",
+	"task.attachmentTag": "Attachment",
 	"settings.signedOut": "Sign in to change settings",
 	"settings.close": "Close settings",
 	"settings.appearance": "Appearance",

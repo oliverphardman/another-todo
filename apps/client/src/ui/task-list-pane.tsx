@@ -28,6 +28,7 @@ import type { LayoutMode } from "./theme";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
 import { TaskRow } from "./task-row";
+import { TaskSubtitleParts } from "./task-subtitle";
 import { rowMetrics } from "./row-metrics";
 
 export interface TaskListPaneProps {
@@ -60,18 +61,6 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	}, [view.id]);
 	const { open, yesterday, done } = store.visibleTasks();
 	const today = store.today;
-	const subtitleFor = (task: Task): string | null => {
-		const parts = [
-			view.showsListName ? (store.listName(task) ?? t("view.tasks")) : null,
-			task.steps.length === 0
-				? null
-				: t("task.stepsProgress", { done: task.stepsCompleted, total: task.steps.length }),
-			view.showsMyDay && store.isInMyDay(task) ? t("task.myDayTag") : null,
-			task.dueDay === null ? null : i18n.dueLabel(task.dueDay, today),
-			task.repeat === null ? null : i18n.repeatLabel(task.repeat),
-		].filter((part): part is string => part !== null);
-		return parts.length === 0 ? null : parts.join(" · ");
-	};
 	const manualOrder = store.settingsFor(view.id).sort === null && view.order === "newest";
 	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);
@@ -126,7 +115,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			}
 			key={task.id}
 			task={task}
-			subtitle={subtitleFor(task)}
+			subtitle={TaskSubtitleParts.of(task, view, store, i18n)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
 			travel={
 				Math.max(0, open.length - 1 - open.indexOf(task)) * rowMetrics(rowStyle).pitch +

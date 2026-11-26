@@ -507,11 +507,24 @@ describe("Photos API", () => {
 		expect(created.body.upload.url).toBe("https://upload.test/photos");
 		const listed = await api(event({ path: base }));
 		expect(listed.body.attachments).toHaveLength(1);
+		const flag = async () => {
+			const one = await api(event({ path: `/tasks/${task.body.id}` }));
+			const all = await api(event({ path: "/tasks" }));
+			expect(all.body.tasks[0].hasAttachments).toBe(one.body.hasAttachments);
+			return one.body.hasAttachments;
+		};
+		expect(task.body.hasAttachments).toBe(false);
+		expect(await flag()).toBe(true);
+		const patched = await api(
+			event({ method: "PATCH", path: `/tasks/${task.body.id}`, body: { completed: true } }),
+		);
+		expect(patched.body.hasAttachments).toBe(true);
 		const removed = await api(
 			event({ method: "DELETE", path: `${base}/${created.body.attachment.id}` }),
 		);
 		expect(removed.status).toBe(204);
 		expect((await api(event({ path: base }))).body.attachments).toEqual([]);
+		expect(await flag()).toBe(false);
 		expect((await api(event({ path: base, sub: "someone-else" }))).status).toBe(404);
 		expect(
 			(

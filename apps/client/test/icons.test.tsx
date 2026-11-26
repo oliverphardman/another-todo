@@ -13,6 +13,7 @@ const GLYPHS: IconGlyph[] = [
 	"rename",
 	"settings",
 	"tick",
+	"note",
 	"addPerson",
 	"sync",
 	"people",

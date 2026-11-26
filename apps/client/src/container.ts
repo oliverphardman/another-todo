@@ -144,6 +144,12 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		overrides.sounds ?? new ExpoSoundPlayer(),
 		settings,
 	);
+	attachments.subscribe(() => {
+		const { taskId, items, busy, error } = attachments.get();
+		if (taskId !== null && busy === "idle" && error === null) {
+			store.noteAttachments(taskId, items.length > 0);
+		}
+	});
 	const reminders = new ReminderService(
 		overrides.reminderNotifier ?? createReminderNotifier(),
 		store,

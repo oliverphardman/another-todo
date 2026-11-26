@@ -375,6 +375,8 @@ export interface components {
             monthDay?: number;
         } | null;
         Task: {
+            /** @description Whether any file is attached to the task */
+            hasAttachments: boolean;
             id: string;
             title: string;
             completed: boolean;

@@ -2,12 +2,16 @@ import { Router } from "express";
 import type { TaskService } from "../application/task-service";
 import type { components } from "../generated/api";
 import { RouteSupport } from "./route-support";
+import type { TaskPresenter } from "./task-presenter";
 
 type CreateTaskBody = components["schemas"]["CreateTask"];
 type UpdateTaskBody = components["schemas"]["UpdateTask"];
 
 export class TaskController {
-	constructor(private readonly service: TaskService) {}
+	constructor(
+		private readonly service: TaskService,
+		private readonly presenter: TaskPresenter,
+	) {}
 
 	router(): Router {
 		const router = Router();
@@ -16,7 +20,7 @@ export class TaskController {
 			RouteSupport.wrap(async (request, response) => {
 				const listId = typeof request.query.listId === "string" ? request.query.listId : undefined;
 				const tasks = await this.service.list(RouteSupport.ownerOf(response), listId);
-				response.json({ tasks: tasks.map((task) => task.toJSON()) });
+				response.json({ tasks: await this.presenter.presentAll(tasks) });
 			}),
 		);
 		router.post(
@@ -24,14 +28,14 @@ export class TaskController {
 			RouteSupport.wrap(async (request, response) => {
 				const body = request.body as CreateTaskBody;
 				const task = await this.service.create(RouteSupport.ownerOf(response), body);
-				response.status(201).json(task.toJSON());
+				response.status(201).json(await this.presenter.present(task));
 			}),
 		);
 		router.get(
 			"/:id",
 			RouteSupport.wrap(async (request, response) => {
 				const task = await this.service.get(RouteSupport.ownerOf(response), request.params.id!);
-				response.json(task.toJSON());
+				response.json(await this.presenter.present(task));
 			}),
 		);
 		router.patch(
@@ -43,7 +47,7 @@ export class TaskController {
 					request.params.id!,
 					body,
 				);
-				response.json(task.toJSON());
+				response.json(await this.presenter.present(task));
 			}),
 		);
 		router.delete(

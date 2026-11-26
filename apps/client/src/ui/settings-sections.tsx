@@ -51,7 +51,7 @@ function RowPreview() {
 	const palette = useTheme();
 	const { rowStyle } = useObservable(settings);
 	const example = Task.create("settings-preview", t("settings.previewTask"), "");
-	const subtitle = [t("view.tasks"), i18n.dueLabel(store.today, store.today)].join(" · ");
+	const subtitle = [{ text: t("view.tasks") }, { text: i18n.dueLabel(store.today, store.today) }];
 	return (
 		<View
 			accessibilityLabel={t("settings.preview")}

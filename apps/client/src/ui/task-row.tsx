@@ -7,13 +7,14 @@ import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useContainer } from "./container-context";
+import { TaskSubtitle, type SubtitlePart } from "./task-subtitle";
 import type { RowStyle } from "../state/app-settings";
 import { rowMetrics } from "./row-metrics";
 import { useTheme } from "./theme-context";
 
 export interface TaskRowProps {
 	readonly task: Task;
-	readonly subtitle: string | null;
+	readonly subtitle: readonly SubtitlePart[];
 	readonly overdue: boolean;
 	readonly travel: number;
 	readonly selected: boolean;
@@ -142,10 +143,8 @@ export function TaskRow({
 					>
 						{task.title}
 					</AppText>
-					{subtitle === null ? null : (
-						<AppText size={12} tone={overdue && !task.completed ? "danger" : "secondary"}>
-							{subtitle}
-						</AppText>
+					{subtitle.length === 0 ? null : (
+						<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} />
 					)}
 				</PressableSurface>
 				<PressableSurface

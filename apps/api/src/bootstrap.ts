@@ -33,6 +33,7 @@ import { RouteSupport } from "./http/route-support";
 import { SettingsController } from "./http/settings-controller";
 import { ShareController } from "./http/share-controller";
 import { TaskController } from "./http/task-controller";
+import { TaskPresenter } from "./http/task-presenter";
 import { McpController } from "./mcp/mcp-controller";
 import { McpServer } from "./mcp/mcp-server";
 import { createTools } from "./mcp/tools";
@@ -47,6 +48,7 @@ export interface ApiConfig {
 
 export interface Services {
 	readonly tasks: TaskService;
+	readonly taskViews: TaskPresenter;
 	readonly lists: ListService;
 	readonly settings: ViewSettingsService;
 	readonly photos: PhotoService;
@@ -128,7 +130,7 @@ export function createApp(
 		}) as unknown as RequestHandler[]),
 	);
 	app.use("/tasks", new AttachmentController(services.attachments).router());
-	app.use("/tasks", new TaskController(services.tasks).router());
+	app.use("/tasks", new TaskController(services.tasks, services.taskViews).router());
 	app.use("/lists", new ShareController(services.shares).router());
 	app.use("/lists", new ListController(services.lists, services.shares).router());
 	app.use("/groups", new GroupController(services.groups).router());
@@ -169,6 +171,7 @@ export function createServices(
 			attachments,
 		),
 		attachments,
+		taskViews: new TaskPresenter(data.attachments),
 		shares: new ShareService(data.shares, data.lists, access, directory, clock),
 		groups: new GroupService(data.groups, data.lists, ids, clock),
 		settings: new ViewSettingsService(data.settings, data.photos, clock),

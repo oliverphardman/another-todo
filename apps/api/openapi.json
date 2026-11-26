@@ -1022,9 +1022,14 @@
 					"note",
 					"position",
 					"remindAt",
-					"repeat"
+					"repeat",
+					"hasAttachments"
 				],
 				"properties": {
+					"hasAttachments": {
+						"type": "boolean",
+						"description": "Whether any file is attached to the task"
+					},
 					"id": {
 						"type": "string"
 					},
