@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -16,11 +16,9 @@ export interface TaskRowProps {
 	readonly task: Task;
 	readonly subtitle: readonly SubtitlePart[];
 	readonly overdue: boolean;
-	readonly travel: number;
 	readonly selected: boolean;
 	readonly rowStyle: RowStyle;
-	readonly onToggleCompleted: (silent?: boolean) => void;
-	readonly onCompleting: () => void;
+	readonly onToggleCompleted: () => void;
 	readonly onToggleImportant: () => void;
 	readonly onSelect: (event: unknown) => void;
 	readonly marker: "before" | "after" | null;
@@ -32,11 +30,9 @@ export function TaskRow({
 	task,
 	subtitle,
 	overdue,
-	travel,
 	selected,
 	rowStyle,
 	onToggleCompleted,
-	onCompleting,
 	onToggleImportant,
 	onSelect,
 	marker,
@@ -48,116 +44,84 @@ export function TaskRow({
 	const menu = useContextMenuTrigger(t("ctx.taskMenu"), buildMenu);
 	const { motion } = useContainer();
 	const metrics = rowMetrics(rowStyle);
-	const [completing, setCompleting] = useState(false);
-	const fill = useRef(new Animated.Value(0)).current;
-	const slide = useRef(new Animated.Value(0)).current;
-	const alive = useRef(true);
-	useEffect(
-		() => () => {
-			alive.current = false;
-		},
-		[],
-	);
-	const toggle = () => {
-		if (task.completed || motion.fillMs === 0 || completing) {
-			onToggleCompleted();
+	const fill = useRef(new Animated.Value(task.completed ? 1 : 0)).current;
+	const filled = useRef(task.completed);
+	useEffect(() => {
+		if (filled.current === task.completed) {
 			return;
 		}
-		setCompleting(true);
-		onCompleting();
-		Animated.parallel([
-			Animated.timing(fill, { toValue: 1, duration: motion.fillMs, useNativeDriver: false }),
-			Animated.timing(slide, {
-				toValue: travel,
-				duration: motion.travelMs,
-				useNativeDriver: false,
-			}),
-		]).start(() => {
-			if (alive.current) {
-				onToggleCompleted(true);
-				setCompleting(false);
-				fill.setValue(0);
-				slide.setValue(0);
-			}
-		});
-	};
+		filled.current = task.completed;
+		const toValue = task.completed ? 1 : 0;
+		if (motion.fillMs === 0) {
+			fill.setValue(toValue);
+			return;
+		}
+		Animated.timing(fill, { toValue, duration: motion.fillMs, useNativeDriver: false }).start();
+	}, [task.completed, motion.fillMs, fill]);
 	return (
-		<Animated.View
+		<View
+			{...({
+				dataSet: { taskRow: task.completed ? undefined : task.id, dropMarker: marker ?? "none" },
+			} as object)}
 			style={{
-				zIndex: completing ? -1 : 0,
-				transform: [{ translateY: slide }],
+				flexDirection: "row",
+				alignItems: "center",
+				borderTopWidth: 2,
+				borderTopColor: marker === "before" ? palette.accent : "transparent",
+				borderBottomWidth: 2,
+				borderBottomColor: marker === "after" ? palette.accent : "transparent",
+				backgroundColor: selected ? palette.accentSoft : palette.surface,
+				borderRadius: 4,
+				marginBottom: metrics.gap,
+				minHeight: metrics.height,
 			}}
 		>
-			<View
-				{...({
-					dataSet: { taskRow: task.completed ? undefined : task.id, dropMarker: marker ?? "none" },
-				} as object)}
-				style={{
-					flexDirection: "row",
-					alignItems: "center",
-					borderTopWidth: 2,
-					borderTopColor: marker === "before" ? palette.accent : "transparent",
-					borderBottomWidth: 2,
-					borderBottomColor: marker === "after" ? palette.accent : "transparent",
-					backgroundColor: selected ? palette.accentSoft : palette.surface,
-					borderRadius: 4,
-					marginBottom: metrics.gap,
-					minHeight: metrics.height,
-				}}
+			<PressableSurface
+				accessibilityRole="checkbox"
+				accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
+				accessibilityState={{ checked: task.completed }}
+				onPress={onToggleCompleted}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
+				style={{ ...metrics.control, cursor: "default" as never }}
 			>
-				<PressableSurface
-					accessibilityRole="checkbox"
-					accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
-					accessibilityState={{ checked: task.completed }}
-					onPress={toggle}
-					onContextMenu={menu.onContextMenu}
-					onLongPress={menu.onLongPress}
-					style={{ ...metrics.control, cursor: "default" as never }}
-				>
-					{task.completed ? (
+				<View>
+					<Icon glyph="circle" size={22} color={palette.accent} />
+					<Animated.View style={{ position: "absolute", opacity: fill }}>
 						<CheckedCircle size={22} color={palette.accent} />
-					) : (
-						<View>
-							<Icon glyph="circle" size={22} color={palette.accent} />
-							{completing ? (
-								<Animated.View style={{ position: "absolute", opacity: fill }}>
-									<CheckedCircle size={22} color={palette.accent} />
-								</Animated.View>
-							) : null}
-						</View>
-					)}
-				</PressableSurface>
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={t("task.open", { title: task.title })}
-					{...(onDragStart === null ? {} : ({ onMouseDown: onDragStart } as object))}
-					onPress={onSelect}
-					onContextMenu={menu.onContextMenu}
-					onLongPress={menu.onLongPress}
-					style={{ flex: 1, paddingVertical: metrics.textPadding, cursor: "default" as never }}
+					</Animated.View>
+				</View>
+			</PressableSurface>
+			<PressableSurface
+				accessibilityRole="button"
+				accessibilityLabel={t("task.open", { title: task.title })}
+				{...(onDragStart === null ? {} : ({ onMouseDown: onDragStart } as object))}
+				onPress={onSelect}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
+				style={{ flex: 1, paddingVertical: metrics.textPadding, cursor: "default" as never }}
+			>
+				<AppText
+					size={15}
+					tone={task.completed ? "secondary" : "primary"}
+					style={task.completed ? { textDecorationLine: "line-through" } : undefined}
 				>
-					<AppText
-						size={15}
-						tone={task.completed ? "secondary" : "primary"}
-						style={task.completed ? { textDecorationLine: "line-through" } : undefined}
-					>
-						{task.title}
-					</AppText>
-					{subtitle.length === 0 ? null : (
-						<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} />
-					)}
-				</PressableSurface>
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={task.important ? t("task.removeImportance") : t("task.makeImportant")}
-					onPress={onToggleImportant}
-					onContextMenu={menu.onContextMenu}
-					onLongPress={menu.onLongPress}
-					style={{ ...metrics.control, cursor: "default" as never }}
-				>
-					<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
-				</PressableSurface>
-			</View>
-		</Animated.View>
+					{task.title}
+				</AppText>
+				{subtitle.length === 0 ? null : (
+					<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} />
+				)}
+			</PressableSurface>
+			<PressableSurface
+				accessibilityRole="button"
+				accessibilityLabel={task.important ? t("task.removeImportance") : t("task.makeImportant")}
+				onPress={onToggleImportant}
+				onContextMenu={menu.onContextMenu}
+				onLongPress={menu.onLongPress}
+				style={{ ...metrics.control, cursor: "default" as never }}
+			>
+				<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
+			</PressableSurface>
+		</View>
 	);
 }

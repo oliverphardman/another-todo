@@ -550,14 +550,10 @@ export class TodoStore extends Observable<TodoState> {
 		}
 	}
 
-	announceCompleted(): void {
-		this.sounds.playCompleted();
-	}
-
-	toggleCompleted(taskId: string, sound = true): void {
+	toggleCompleted(taskId: string): void {
 		const task = this.get().tasks.find((candidate) => candidate.id === taskId);
 		if (task !== undefined) {
-			if (!task.completed && sound) {
+			if (!task.completed) {
 				this.sounds.playCompleted();
 			}
 			this.updateTask(taskId, { completed: !task.completed });

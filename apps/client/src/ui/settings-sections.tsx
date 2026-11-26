@@ -63,11 +63,9 @@ function RowPreview() {
 					task={example}
 					subtitle={subtitle}
 					overdue={false}
-					travel={0}
 					selected={false}
 					rowStyle={rowStyle}
 					onToggleCompleted={ignore}
-					onCompleting={ignore}
 					onToggleImportant={ignore}
 					onSelect={ignore}
 					marker={null}
