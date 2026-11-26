@@ -13,9 +13,15 @@ import { setViewport } from "./support/render-app";
 const serverAnswer = (authentication: string) =>
 	vi.fn(async (url: string) =>
 		url.endsWith("/config")
-			? new Response(JSON.stringify({ authentication, notice: null, realtimeUrl: null }), {
-					status: 200,
-				})
+			? new Response(
+					JSON.stringify({
+						authentication,
+						notice: null,
+						realtimeUrl: null,
+						signIn: { url: "https://auth.example.com", clientId: "app" },
+					}),
+					{ status: 200 },
+				)
 			: new Response(JSON.stringify({ tasks: [], lists: [], groups: [], settings: [] }), {
 					status: 200,
 				}),

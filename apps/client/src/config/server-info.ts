@@ -1,6 +1,6 @@
 import type { Fetcher } from "../api/authorized-http";
 import type { IdentityProvider } from "../auth/authorization-server";
-import type { Authentication, ServerInfo } from "./app-config";
+import type { Authentication, ServerInfo, SignInSettings } from "./app-config";
 
 const MODES: readonly Authentication[] = ["none", "password", "external"];
 
@@ -20,6 +20,10 @@ export class ServerInfoLoader {
 			if (!response.ok || !MODES.includes(body.authentication as Authentication)) {
 				throw new ServerUnreachableError(serverUrl);
 			}
+			const signIn = ServerInfoLoader.signIn(body.signIn);
+			if (body.authentication === "external" && signIn === null) {
+				throw new ServerUnreachableError(serverUrl);
+			}
 			return {
 				authentication: body.authentication!,
 				providers: (Array.isArray(body.providers) ? body.providers : []).filter(
@@ -27,9 +31,17 @@ export class ServerInfoLoader {
 				),
 				notice: typeof body.notice === "string" ? body.notice : null,
 				realtimeUrl: typeof body.realtimeUrl === "string" ? body.realtimeUrl : null,
+				signIn,
 			};
 		} catch {
 			throw new ServerUnreachableError(serverUrl);
 		}
+	}
+
+	private static signIn(value: Partial<SignInSettings> | null | undefined): SignInSettings | null {
+		const { url, clientId } = value ?? {};
+		return typeof url === "string" && url.startsWith("https://") && typeof clientId === "string"
+			? { url, clientId }
+			: null;
 	}
 }

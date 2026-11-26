@@ -456,6 +456,7 @@ resource "aws_lambdaweb_function_revision" "api" {
       WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"
       COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
       COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
+      COGNITO_AUTH_URL             = "https://${local.auth_domain}"
       CORS_ORIGINS                 = join(",", local.cors_origins)
       PUBLIC_API_URL               = "https://${local.api_domain}"
       ENFORCED_USERNAME            = var.enforced_username

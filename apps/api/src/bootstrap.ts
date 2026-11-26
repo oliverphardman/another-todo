@@ -86,6 +86,7 @@ export function createApp(
 			providers: identity.providers,
 			notice: config.notice,
 			realtimeUrl: realtime.endpoint,
+			signIn: identity.signIn,
 		}).router(),
 	);
 	if (identity.router !== null) {

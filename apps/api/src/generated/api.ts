@@ -1232,6 +1232,11 @@ export interface operations {
                         providers: "Microsoft"[];
                         notice: string | null;
                         realtimeUrl: string | null;
+                        /** @description Where an app signs in when authentication is external */
+                        signIn: {
+                            url: string;
+                            clientId: string;
+                        } | null;
                     };
                 };
             };

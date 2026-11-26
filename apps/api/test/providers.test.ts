@@ -33,6 +33,7 @@ const AWS_ENV = {
 	WEBSOCKET_MANAGEMENT_URL: "https://ws.example.com/prod",
 	COGNITO_USER_POOL_ID: "eu-west-1_pool",
 	COGNITO_CLIENT_ID: "client",
+	COGNITO_AUTH_URL: "https://auth.example.com",
 };
 
 describe("Settings", () => {
@@ -64,10 +65,20 @@ describe("PlatformFactory", () => {
 		expect(platform.identity.issuer).toBe(
 			"https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_pool",
 		);
+		expect(platform.identity.signIn).toEqual({
+			url: "https://auth.example.com",
+			clientId: "client",
+		});
 		expect(platform.realtime.endpoint).toBe("wss://ws.example.com/prod");
 		expect(platform.media.router).toBeNull();
 		expect(platform.identity.router).toBeNull();
 		expect(() => platform.realtime.attach({} as never)).not.toThrow();
+	});
+
+	it("offers no sign-in address when none is configured", () => {
+		const platform = factory.create({ ...AWS_ENV, COGNITO_AUTH_URL: " " }, "u");
+		expect(platform.identity.mode).toBe("external");
+		expect(platform.identity.signIn).toBeNull();
 	});
 
 	it("swaps a provider through its environment variable", async () => {
@@ -146,6 +157,7 @@ describe("public configuration", () => {
 			providers: [],
 			notice: null,
 			realtimeUrl: null,
+			signIn: null,
 		});
 	});
 });
@@ -183,6 +195,7 @@ describe("mounted provider routers", () => {
 			authenticator: new TokenIsSubjectAuthenticator(),
 			directory: new FakeUserDirectory(),
 			issuer: null,
+			signIn: { url: "https://auth.example.com", clientId: "app" },
 			router: identityRouter,
 		};
 		const media: Pick<Media, "router"> = { router: mediaRouter };
@@ -208,6 +221,7 @@ describe("mounted provider routers", () => {
 			providers: ["Microsoft"],
 			notice: "Shared",
 			realtimeUrl: "wss://rt.example.com/dev",
+			signIn: { url: "https://auth.example.com", clientId: "app" },
 		});
 		const discovery = await (await fetch(`${base}/.well-known/oauth-protected-resource`)).json();
 		expect(discovery.authorization_servers).toEqual([TEST_CONFIG.publicUrl]);
