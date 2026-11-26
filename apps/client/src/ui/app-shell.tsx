@@ -18,6 +18,7 @@ import { DrawerLayout } from "./drawer-layout";
 import { KeyboardSafe } from "./keyboard-safe";
 import { ConsumedInsets } from "./safe-area";
 import { ThemeOverride } from "./theme-context";
+import { useBackHandler } from "./use-back-handler";
 import { useListTheme } from "./use-list-theme";
 import { Sidebar } from "./sidebar";
 import { SignInScreen } from "./sign-in-screen";
@@ -89,6 +90,17 @@ function MainLayout() {
 		lastTask.current = task;
 	}
 	const closeDetail = () => store.selectTask(null);
+	useBackHandler(() => {
+		if (task !== null) {
+			closeDetail();
+			return true;
+		}
+		if (mode === "compact" && sidebarOpen) {
+			setSidebarOpen(false);
+			return true;
+		}
+		return false;
+	});
 	const sidebarWidth = widths.sidebar ?? Layout.sidebarWidth(mode);
 	const detailWidth = widths.detail ?? Layout.detailWidth(mode);
 	if (mode === "compact") {

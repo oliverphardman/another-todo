@@ -8,6 +8,7 @@ import { MenuItem, MenuPanel } from "./menu";
 import { NativeMenu } from "./native-menu";
 import { Pointer } from "./pointer";
 import { useObservable } from "./hooks";
+import { useBackHandler } from "./use-back-handler";
 import { useInsets, type Insets } from "./safe-area";
 import { useTheme } from "./theme-context";
 
@@ -148,6 +149,14 @@ function ContextMenuPopup({ state, onClose }: { state: ContextMenuState; onClose
 	const rows = panel === null ? entries.length : Math.max(entries.length, PANEL_ROWS);
 	const insets = useInsets();
 	const { left, top } = MenuPlacement.at(state.x, state.y, { width, height }, rows, insets);
+	useBackHandler(() => {
+		if (panel === null && stack.length > 1) {
+			setStack(stack.slice(0, -1));
+		} else {
+			onClose();
+		}
+		return true;
+	});
 	const finish = (action: () => void) => () => {
 		action();
 		onClose();
