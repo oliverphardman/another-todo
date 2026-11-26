@@ -4,6 +4,7 @@ export interface Palette {
 	readonly sidebarSelected: string;
 	readonly sidebarHover: string;
 	readonly sidebarField: string;
+	readonly ripple: string;
 	readonly surface: string;
 	readonly surfaceHover: string;
 	readonly detail: string;
@@ -24,6 +25,7 @@ export const LIGHT: Palette = {
 	sidebarSelected: "#e1e1e1",
 	sidebarHover: "#ebebeb",
 	sidebarField: "#ffffff",
+	ripple: "rgba(0, 0, 0, 0.18)",
 	surface: "#ffffff",
 	surfaceHover: "#f5f5f5",
 	detail: "#faf9f8",
@@ -44,6 +46,7 @@ export const DARK: Palette = {
 	sidebarSelected: "#3a3a3a",
 	sidebarHover: "#2f2f2f",
 	sidebarField: "#1b1b1b",
+	ripple: "rgba(255, 255, 255, 0.24)",
 	surface: "#292929",
 	surfaceHover: "#333333",
 	detail: "#242424",

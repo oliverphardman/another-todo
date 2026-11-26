@@ -13,6 +13,7 @@ import { NewListField } from "./new-list-field";
 import { SidebarColors } from "./sidebar-colors";
 import { sidebarMetrics, type SidebarMetrics } from "./sidebar-metrics";
 import { useLogOut } from "./use-log-out";
+import { useTouchReorder } from "./use-touch-reorder";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
@@ -82,7 +83,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		return entries;
 	});
 	const custom = store.orderedLists();
-	const [drag, setDrag] = useState<{ id: string; index: number } | null>(null);
+	const [pointerDrag, setDrag] = useState<{ id: string; index: number } | null>(null);
 	const dragged = useRef(false);
 	const beginDrag = (listId: string, event: unknown) => {
 		const groupKey = state.lists.find((list) => list.id === listId)?.groupId ?? "";
@@ -116,6 +117,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		window.addEventListener("mousemove", move);
 		window.addEventListener("mouseup", end);
 	};
+	const groupOf = (id: string) => state.lists.find((list) => list.id === id)?.groupId ?? null;
+	const siblingsOf = (listId: string) =>
+		custom.filter((list) => list.id !== listId && list.groupId === groupOf(listId));
+	const touch = useTouchReorder({
+		siblingsOf: (listId) => siblingsOf(listId).map((list) => list.id),
+		onDrop: (listId, index) => store.moveList(listId, index),
+	});
+	const drag = touch.drag ?? pointerDrag;
 	const customViews = state.views.filter((view): view is CustomListView => view.isCustomList);
 	const knownGroups = new Set(state.groups.map((group) => group.id));
 	const ungrouped = customViews.filter(
@@ -146,6 +155,17 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			}}
 			marker={markerFor(view.id)}
 			onDragStart={(event) => beginDrag(view.id, event)}
+			reorder={
+				touch.enabled && view.isCustomList
+					? {
+							ref: touch.register(view.id),
+							lifted: touch.lifted === view.id,
+							offset: touch.drag?.id === view.id ? touch.drag.offset : 0,
+							lift: () => touch.lift(view.id),
+							release: () => touch.release(view.id),
+						}
+					: null
+			}
 			buildMenu={() => listEntries(view.id)}
 			hasMenu={view.isCustomList}
 		/>
@@ -154,10 +174,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		if (drag === null) {
 			return null;
 		}
-		const groupOf = (id: string) => state.lists.find((list) => list.id === id)?.groupId ?? null;
-		const others = custom.filter(
-			(list) => list.id !== drag.id && list.groupId === groupOf(drag.id),
-		);
+		const others = siblingsOf(drag.id);
 		if (others[drag.index]?.id === viewId) {
 			return "before";
 		}
@@ -249,56 +266,62 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					</PressableSurface>
 				)}
 			</View>
-			<ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
-				{builtIns.map((view) => renderRow(view, false))}
-				{ungrouped.length === 0 && state.groups.length === 0 ? null : (
-					<View
-						style={{
-							height: 1,
-							backgroundColor: palette.border,
-							marginVertical: 8,
-							marginHorizontal: 16,
-						}}
+			<ScrollView
+				keyboardShouldPersistTaps="handled"
+				scrollEnabled={touch.lifted === null}
+				contentContainerStyle={{ flexGrow: 1 }}
+			>
+				<View style={{ flexGrow: 1 }} {...touch.panHandlers}>
+					{builtIns.map((view) => renderRow(view, false))}
+					{ungrouped.length === 0 && state.groups.length === 0 ? null : (
+						<View
+							style={{
+								height: 1,
+								backgroundColor: palette.border,
+								marginVertical: 8,
+								marginHorizontal: 16,
+							}}
+						/>
+					)}
+					{ungrouped.map((view) => renderRow(view, false))}
+					{state.groups.map((group) => {
+						const members = customViews.filter((view) => view.list.groupId === group.id);
+						const open = !collapsed.has(group.id);
+						return (
+							<View key={group.id}>
+								<GroupHeader
+									group={group}
+									open={open}
+									count={members.length}
+									renaming={state.renamingGroupId === group.id}
+									onToggle={() =>
+										setCollapsed((previous) => {
+											const next = new Set(previous);
+											if (next.has(group.id)) {
+												next.delete(group.id);
+											} else {
+												next.add(group.id);
+											}
+											return next;
+										})
+									}
+									onRename={(name) => {
+										store.renameGroup(group.id, name);
+										store.stopRenamingGroup();
+									}}
+									buildMenu={() => groupEntries(group.id)}
+								/>
+								{open ? members.map((view) => renderRow(view, true)) : null}
+							</View>
+						);
+					})}
+					<PressableSurface
+						accessibilityLabel={t("sidebar.blank")}
+						onContextMenu={blankMenu.onContextMenu}
+						onLongPress={blankMenu.onLongPress}
+						style={{ flexGrow: 1, minHeight: 24 }}
 					/>
-				)}
-				{ungrouped.map((view) => renderRow(view, false))}
-				{state.groups.map((group) => {
-					const members = customViews.filter((view) => view.list.groupId === group.id);
-					const open = !collapsed.has(group.id);
-					return (
-						<View key={group.id}>
-							<GroupHeader
-								group={group}
-								open={open}
-								count={members.length}
-								renaming={state.renamingGroupId === group.id}
-								onToggle={() =>
-									setCollapsed((previous) => {
-										const next = new Set(previous);
-										if (next.has(group.id)) {
-											next.delete(group.id);
-										} else {
-											next.add(group.id);
-										}
-										return next;
-									})
-								}
-								onRename={(name) => {
-									store.renameGroup(group.id, name);
-									store.stopRenamingGroup();
-								}}
-								buildMenu={() => groupEntries(group.id)}
-							/>
-							{open ? members.map((view) => renderRow(view, true)) : null}
-						</View>
-					);
-				})}
-				<PressableSurface
-					accessibilityLabel={t("sidebar.blank")}
-					onContextMenu={blankMenu.onContextMenu}
-					onLongPress={blankMenu.onLongPress}
-					style={{ flexGrow: 1, minHeight: 24 }}
-				/>
+				</View>
 			</ScrollView>
 			<View style={{ paddingHorizontal: 6, paddingVertical: 8 }}>
 				{creating ? (
@@ -317,6 +340,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityLabel={t("sidebar.createList")}
 							onPress={() => setCreating(true)}
 							hoverColor={palette.sidebarHover}
+							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								flex: 1,
 								flexDirection: "row",
@@ -335,6 +359,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityLabel={t("sidebar.createGroup")}
 							onPress={() => store.newGroup(t("group.new"))}
 							hoverColor={palette.sidebarHover}
+							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								minHeight: metrics.rowHeight,
 								minWidth: metrics.rowHeight,
@@ -371,7 +396,7 @@ function HeaderAction({ kind }: { kind: SidebarMetrics["headerAction"] }) {
 			accessibilityLabel={action.label}
 			onPress={action.run}
 			hoverColor={palette.sidebarHover}
-			android_ripple={{ color: palette.sidebarSelected, borderless: true }}
+			android_ripple={{ color: palette.ripple, borderless: true }}
 			style={{ padding: 8, borderRadius: 4 }}
 		>
 			<Icon glyph="signOut" color={palette.textSecondary} />
@@ -390,6 +415,15 @@ interface SidebarRowProps {
 	readonly indented: boolean;
 	readonly marker: "before" | "after" | null;
 	readonly onDragStart: (event: unknown) => void;
+	readonly reorder: RowReorder | null;
+}
+
+interface RowReorder {
+	readonly ref: (row: View | null) => void;
+	readonly lifted: boolean;
+	readonly offset: number;
+	readonly lift: () => void;
+	readonly release: () => boolean;
 }
 
 function SidebarRow({
@@ -403,6 +437,7 @@ function SidebarRow({
 	indented,
 	marker,
 	onDragStart,
+	reorder,
 }: SidebarRowProps) {
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -411,12 +446,19 @@ function SidebarRow({
 	const metrics = sidebarMetrics();
 	return (
 		<PressableSurface
+			ref={reorder?.ref}
 			accessibilityRole="button"
 			accessibilityLabel={i18n.viewTitle(view)}
 			accessibilityState={{ selected }}
 			onPress={onPress}
 			onContextMenu={hasMenu ? menu.onContextMenu : undefined}
-			onLongPress={hasMenu ? menu.onLongPress : undefined}
+			onLongPress={reorder?.lift ?? (hasMenu ? menu.onLongPress : undefined)}
+			onPressOut={(event) => {
+				if (reorder?.release() === true) {
+					menu.onContextMenu(event);
+				}
+			}}
+			android_ripple={{ color: palette.ripple, foreground: true }}
 			hoverColor={palette.sidebarHover}
 			{...(hasMenu
 				? ({
@@ -439,6 +481,14 @@ function SidebarRow({
 				borderBottomWidth: 2,
 				borderBottomColor: marker === "after" ? palette.accent : "transparent",
 				backgroundColor: selected ? palette.sidebarSelected : undefined,
+				...(reorder?.lifted === true
+					? {
+							backgroundColor: palette.sidebarHover,
+							transform: [{ translateY: reorder.offset }],
+							zIndex: 1,
+							elevation: 4,
+						}
+					: {}),
 			}}
 		>
 			<Icon
@@ -499,6 +549,7 @@ function GroupHeader({
 			onContextMenu={menu.onContextMenu}
 			onLongPress={menu.onLongPress}
 			hoverColor={palette.sidebarHover}
+			android_ripple={{ color: palette.ripple, foreground: true }}
 			style={{
 				flexDirection: "row",
 				alignItems: "center",

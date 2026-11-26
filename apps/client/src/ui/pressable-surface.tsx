@@ -2,8 +2,10 @@ import {
 	Pressable,
 	type PressableProps,
 	type PressableStateCallbackType,
+	type View,
 	type ViewStyle,
 } from "react-native";
+import type { Ref } from "react";
 import { contextClickProps } from "./context-click";
 
 export interface PressableSurfaceProps extends Omit<PressableProps, "style"> {
@@ -11,6 +13,7 @@ export interface PressableSurfaceProps extends Omit<PressableProps, "style"> {
 	readonly hoverColor?: string;
 	readonly activeColor?: string;
 	readonly onContextMenu?: (event: unknown) => void;
+	readonly ref?: Ref<View>;
 }
 
 export type InteractionState = PressableStateCallbackType & { hovered?: boolean };
