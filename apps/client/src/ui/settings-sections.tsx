@@ -10,7 +10,7 @@ import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-contr
 import { useAccountAction, useMicrosoftSettings, type SyncDirectionKey } from "./settings-state";
 import { TaskRow } from "./task-row";
 import { TextField } from "./text-field";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export function AppearanceSection() {
@@ -142,7 +142,7 @@ export function ServerSection() {
 						borderWidth: 1,
 						borderColor: palette.border,
 						backgroundColor: palette.surfaceHover,
-						fontFamily: FONT_FAMILY,
+						...fontStyle(),
 						fontSize: 14,
 						color: palette.textSecondary,
 						outlineStyle: "none",

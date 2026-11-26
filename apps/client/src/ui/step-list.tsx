@@ -8,7 +8,7 @@ import { useContextMenuTrigger } from "./context-menu";
 import { PressableSurface } from "./pressable-surface";
 import { DETAIL_ROW_HEIGHT, DetailSeparator } from "./detail-card";
 import { AppText } from "./app-text";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 const INPUT_STYLE = {
@@ -16,7 +16,7 @@ const INPUT_STYLE = {
 	minWidth: 0,
 	marginLeft: 14,
 	padding: 0,
-	fontFamily: FONT_FAMILY,
+	...fontStyle(),
 	fontSize: 14,
 	outlineStyle: "none",
 } as object;

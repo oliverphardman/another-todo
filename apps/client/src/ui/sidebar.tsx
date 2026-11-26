@@ -19,7 +19,7 @@ import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
 import { buildListContextMenu } from "./list-context-menu";
 import { usePrintList } from "./use-print-list";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
 import { useIsDark, useTheme } from "./theme-context";
@@ -247,7 +247,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						{
 							flex: 1,
 							marginLeft: 8,
-							fontFamily: FONT_FAMILY,
+							...fontStyle(),
 							fontSize: metrics.fontSize,
 							color: palette.text,
 							padding: 0,
@@ -564,7 +564,7 @@ function GroupHeader({
 						{
 							flex: 1,
 							marginLeft: 14,
-							fontFamily: FONT_FAMILY,
+							...fontStyle(),
 							fontSize: 14,
 							color: palette.text,
 							outlineStyle: "none",

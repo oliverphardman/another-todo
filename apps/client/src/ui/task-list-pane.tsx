@@ -25,7 +25,7 @@ import { buildTaskMenu } from "./task-menu";
 import { SyncIndicator } from "./sync-indicator";
 import { useListTheme } from "./use-list-theme";
 import type { LayoutMode } from "./theme";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 import { TaskRow } from "./task-row";
 import { TaskSubtitleParts } from "./task-subtitle";
@@ -329,9 +329,8 @@ function RenameField({ initial, onDone }: { initial: string; onDone: (name: stri
 			style={
 				{
 					flex: 1,
-					fontFamily: FONT_FAMILY,
+					...fontStyle("600"),
 					fontSize: 28,
-					fontWeight: "600",
 					color: palette.title,
 					outlineStyle: "none",
 				} as object

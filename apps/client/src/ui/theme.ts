@@ -64,9 +64,6 @@ export const DARK: Palette = {
 	warning: "#433519",
 };
 
-export const FONT_FAMILY =
-	'"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif';
-
 export type LayoutMode = "compact" | "medium" | "expanded";
 
 export class Layout {

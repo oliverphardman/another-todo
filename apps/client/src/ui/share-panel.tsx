@@ -9,7 +9,7 @@ import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export interface SharePanelProps {
@@ -102,7 +102,7 @@ export function SharePanel({ listId, onClose }: SharePanelProps) {
 					style={
 						{
 							flex: 1,
-							fontFamily: FONT_FAMILY,
+							...fontStyle(),
 							fontSize: 14,
 							color: palette.text,
 							borderWidth: 1,

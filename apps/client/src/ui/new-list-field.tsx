@@ -4,7 +4,7 @@ import { View } from "react-native";
 import { TextField } from "./text-field";
 import { Icon } from "./icon";
 import { sidebarMetrics } from "./sidebar-metrics";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
 export interface NewListFieldProps {
@@ -59,7 +59,7 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 						flex: 1,
 						marginLeft: 12,
 						padding: 0,
-						fontFamily: FONT_FAMILY,
+						...fontStyle(),
 						fontSize: metrics.fontSize,
 						color: palette.text,
 						outlineStyle: "none",

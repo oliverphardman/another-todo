@@ -3,7 +3,7 @@ import type { Task } from "../domain/task";
 import { useI18n } from "../i18n/i18n-context";
 import { useContainer } from "./container-context";
 import { TextField } from "./text-field";
-import { FONT_FAMILY } from "./theme";
+import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 import { useDraft } from "./use-draft";
 
@@ -23,9 +23,8 @@ export function TaskTitleField({ task }: { task: Task }) {
 				{
 					flex: 1,
 					minWidth: 0,
-					fontFamily: FONT_FAMILY,
+					...fontStyle("600"),
 					fontSize: 17,
-					fontWeight: "600",
 					color: palette.text,
 					paddingVertical: 12,
 					outlineStyle: "none",
@@ -59,7 +58,7 @@ export function TaskNoteField({ task }: { task: Task }) {
 				{
 					minHeight: 72,
 					padding: 16,
-					fontFamily: FONT_FAMILY,
+					...fontStyle(),
 					fontSize: 14,
 					color: palette.text,
 					outlineStyle: "none",
