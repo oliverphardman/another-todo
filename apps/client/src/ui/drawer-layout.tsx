@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Animated, Easing, PanResponder, View } from "react-native";
+import { Animated, Easing, Keyboard, PanResponder, View } from "react-native";
 import { useContainer } from "./container-context";
 import { DrawerGesture, type Drag, type DrawerSide } from "./drawer-gesture";
 
@@ -116,6 +116,7 @@ export function DrawerLayout({ width, left, right, children }: DrawerLayoutProps
 			onMoveShouldSetPanResponder: claims,
 			onMoveShouldSetPanResponderCapture: claims,
 			onPanResponderGrant: () => {
+				Keyboard.dismiss();
 				dragged.current = candidate();
 				dragged.current.reveal();
 			},

@@ -11,6 +11,7 @@ import { AsyncStorageKeyValueStore } from "./src/storage/async-storage-key-value
 import { createTokenStore } from "./src/storage/token-store";
 import { AboutSync } from "./src/ui/about-sync";
 import { ContainerProvider } from "./src/ui/container-context";
+import { KeyboardDismisser } from "./src/ui/keyboard-dismisser";
 import { AppShell } from "./src/ui/app-shell";
 import { ServerGate } from "./src/ui/server-gate";
 import { ThemeProvider } from "./src/ui/theme-context";
@@ -67,9 +68,11 @@ export default function App() {
 				<StatusBar style="auto" />
 				<I18nProvider locale={locale}>
 					<AboutSync session={session} />
-					<ServerGate session={session}>
-						{(config) => <Application config={config} session={session} />}
-					</ServerGate>
+					<KeyboardDismisser>
+						<ServerGate session={session}>
+							{(config) => <Application config={config} session={session} />}
+						</ServerGate>
+					</KeyboardDismisser>
 				</I18nProvider>
 			</ThemeProvider>
 		</SafeAreaProvider>

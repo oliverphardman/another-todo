@@ -1,6 +1,6 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { Keyboard, useWindowDimensions, View } from "react-native";
 import type { IdentityProvider } from "../auth/authorization-server";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -69,6 +69,10 @@ function MainLayout() {
 	const mode = useLayoutMode();
 	const { width } = useWindowDimensions();
 	const [sidebarOpen, setSidebarOpen] = useState(false);
+	const showSidebar = (open: boolean) => {
+		Keyboard.dismiss();
+		setSidebarOpen(open);
+	};
 	const { microsoft } = useContainer();
 	const microsoftStatus = useObservable(microsoft);
 	const confirm = useConfirm();
@@ -96,7 +100,7 @@ function MainLayout() {
 			return true;
 		}
 		if (mode === "compact" && sidebarOpen) {
-			setSidebarOpen(false);
+			showSidebar(false);
 			return true;
 		}
 		return false;
@@ -109,9 +113,9 @@ function MainLayout() {
 				width={width}
 				left={{
 					open: sidebarOpen,
-					onChange: setSidebarOpen,
+					onChange: showSidebar,
 					opensBySwipe: true,
-					content: <Sidebar onSelected={() => setSidebarOpen(false)} />,
+					content: <Sidebar onSelected={() => showSidebar(false)} />,
 				}}
 				right={{
 					open: task !== null,
@@ -125,7 +129,7 @@ function MainLayout() {
 				}}
 			>
 				<ThemedArea>
-					<TaskListPane mode={mode} onShowSidebar={() => setSidebarOpen(true)} />
+					<TaskListPane mode={mode} onShowSidebar={() => showSidebar(true)} />
 				</ThemedArea>
 			</DrawerLayout>
 		);

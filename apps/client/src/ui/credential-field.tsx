@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { TextField } from "./text-field";
 import { FONT_FAMILY } from "./theme";
 import { useTheme } from "./theme-context";
@@ -35,7 +36,7 @@ export function CredentialField({
 			onChangeText={onChange}
 			onSubmitEditing={onSubmit}
 			secureTextEntry={secure}
-			autoFocus={autoFocus}
+			autoFocus={autoFocus && Platform.OS !== "ios" && Platform.OS !== "android"}
 			autoCapitalize="none"
 			autoCorrect={false}
 			keyboardType={kind === "url" ? "url" : "default"}
