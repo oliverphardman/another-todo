@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DesktopMenuBridge } from "../src/ui/desktop-menu-bridge";
@@ -11,6 +12,7 @@ import {
 	type NativeMenuRequest,
 } from "../src/ui/native-menu";
 import type { ContextMenuEntry } from "../src/ui/context-menu";
+import { IconArtwork } from "../src/ui/icon-artwork";
 import { renderApp } from "./support/render-app";
 
 class FakeBridge implements NativeMenuBridge {
@@ -131,6 +133,18 @@ describe("NativeMenu items", () => {
 		]);
 	});
 
+	it("illustrates every entry but the separators when icons are wanted", () => {
+		const items = flat(NativeMenu.items(entries, { icons: true }));
+		for (const item of items) {
+			expect(item.icon).toBe(
+				item.kind === "separator"
+					? undefined
+					: IconArtwork.svg(NativeMenu.find(entries, item.key)!.glyph),
+			);
+		}
+		expect(items.filter((item) => item.icon !== undefined)).toHaveLength(6);
+	});
+
 	it("finds entries, including nested ones", () => {
 		expect(NativeMenu.find(entries, "a")!.label).toBe("A");
 		expect(NativeMenu.find(entries, "d")!.label).toBe("D");
@@ -159,6 +173,35 @@ describe("bridges", () => {
 		expect(await bridge.show({ items, x: 3, y: 4, cancelLabel: "Cancel" })).toBe("picked");
 		expect(calls).toEqual([[[{ key: "a", label: "A", kind: "action" }], 3, 4]]);
 		expect(new DesktopMenuBridge(null).isAvailable()).toBe(false);
+	});
+});
+
+describe("native menu icons", () => {
+	it("hands the macOS menu each icon as a template image", () => {
+		const source = readFileSync("macos/AnotherToDoMenu/AnotherToDoMenu.mm", "utf8");
+		expect(source).toContain('[self illustrate:entry markup:item[@"icon"]];');
+		expect(source).toContain("[icon setTemplate:YES];");
+		expect(source).toContain('[entry setValue:@1 forKey:@"preferredImageVisibility"];');
+	});
+
+	it("groups and illustrates the list menu as Microsoft To Do does", async () => {
+		const app = await start();
+		mutate(app, (store) => store.addList("Errands"));
+		fireEvent.contextMenu(screen.getByLabelText("Errands"));
+		await waitFor(() => expect(fake().shown).toHaveLength(1));
+		const items = fake().shown[0]!;
+		const sections = items
+			.map((item) => (item.kind === "separator" ? "|" : item.label))
+			.join(",")
+			.split(",|,");
+		expect(sections[0]!.startsWith("Create Group,")).toBe(true);
+		expect(sections.slice(1)).toEqual(["Share List,Rename List,Print List", "Delete List"]);
+		const icon = (label: string) => items.find((item) => item.label === label)!.icon;
+		expect(icon("Create Group")).toBe(IconArtwork.svg("group"));
+		expect(icon("Share List")).toBe(IconArtwork.svg("addPerson"));
+		expect(icon("Rename List")).toBe(IconArtwork.svg("rename"));
+		expect(icon("Print List")).toBe(IconArtwork.svg("print"));
+		expect(icon("Delete List")).toBe(IconArtwork.svg("trash"));
 	});
 });
 

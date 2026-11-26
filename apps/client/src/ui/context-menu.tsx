@@ -85,7 +85,7 @@ export class NativeMenuRunner {
 		let key: string | null;
 		try {
 			key = await NativeMenu.bridge.show({
-				items: NativeMenu.items(state.entries),
+				items: NativeMenu.items(state.entries, { icons: true }),
 				x: state.x,
 				y: state.y,
 				cancelLabel,

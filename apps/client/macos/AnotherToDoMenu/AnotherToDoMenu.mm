@@ -52,6 +52,16 @@ RCT_EXPORT_MODULE()
   return dispatch_get_main_queue();
 }
 
+- (void)illustrate:(NSMenuItem *)entry markup:(NSString *)markup
+{
+  NSImage *icon = [[NSImage alloc] initWithData:[markup dataUsingEncoding:NSUTF8StringEncoding]];
+  [icon setTemplate:YES];
+  entry.image = icon;
+  if ([entry respondsToSelector:NSSelectorFromString(@"setPreferredImageVisibility:")]) {
+    [entry setValue:@1 forKey:@"preferredImageVisibility"];
+  }
+}
+
 - (NSMenu *)buildMenu:(NSArray *)items target:(ATDMenuTarget *)target
 {
   NSMenu *menu = [[NSMenu alloc] init];
@@ -65,6 +75,9 @@ RCT_EXPORT_MODULE()
     NSMenuItem *entry = [[NSMenuItem alloc] initWithTitle:item[@"label"] ?: @"" action:nil keyEquivalent:@""];
     entry.enabled = ![item[@"disabled"] boolValue];
     entry.state = [item[@"checked"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
+    if (item[@"icon"] != nil) {
+      [self illustrate:entry markup:item[@"icon"]];
+    }
     if ([kind isEqualToString:@"submenu"] && item[@"children"] != nil) {
       entry.submenu = [self buildMenu:item[@"children"] target:target];
     } else {

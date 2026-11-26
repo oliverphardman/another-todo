@@ -119,6 +119,7 @@ describe("the menu bar", () => {
 		);
 		expect(labels.filter((label) => label === "Rename List")).toHaveLength(1);
 		expect(labels.at(-1)).toBe("Delete List");
+		expect(bar.menu("List").some((item) => item.icon !== undefined)).toBe(false);
 		const id = app.container.store.get().lists[0]!.id;
 		await bar.choose("list/rename");
 		expect(app.container.store.get().renamingViewId).toBe(id);
