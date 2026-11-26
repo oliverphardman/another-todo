@@ -82,6 +82,15 @@ describe("createContainer", () => {
 		expect(urls).toEqual(["https://api.test/auth/login"]);
 	});
 
+	it("offers Microsoft To Do sync only where Microsoft can return to the app", () => {
+		const status = (authentication: "password" | "external" | "none", platform: string) =>
+			createContainer({ ...TEST_CONFIG, authentication }, { platform }).microsoft.get();
+		expect(status("external", "web")).toBe("idle");
+		expect(status("password", "web")).toBe("unavailable");
+		expect(status("none", "web")).toBe("unavailable");
+		expect(status("password", "android")).toBe("idle");
+	});
+
 	it("opens a real WebSocket by default once signed in", async () => {
 		const created: string[] = [];
 		vi.stubGlobal(

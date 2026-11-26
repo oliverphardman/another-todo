@@ -73,7 +73,7 @@ export class MicrosoftSyncService extends Observable<MicrosoftSyncStatus> {
 	}
 
 	async accept(): Promise<void> {
-		const tokens = await this.authorizer.authorize();
+		const tokens = await this.authorizer.authorize().catch(() => null);
 		if (tokens === null) {
 			this.set("idle");
 			return;
