@@ -106,3 +106,16 @@ describe("sidebarMetrics", () => {
 		expect(sidebarMetrics("ios").rowHeight).toBe(44);
 	});
 });
+
+describe("sidebar edge", () => {
+	it.each([
+		["dark", "rgb(56, 56, 56)"],
+		["light", "rgba(0, 0, 0, 0)"],
+	] as const)("is a one point line in %s mode", async (scheme, color) => {
+		const app = await renderApp({ scheme });
+		stop = app.stop;
+		const sidebar = screen.getByLabelText("Lists");
+		expect(sidebar.style.borderRightWidth).toBe("1px");
+		expect(sidebar.style.borderRightColor).toBe(color);
+	});
+});

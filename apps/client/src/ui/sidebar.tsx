@@ -212,7 +212,15 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		});
 	return (
 		<View
-			style={[{ flex: 1, backgroundColor: palette.sidebar }, insetPadding(insets)]}
+			style={[
+				{
+					flex: 1,
+					backgroundColor: palette.sidebar,
+					borderRightWidth: 1,
+					borderRightColor: palette.sidebarBorder,
+				},
+				insetPadding(insets),
+			]}
 			accessibilityLabel={t("sidebar.lists")}
 		>
 			<StatusBarTone foreground={palette.text} />

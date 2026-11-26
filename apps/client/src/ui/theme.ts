@@ -1,6 +1,7 @@
 export interface Palette {
 	readonly background: string;
 	readonly sidebar: string;
+	readonly sidebarBorder: string;
 	readonly sidebarSelected: string;
 	readonly sidebarHover: string;
 	readonly sidebarField: string;
@@ -23,6 +24,7 @@ export interface Palette {
 export const LIGHT: Palette = {
 	background: "#2564cf",
 	sidebar: "#f5f5f5",
+	sidebarBorder: "transparent",
 	sidebarSelected: "#e1e1e1",
 	sidebarHover: "#ebebeb",
 	sidebarField: "#ffffff",
@@ -45,6 +47,7 @@ export const LIGHT: Palette = {
 export const DARK: Palette = {
 	background: "#1e1e1e",
 	sidebar: "#252525",
+	sidebarBorder: "#383838",
 	sidebarSelected: "#3a3a3a",
 	sidebarHover: "#2f2f2f",
 	sidebarField: "#1b1b1b",
