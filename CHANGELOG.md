@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.5.0](https://github.com/oliverphardman/another-todo/compare/v1.4.0...v1.5.0) (2026-11-26)
+
+
+### Features
+
+* add settings, server defaults and client fixes ([#17](https://github.com/oliverphardman/another-todo/issues/17)) ([86a48f1](https://github.com/oliverphardman/another-todo/commit/86a48f11b730201bb189661fd410867016c879fd))
+* cap upload size with a configurable server limit ([2beb513](https://github.com/oliverphardman/another-todo/commit/2beb5138aa82300ab20bc81744bfa7acdfbe578c))
+* **client:** add a settings window ([57a2ce8](https://github.com/oliverphardman/another-todo/commit/57a2ce854ea531a87d11f3f71c156a0b27652a39))
+* **client:** color list titles with the theme in dark mode ([360a534](https://github.com/oliverphardman/another-todo/commit/360a53470b43a713e2612149cc4728a255d0f2c6))
+* **client:** draw the sidebar's edge line in dark mode ([ee60057](https://github.com/oliverphardman/another-todo/commit/ee6005786e1332401dfab7f950f8de5f671af3b2))
+* **client:** show icons in the macOS right-click menus ([abb0bd6](https://github.com/oliverphardman/another-todo/commit/abb0bd6094193a0353fb119278138ea8eb203252))
+* **client:** show the exact creation time on hover ([9cd26c7](https://github.com/oliverphardman/another-todo/commit/9cd26c7b31213c15a04e8167a840130873b0c265))
+* **client:** use the system Settings window on macOS ([f096c20](https://github.com/oliverphardman/another-todo/commit/f096c20352a33b3778e49de676696db5a7788a64))
+* let the server set default settings for apps ([0daf825](https://github.com/oliverphardman/another-todo/commit/0daf825d77083d8d76792ebf83fecd0bf6bedb8b))
+* serve uploaded files from a custom domain ([79e8182](https://github.com/oliverphardman/another-todo/commit/79e81826a8fab7ae35176a68ecaa319c2df595c4))
+* show notes, attachments and My Day on task rows ([d237df6](https://github.com/oliverphardman/another-todo/commit/d237df674e2c8a3d9a029fb95553638abf7404f6))
+
+
+### Fixes
+
+* **client:** animate completing and uncompleting smoothly ([2f58d36](https://github.com/oliverphardman/another-todo/commit/2f58d364fa06a44afb2a5f7cf655083be4c5587b))
+* **client:** keep a note or title that is still being typed ([a803084](https://github.com/oliverphardman/another-todo/commit/a80308433bf74aa257bef028f6913498ba4721e5))
+* **client:** save a group name when clicking elsewhere on desktop ([3602ed1](https://github.com/oliverphardman/another-todo/commit/3602ed115568414faf5d952840235a63b19c4603))
+* **client:** use a bundled font on iOS and Android ([abdd4c8](https://github.com/oliverphardman/another-todo/commit/abdd4c8a9af94f35c29416ae4bb788b80541921e))
+
 ## [1.4.0](https://github.com/oliverphardman/another-todo/compare/v1.3.2...v1.4.0) (2026-11-26)
 
 
