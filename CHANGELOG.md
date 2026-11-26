@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/oliverphardman/another-todo/compare/v1.3.0...v1.3.1) (2026-11-26)
+
+
+### Fixes
+
+* **client:** respect safe areas and the keyboard on mobile, and slide the side panes in ([51b58e7](https://github.com/oliverphardman/another-todo/commit/51b58e7ed2b4b01620586596aae8d2b5f9a0894c))
+
 ## [1.3.0](https://github.com/oliverphardman/another-todo/compare/v1.2.1...v1.3.0) (2026-11-25)
 
 
