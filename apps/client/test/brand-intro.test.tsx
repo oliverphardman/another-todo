@@ -65,4 +65,20 @@ describe("the welcome introduction", () => {
 		act(() => finish(false));
 		expect(screen.getByLabelText("Server address").closest("[aria-hidden=true]")).not.toBeNull();
 	});
+
+	it("can show the finished welcome at once", () => {
+		render(
+			<ThemeProvider scheme="light">
+				<I18nProvider>
+					<BrandIntro animate={false}>
+						<TextInput accessibilityLabel="Username" autoFocus />
+					</BrandIntro>
+				</I18nProvider>
+			</ThemeProvider>,
+		);
+		expect(order).toEqual([]);
+		const field = screen.getByLabelText("Username");
+		expect(field.closest("[aria-hidden=true]")).toBeNull();
+		expect(document.activeElement).toBe(field);
+	});
 });

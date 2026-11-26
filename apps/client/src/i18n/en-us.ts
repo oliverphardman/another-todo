@@ -11,6 +11,7 @@ export const EN_US = {
 	"sidebar.clearSearch": "Clear search",
 	"view.tasks": "Tasks",
 	"signIn.button": "Sign in",
+	"signIn.prompt": "Enter your username and password",
 	"signIn.provider": "Continue with {provider}",
 	"signIn.again": "Sign in again",
 	"signIn.expired": "Your session has expired. Sign in again to sync your changes.",
