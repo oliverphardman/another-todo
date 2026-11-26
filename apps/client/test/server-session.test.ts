@@ -23,6 +23,7 @@ describe("ServerInfoLoader", () => {
 			providers: [],
 			notice: "Hi",
 			realtimeUrl: "wss://rt",
+			signIn: null,
 		});
 		expect(urls).toEqual(["https://todo.example.com/config"]);
 	});
@@ -41,7 +42,26 @@ describe("ServerInfoLoader", () => {
 			providers: [],
 			notice: null,
 			realtimeUrl: null,
+			signIn: null,
 		});
+	});
+
+	it("learns where to sign in on a server with external authentication", async () => {
+		const signIn = { url: "https://auth.example.com", clientId: "app" };
+		const loader = new ServerInfoLoader(async () => reply({ authentication: "external", signIn }));
+		expect((await loader.load("https://x")).signIn).toEqual(signIn);
+	});
+
+	it.each([
+		["nothing", undefined],
+		["null", null],
+		["no client id", { url: "https://auth.example.com" }],
+		["no address", { clientId: "app" }],
+		["an insecure address", { url: "http://auth.example.com", clientId: "app" }],
+		["a script address", { url: "javascript:alert(1)", clientId: "app" }],
+	])("rejects external authentication that offers %s to sign in with", async (_name, signIn) => {
+		const loader = new ServerInfoLoader(async () => reply({ authentication: "external", signIn }));
+		await expect(loader.load("https://x")).rejects.toBeInstanceOf(ServerUnreachableError);
 	});
 
 	it("reports servers that are down, not ours or answer with an error", async () => {

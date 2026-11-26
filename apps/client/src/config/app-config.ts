@@ -16,11 +16,14 @@ export interface AppConfig {
 }
 
 export interface BuildConfig {
-	readonly authUrl: string;
-	readonly clientId: string;
 	readonly microsoftClientId: string;
 	readonly scheme: string;
 	readonly enforcedServerUrl: string | null;
+}
+
+export interface SignInSettings {
+	readonly url: string;
+	readonly clientId: string;
 }
 
 export interface ServerInfo {
@@ -28,6 +31,7 @@ export interface ServerInfo {
 	readonly providers: readonly IdentityProvider[];
 	readonly notice: string | null;
 	readonly realtimeUrl: string | null;
+	readonly signIn: SignInSettings | null;
 }
 
 export interface RuntimeConfig {
@@ -45,8 +49,6 @@ export class AppConfigReader {
 		origin: string | undefined = globalThis.location?.origin,
 	): BuildConfig {
 		return {
-			authUrl: AppConfigReader.trimmed(env.EXPO_PUBLIC_AUTH_URL),
-			clientId: env.EXPO_PUBLIC_CLIENT_ID ?? "",
 			microsoftClientId: env.EXPO_PUBLIC_MICROSOFT_CLIENT_ID || MICROSOFT_CLIENT_ID,
 			scheme: "anothertodo",
 			enforcedServerUrl: AppConfigReader.enforced(env, runtime, origin),
@@ -58,8 +60,8 @@ export class AppConfigReader {
 		return {
 			serverUrl: url,
 			apiUrl: url,
-			authUrl: build.authUrl,
-			clientId: build.clientId,
+			authUrl: AppConfigReader.trimmed(info.signIn?.url),
+			clientId: info.signIn?.clientId ?? "",
 			realtimeUrl: info.realtimeUrl ?? `${url.replace(/^http/, "ws")}/realtime`,
 			microsoftClientId: build.microsoftClientId,
 			scheme: build.scheme,

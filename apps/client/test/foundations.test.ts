@@ -69,8 +69,6 @@ describe("ports", () => {
 describe("AppConfigReader", () => {
 	it("starts with no enforced server and no external sign-in", () => {
 		expect(AppConfigReader.read({}, undefined, undefined)).toEqual({
-			authUrl: "",
-			clientId: "",
 			microsoftClientId: "dbb91251-9be4-4765-8e99-f20806a78f1a",
 			scheme: "anothertodo",
 			enforcedServerUrl: null,
@@ -81,13 +79,9 @@ describe("AppConfigReader", () => {
 		expect(
 			AppConfigReader.read({
 				EXPO_PUBLIC_ENFORCED_SERVER_URL: " https://todo.example.com// ",
-				EXPO_PUBLIC_AUTH_URL: "http://localhost:9000//",
-				EXPO_PUBLIC_CLIENT_ID: "dev-client",
 				EXPO_PUBLIC_MICROSOFT_CLIENT_ID: "dev-ms",
 			}),
 		).toEqual({
-			authUrl: "http://localhost:9000",
-			clientId: "dev-client",
 			microsoftClientId: "dev-ms",
 			scheme: "anothertodo",
 			enforcedServerUrl: "https://todo.example.com",
@@ -118,7 +112,7 @@ describe("AppConfigReader", () => {
 
 	it("offers Microsoft on an external server and what the server lists otherwise", () => {
 		const build = AppConfigReader.read({}, undefined, undefined);
-		const info = { notice: null, realtimeUrl: null } as const;
+		const info = { notice: null, realtimeUrl: null, signIn: null } as const;
 		expect(
 			AppConfigReader.compose(build, "https://x", {
 				...info,
@@ -135,9 +129,29 @@ describe("AppConfigReader", () => {
 		).toEqual(["Microsoft"]);
 	});
 
+	it("signs in where the server says to", () => {
+		const config = AppConfigReader.compose(
+			AppConfigReader.read({}, undefined, undefined),
+			"https://api.example.com",
+			{
+				authentication: "external",
+				providers: [],
+				notice: null,
+				realtimeUrl: null,
+				signIn: { url: "https://auth.example.com/", clientId: "app" },
+			},
+		);
+		expect(config).toMatchObject({ authUrl: "https://auth.example.com", clientId: "app" });
+	});
+
 	it("combines the build and the server's answers", () => {
-		const build = AppConfigReader.read({ EXPO_PUBLIC_CLIENT_ID: "c" }, undefined, undefined);
-		const base = { authentication: "password", providers: [], notice: "Hello" } as const;
+		const build = AppConfigReader.read({}, undefined, undefined);
+		const base = {
+			authentication: "password",
+			providers: [],
+			notice: "Hello",
+			signIn: null,
+		} as const;
 		expect(
 			AppConfigReader.compose(build, "https://todo.example.com/", { ...base, realtimeUrl: null }),
 		).toMatchObject({
@@ -146,7 +160,8 @@ describe("AppConfigReader", () => {
 			realtimeUrl: "wss://todo.example.com/realtime",
 			authentication: "password",
 			notice: "Hello",
-			clientId: "c",
+			authUrl: "",
+			clientId: "",
 		});
 		expect(
 			AppConfigReader.compose(build, "http://localhost:3000", { ...base, realtimeUrl: null })

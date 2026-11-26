@@ -35,6 +35,7 @@ describe("self-hosted server entry point", () => {
 			providers: [],
 			notice: null,
 			realtimeUrl: null,
+			signIn: null,
 		});
 		expect((await fetch(`${base}/tasks`)).status).toBe(401);
 		expect((await fetch(`${base}/`)).status).toBe(404);

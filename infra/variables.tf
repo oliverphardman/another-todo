@@ -10,7 +10,7 @@ variable "environment" {
 
 variable "callback_urls" {
   type    = list(string)
-  default = ["http://localhost:8081/auth/callback"]
+  default = ["anothertodo://auth/callback", "http://localhost:8081/auth/callback"]
 }
 
 variable "logout_urls" {

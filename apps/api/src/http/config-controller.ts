@@ -1,11 +1,12 @@
 import { Router } from "express";
-import type { AuthenticationMode } from "../composition/platform";
+import type { AuthenticationMode, SignIn } from "../composition/platform";
 
 export interface PublicConfig {
 	readonly authentication: AuthenticationMode;
 	readonly providers: readonly string[];
 	readonly notice: string | null;
 	readonly realtimeUrl: string | null;
+	readonly signIn: SignIn | null;
 }
 
 export class ConfigController {

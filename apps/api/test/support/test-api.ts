@@ -89,6 +89,7 @@ export function createTestApi(
 		authenticator: new TokenIsSubjectAuthenticator(),
 		directory,
 		issuer: TEST_ISSUER,
+		signIn: null,
 		router: null,
 	};
 	const app = createApp(
