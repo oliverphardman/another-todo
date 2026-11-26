@@ -206,7 +206,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 						onPress={() => store.startRenaming(view.id)}
 						style={{ flex: 1 }}
 					>
-						<AppText role="heading" size={28} weight="600" tone="onAccent">
+						<AppText role="heading" size={28} weight="600" tone="title">
 							{i18n.viewTitle(view)}
 						</AppText>
 						{view.showsDate ? (
@@ -343,7 +343,7 @@ function RenameField({ initial, onDone }: { initial: string; onDone: (name: stri
 					fontFamily: FONT_FAMILY,
 					fontSize: 28,
 					fontWeight: "600",
-					color: palette.onAccent,
+					color: palette.title,
 					outlineStyle: "none",
 				} as object
 			}

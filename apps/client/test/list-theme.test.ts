@@ -71,6 +71,8 @@ describe("ListTheme", () => {
 		);
 		expect(dark.overrides.background).toBeUndefined();
 		expect(dark.overrides.onAccent).toBeUndefined();
+		expect(dark.overrides.title).toBe(dark.overrides.accent);
+		expect(ColorMath.contrast(dark.overrides.title!, DARK.background)).toBeGreaterThanOrEqual(4.5);
 		expect(ColorMath.contrast(dark.overrides.accent!, DARK.surface)).toBeGreaterThanOrEqual(4.5);
 		expect(DARK.background).toBe("#1e1e1e");
 		expect(DARK.sidebar).toBe("#252525");
