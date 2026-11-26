@@ -24,6 +24,7 @@ export class I18n {
 	private readonly shortDayWithYear: Intl.DateTimeFormat;
 	private readonly longDayFormat: Intl.DateTimeFormat;
 	private readonly reminderFormat: Intl.DateTimeFormat;
+	private readonly exactFormat: Intl.DateTimeFormat;
 	private readonly monthFormat: Intl.DateTimeFormat;
 	private readonly weekdayFormat: Intl.DateTimeFormat;
 	private readonly shortWeekdayFormat: Intl.DateTimeFormat;
@@ -45,6 +46,15 @@ export class I18n {
 			day: "numeric",
 			hour: "numeric",
 			minute: "2-digit",
+		});
+		this.exactFormat = new Intl.DateTimeFormat(locale, {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			hour: "numeric",
+			minute: "2-digit",
+			second: "2-digit",
 		});
 		this.monthFormat = new Intl.DateTimeFormat(locale, {
 			month: "long",
@@ -115,6 +125,10 @@ export class I18n {
 			bytes / (1024 * 1024),
 		);
 		return this.t("attachment.megabytes", { size });
+	}
+
+	exactTime(iso: string): string {
+		return this.exactFormat.format(new Date(iso));
 	}
 
 	reminderLabel(iso: string): string {

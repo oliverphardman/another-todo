@@ -15,6 +15,7 @@ import { CheckedCircle, Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
 import { useDeleteTasks } from "./use-delete-tasks";
+import { Hint } from "./hint";
 import { TaskNoteField, TaskTitleField } from "./task-fields";
 import { AddStepRow, StepRow } from "./step-list";
 import { useKeyboardShown } from "./keyboard-safe";
@@ -251,9 +252,11 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 					>
 						<Icon glyph="panelClose" size={20} color={palette.textSecondary} strokeWidth={1.3} />
 					</PressableSurface>
-					<AppText size={13} tone="secondary">
-						{i18n.createdLabel(task.createdAt, store.now)}
-					</AppText>
+					<Hint text={i18n.exactTime(task.createdAt)}>
+						<AppText size={13} tone="secondary">
+							{i18n.createdLabel(task.createdAt, store.now)}
+						</AppText>
+					</Hint>
 					<PressableSurface
 						accessibilityRole="button"
 						accessibilityLabel={t("task.delete")}
