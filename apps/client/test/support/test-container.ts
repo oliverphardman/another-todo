@@ -67,6 +67,7 @@ export function createTestContainer(
 	microsoftAvailable = true,
 	overrides: Partial<AppConfig> = {},
 	server?: ServerControls,
+	platform = "web",
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -90,7 +91,7 @@ export function createTestContainer(
 	const container = createContainer(
 		{ ...TEST_CONFIG, ...overrides },
 		{
-			platform: "web",
+			platform,
 			server,
 			dataStore,
 			tokenStore,
