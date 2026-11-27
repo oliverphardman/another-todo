@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.6.0](https://github.com/oliverphardman/another-todo/compare/v1.5.2...v1.6.0) (2026-11-27)
+
+
+### Features
+
+* add a menu style setting alongside the task style ([e4f5a3b](https://github.com/oliverphardman/another-todo/commit/e4f5a3bdaa790e6b70793208acd0c35a2c173af8))
+* **api:** accept preset photo themes ([532f576](https://github.com/oliverphardman/another-todo/commit/532f576e30aa2e19c3079922e1b6105e2dd687da))
+* **client:** ask desktop users to choose a layout style after sign-in ([15870e5](https://github.com/oliverphardman/another-todo/commit/15870e57b72a981e407a9ce25f657c86f3131331))
+* **client:** export lists to CSV, XLSX, JSON and PDF ([3865321](https://github.com/oliverphardman/another-todo/commit/386532148b8fd757f7f2b015d8c15dea55eb4fb5))
+* **client:** export to PDF on Windows through WebView2 ([978d1d2](https://github.com/oliverphardman/another-todo/commit/978d1d239b7b70a3dd0db5f22cee6b4c0f3f71a7))
+* **client:** include royalty-free photos in the theme menu ([0d801a8](https://github.com/oliverphardman/another-todo/commit/0d801a899e235a5a69c0b3cf6e323949708d49d0))
+* **client:** restyle the Add a Task field to follow the list theme ([53fc480](https://github.com/oliverphardman/another-todo/commit/53fc480536a25436125a01cf8d16a069a6f0ad26))
+
+
+### Fixes
+
+* **client:** give each sort option its own menu icon ([ff0dd6a](https://github.com/oliverphardman/another-todo/commit/ff0dd6a066f3f07d3b0293296fad782fe612887d))
+* **client:** give the cozy menu style the same colors as compact ([21787fe](https://github.com/oliverphardman/another-todo/commit/21787fe63f2cce0c7823b6571a82d5b5699b7643))
+
 ## [1.5.2](https://github.com/oliverphardman/another-todo/compare/v1.5.1...v1.5.2) (2026-11-27)
 
 
