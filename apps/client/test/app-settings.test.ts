@@ -21,6 +21,7 @@ describe("AppSettings", () => {
 		const { settings } = await loaded(null);
 		expect(settings.get()).toEqual({
 			rowStyle: "cozy",
+			menuStyle: "compact",
 			addTaskPosition: "top",
 			microsoft: { receive: true, send: true, intervalMinutes: 2 },
 			lists: { all: true, important: true, planned: true, completed: true },
@@ -30,7 +31,7 @@ describe("AppSettings", () => {
 
 	it("remembers every change on this device", async () => {
 		const { settings, storage } = await loaded(null);
-		settings.change({ rowStyle: "compact", addTaskPosition: "bottom" });
+		settings.change({ rowStyle: "compact", menuStyle: "cozy", addTaskPosition: "bottom" });
 		settings.changeMicrosoft({ send: false, intervalMinutes: 15 });
 		settings.changeMyDay({ yesterday: true, dueToday: false });
 		settings.showList("planned", false);
@@ -52,12 +53,14 @@ describe("AppSettings", () => {
 		const { settings } = await loaded(
 			JSON.stringify({
 				rowStyle: "huge",
+				menuStyle: "tiny",
 				addTaskPosition: 3,
 				microsoft: { receive: "no", intervalMinutes: 100000 },
 				lists: { all: false, completed: "no" },
 			}),
 		);
 		expect(settings.get().rowStyle).toBe("cozy");
+		expect(settings.get().menuStyle).toBe("compact");
 		expect(settings.get().microsoft).toEqual({ receive: true, send: true, intervalMinutes: 1440 });
 		expect(settings.get().lists).toEqual({ ...DEFAULT_SETTINGS.lists, all: false });
 		expect(AppSettings.minutes(0)).toBe(1);
@@ -68,6 +71,7 @@ describe("AppSettings", () => {
 describe("server defaults", () => {
 	const server = {
 		rowStyle: "compact",
+		menuStyle: "cozy",
 		microsoft: { intervalMinutes: 30 },
 		lists: { all: false, planned: false },
 		myDay: "nonsense",
@@ -80,6 +84,7 @@ describe("server defaults", () => {
 		expect(settings.get()).toEqual({
 			...DEFAULT_SETTINGS,
 			rowStyle: "compact",
+			menuStyle: "cozy",
 			microsoft: { ...DEFAULT_SETTINGS.microsoft, intervalMinutes: 30 },
 			lists: { ...DEFAULT_SETTINGS.lists, all: false, planned: false },
 		});

@@ -3,15 +3,17 @@ import { useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { TextField } from "./text-field";
 import type { Group } from "../domain/group";
-import type { CustomListView, IconName, TaskView } from "../domain/task-view";
+import type { CustomListView, TaskView } from "../domain/task-view";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
-import { Icon, type IconGlyph } from "./icon";
+import { Icon } from "./icon";
 import { AccountHeader } from "./account-header";
-import { NewListField } from "./new-list-field";
-import { SidebarColors } from "./sidebar-colors";
-import { sidebarMetrics } from "./sidebar-metrics";
+import { FOOTER_INSET, NewListField } from "./new-list-field";
+import type { MenuLook } from "./menu-look";
+import { sidebarActions } from "./sidebar-actions";
+import { SidebarRow } from "./sidebar-row";
+import { useMenuLook } from "./use-menu-look";
 import { useSettingsController } from "./settings-host";
 import { useTouchReorder } from "./use-touch-reorder";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
@@ -26,16 +28,6 @@ import { useIsDark, useTheme } from "./theme-context";
 
 const DRAG_THRESHOLD = 5;
 
-const GLYPHS: Record<IconName, IconGlyph> = {
-	myDay: "sun",
-	important: "star",
-	planned: "calendar",
-	all: "infinity",
-	completed: "check",
-	tasks: "homeCheck",
-	list: "list",
-};
-
 export interface SidebarProps {
 	readonly onSelected: () => void;
 }
@@ -49,7 +41,9 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	const dark = useIsDark();
-	const metrics = sidebarMetrics();
+	const look = useMenuLook();
+	const { metrics } = look;
+	const surface = look.surface(palette);
 	const print = usePrintList();
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
@@ -136,15 +130,16 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const renderRow = (view: TaskView, indented: boolean) => (
 		<SidebarRow
 			key={view.id}
+			look={look}
 			view={view}
 			selected={state.selectedViewId === view.id}
 			count={store.taskCount(view)}
-			iconColor={SidebarColors.icon(
-				view.id,
-				store.settingsFor(view.id).theme,
-				palette.sidebar,
+			iconColor={look.iconColor({
+				viewId: view.id,
+				theme: store.settingsFor(view.id).theme,
+				palette,
 				dark,
-			)}
+			})}
 			indented={indented}
 			onPress={() => {
 				if (dragged.current) {
@@ -155,7 +150,6 @@ export function Sidebar({ onSelected }: SidebarProps) {
 				onSelected();
 			}}
 			marker={markerFor(view.id)}
-			onDragStart={(event) => beginDrag(view.id, event)}
 			reorder={
 				touch.enabled && view.isCustomList
 					? {
@@ -167,8 +161,14 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						}
 					: null
 			}
-			buildMenu={() => listEntries(view.id)}
-			hasMenu={view.isCustomList}
+			listActions={
+				view.isCustomList
+					? {
+							buildMenu: () => listEntries(view.id),
+							onDragStart: (event) => beginDrag(view.id, event),
+						}
+					: null
+			}
 		/>
 	);
 	const markerFor = (viewId: string): "before" | "after" | null => {
@@ -215,16 +215,18 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			style={[
 				{
 					flex: 1,
-					backgroundColor: palette.sidebar,
+					backgroundColor: surface.background,
 					borderRightWidth: 1,
-					borderRightColor: palette.sidebarBorder,
+					borderRightColor: surface.border,
 				},
 				insetPadding(insets),
 			]}
 			accessibilityLabel={t("sidebar.lists")}
 		>
 			<StatusBarTone foreground={palette.text} />
-			<AccountHeader>{metrics.headerAction === null ? null : <SettingsButton />}</AccountHeader>
+			<AccountHeader>
+				{sidebarActions().headerAction === null ? null : <SettingsButton hover={surface.hover} />}
+			</AccountHeader>
 			<View
 				style={{
 					flexDirection: "row",
@@ -297,6 +299,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						return (
 							<View key={group.id}>
 								<GroupHeader
+									look={look}
 									group={group}
 									open={open}
 									count={members.length}
@@ -330,9 +333,10 @@ export function Sidebar({ onSelected }: SidebarProps) {
 					/>
 				</View>
 			</ScrollView>
-			<View style={{ paddingHorizontal: 6, paddingVertical: 8 }}>
+			<View style={{ paddingHorizontal: FOOTER_INSET, paddingVertical: 8 }}>
 				{creating ? (
 					<NewListField
+						metrics={metrics}
 						onSubmit={(name) => {
 							store.addList(name);
 							setCreating(false);
@@ -346,18 +350,23 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityRole="button"
 							accessibilityLabel={t("sidebar.createList")}
 							onPress={() => setCreating(true)}
-							hoverColor={palette.sidebarHover}
+							hoverColor={surface.hover}
 							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								flex: 1,
 								flexDirection: "row",
 								alignItems: "center",
 								minHeight: metrics.rowHeight,
-								paddingHorizontal: 10,
+								paddingHorizontal: metrics.paddingStart - FOOTER_INSET,
 							}}
 						>
-							<Icon glyph="plus" size={metrics.iconSize} color={palette.text} />
-							<AppText size={metrics.fontSize} style={{ marginLeft: 12 }}>
+							<Icon
+								glyph="plus"
+								size={metrics.iconSize}
+								strokeWidth={metrics.strokeWidth}
+								color={palette.text}
+							/>
+							<AppText size={metrics.fontSize} style={{ marginLeft: metrics.labelGap }}>
 								{t("sidebar.newList")}
 							</AppText>
 						</PressableSurface>
@@ -365,7 +374,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityRole="button"
 							accessibilityLabel={t("sidebar.createGroup")}
 							onPress={() => store.newGroup(t("group.new"))}
-							hoverColor={palette.sidebarHover}
+							hoverColor={surface.hover}
 							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								minHeight: metrics.rowHeight,
@@ -384,7 +393,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	);
 }
 
-function SettingsButton() {
+function SettingsButton({ hover }: { hover: string }) {
 	const { t } = useI18n();
 	const palette = useTheme();
 	const settings = useSettingsController();
@@ -393,7 +402,7 @@ function SettingsButton() {
 			accessibilityRole="button"
 			accessibilityLabel={t("settings.title")}
 			onPress={() => settings.open()}
-			hoverColor={palette.sidebarHover}
+			hoverColor={hover}
 			android_ripple={{ color: palette.ripple, borderless: true }}
 			style={{ padding: 8, borderRadius: 4 }}
 		>
@@ -402,119 +411,8 @@ function SettingsButton() {
 	);
 }
 
-interface SidebarRowProps {
-	readonly view: TaskView;
-	readonly selected: boolean;
-	readonly count: number;
-	readonly iconColor: string;
-	readonly onPress: () => void;
-	readonly buildMenu: () => ContextMenuEntry[];
-	readonly hasMenu: boolean;
-	readonly indented: boolean;
-	readonly marker: "before" | "after" | null;
-	readonly onDragStart: (event: unknown) => void;
-	readonly reorder: RowReorder | null;
-}
-
-interface RowReorder {
-	readonly ref: (row: View | null) => void;
-	readonly lifted: boolean;
-	readonly offset: number;
-	readonly lift: () => void;
-	readonly release: () => boolean;
-}
-
-function SidebarRow({
-	view,
-	selected,
-	count,
-	iconColor,
-	onPress,
-	buildMenu,
-	hasMenu,
-	indented,
-	marker,
-	onDragStart,
-	reorder,
-}: SidebarRowProps) {
-	const i18n = useI18n();
-	const { t } = i18n;
-	const palette = useTheme();
-	const menu = useContextMenuTrigger(t("ctx.listMenu"), buildMenu);
-	const metrics = sidebarMetrics();
-	return (
-		<PressableSurface
-			ref={reorder?.ref}
-			accessibilityRole="button"
-			accessibilityLabel={i18n.viewTitle(view)}
-			accessibilityState={{ selected }}
-			onPress={onPress}
-			onContextMenu={hasMenu ? menu.onContextMenu : undefined}
-			onLongPress={reorder?.lift ?? (hasMenu ? menu.onLongPress : undefined)}
-			onPressOut={(event) => {
-				if (reorder?.release() === true) {
-					menu.onContextMenu(event);
-				}
-			}}
-			android_ripple={{ color: palette.ripple, foreground: true }}
-			hoverColor={palette.sidebarHover}
-			{...(hasMenu
-				? ({
-						onMouseDown: onDragStart,
-						dataSet: {
-							listRow: view.id,
-							listGroup: (view as CustomListView).list.groupId ?? "",
-							dropMarker: marker ?? "none",
-						},
-					} as object)
-				: {})}
-			style={{
-				flexDirection: "row",
-				alignItems: "center",
-				paddingLeft: indented ? 36 : 16,
-				paddingRight: 16,
-				minHeight: metrics.rowHeight,
-				borderTopWidth: 2,
-				borderTopColor: marker === "before" ? palette.accent : "transparent",
-				borderBottomWidth: 2,
-				borderBottomColor: marker === "after" ? palette.accent : "transparent",
-				backgroundColor: selected ? palette.sidebarSelected : undefined,
-				...(reorder?.lifted === true
-					? {
-							backgroundColor: palette.sidebarHover,
-							transform: [{ translateY: reorder.offset }],
-							zIndex: 1,
-							elevation: 4,
-						}
-					: {}),
-			}}
-		>
-			<Icon
-				glyph={
-					view.isCustomList && (view as CustomListView).list.shared ? "people" : GLYPHS[view.icon]
-				}
-				size={metrics.iconSize}
-				strokeWidth={metrics.strokeWidth}
-				color={iconColor}
-			/>
-			<AppText
-				size={metrics.fontSize}
-				style={{ flex: 1, marginLeft: 12 }}
-				weight={selected ? "600" : "400"}
-				numberOfLines={1}
-			>
-				{i18n.viewTitle(view)}
-			</AppText>
-			{count === 0 ? null : (
-				<AppText size={12} tone="secondary" accessibilityLabel={t("sidebar.openCount", { count })}>
-					{count}
-				</AppText>
-			)}
-		</PressableSurface>
-	);
-}
-
 interface GroupHeaderProps {
+	readonly look: MenuLook;
 	readonly group: Group;
 	readonly open: boolean;
 	readonly count: number;
@@ -525,6 +423,7 @@ interface GroupHeaderProps {
 }
 
 function GroupHeader({
+	look,
 	group,
 	open,
 	count,
@@ -536,7 +435,8 @@ function GroupHeader({
 	const { t } = useI18n();
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("group.menu"), buildMenu);
-	const metrics = sidebarMetrics();
+	const { metrics } = look;
+	const surface = look.surface(palette);
 	const [text, setText] = useState(group.name);
 	return (
 		<PressableSurface
@@ -546,12 +446,13 @@ function GroupHeader({
 			onPress={renaming ? undefined : onToggle}
 			onContextMenu={menu.onContextMenu}
 			onLongPress={menu.onLongPress}
-			hoverColor={palette.sidebarHover}
+			hoverColor={surface.hover}
 			android_ripple={{ color: palette.ripple, foreground: true }}
 			style={{
 				flexDirection: "row",
 				alignItems: "center",
-				paddingHorizontal: 16,
+				paddingLeft: metrics.paddingStart,
+				paddingRight: metrics.paddingEnd,
 				minHeight: metrics.rowHeight,
 			}}
 		>
@@ -571,21 +472,25 @@ function GroupHeader({
 					style={
 						{
 							flex: 1,
-							marginLeft: 14,
+							marginLeft: metrics.labelGap,
 							...fontStyle(),
-							fontSize: 14,
+							fontSize: metrics.fontSize,
 							color: palette.text,
 							outlineStyle: "none",
 						} as object
 					}
 				/>
 			) : (
-				<AppText size={metrics.fontSize} style={{ flex: 1, marginLeft: 12 }} weight="600">
+				<AppText
+					size={metrics.fontSize}
+					style={{ flex: 1, marginLeft: metrics.labelGap }}
+					weight="600"
+				>
 					{group.name}
 				</AppText>
 			)}
 			{renaming || count === 0 ? null : (
-				<AppText size={12} tone="secondary">
+				<AppText size={metrics.countSize} style={{ color: surface.count }}>
 					{count}
 				</AppText>
 			)}

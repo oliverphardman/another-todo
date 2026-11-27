@@ -3,21 +3,23 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 import { TextField } from "./text-field";
 import { Icon } from "./icon";
-import { sidebarMetrics } from "./sidebar-metrics";
+import type { MenuMetrics } from "./menu-look";
 import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
+export const FOOTER_INSET = 6;
+
 export interface NewListFieldProps {
+	readonly metrics: MenuMetrics;
 	readonly onSubmit: (name: string) => void;
 	readonly onCancel: () => void;
 }
 
-export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
+export function NewListField({ metrics, onSubmit, onCancel }: NewListFieldProps) {
 	const palette = useTheme();
 	const { t } = useI18n();
 	const [name, setName] = useState("");
 	const finished = useRef(false);
-	const metrics = sidebarMetrics();
 	const finish = () => {
 		if (finished.current) {
 			return;
@@ -35,10 +37,15 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 				flexDirection: "row",
 				alignItems: "center",
 				minHeight: metrics.rowHeight,
-				paddingHorizontal: 10,
+				paddingHorizontal: metrics.paddingStart - FOOTER_INSET,
 			}}
 		>
-			<Icon glyph="plus" size={metrics.iconSize} color={palette.text} />
+			<Icon
+				glyph="plus"
+				size={metrics.iconSize}
+				strokeWidth={metrics.strokeWidth}
+				color={palette.text}
+			/>
 			<TextField
 				autoFocus
 				accessibilityLabel={t("sidebar.newList")}
@@ -57,7 +64,7 @@ export function NewListField({ onSubmit, onCancel }: NewListFieldProps) {
 				style={
 					{
 						flex: 1,
-						marginLeft: 12,
+						marginLeft: metrics.labelGap,
 						padding: 0,
 						...fontStyle(),
 						fontSize: metrics.fontSize,

@@ -1,9 +1,11 @@
 import { View } from "react-native";
 import { useI18n } from "../i18n/i18n-context";
-import { OPTIONAL_LISTS } from "../state/app-settings";
+import { LAYOUT_STYLES, OPTIONAL_LISTS } from "../state/app-settings";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
+import { STYLE_LABELS } from "./layout-labels";
+import { MenuPreview } from "./menu-preview";
 import { PressableSurface } from "./pressable-surface";
 import { RowPreview } from "./row-preview";
 import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-controls";
@@ -15,20 +17,27 @@ import { useTheme } from "./theme-context";
 export function AppearanceSection() {
 	const { settings } = useContainer();
 	const { t } = useI18n();
-	const { rowStyle, addTaskPosition } = useObservable(settings);
+	const { rowStyle, menuStyle, addTaskPosition } = useObservable(settings);
+	const styles = LAYOUT_STYLES.map((value) => ({ value, label: t(STYLE_LABELS[value]) }));
 	return (
 		<SettingsSection title={t("settings.appearance")}>
 			<Choice
-				label={t("settings.rowStyle")}
+				label={t("settings.taskStyle")}
 				value={rowStyle}
-				options={[
-					{ value: "cozy", label: t("settings.rowCozy") },
-					{ value: "compact", label: t("settings.rowCompact") },
-				]}
+				options={styles}
 				onChange={(next) => settings.change({ rowStyle: next })}
 			/>
-			<View accessibilityLabel={t("settings.preview")}>
+			<View accessibilityLabel={t("settings.taskPreview")}>
 				<RowPreview rowStyle={rowStyle} titles={[t("settings.previewTask")]} />
+			</View>
+			<Choice
+				label={t("settings.menuStyle")}
+				value={menuStyle}
+				options={styles}
+				onChange={(next) => settings.change({ menuStyle: next })}
+			/>
+			<View accessibilityLabel={t("settings.menuPreview")}>
+				<MenuPreview menuStyle={menuStyle} />
 			</View>
 			<Choice
 				label={t("settings.addPosition")}

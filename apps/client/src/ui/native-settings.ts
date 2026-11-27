@@ -6,7 +6,8 @@ export interface NativeSettingsOption {
 }
 
 export interface NativeSettingsRow {
-	readonly kind: "choice" | "preview" | "toggle" | "number" | "text" | "note" | "button";
+	readonly kind:
+		"choice" | "preview" | "menuPreview" | "toggle" | "number" | "text" | "note" | "button";
 	readonly key: string;
 	readonly label: string;
 	readonly value?: string;

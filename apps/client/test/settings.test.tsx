@@ -97,12 +97,13 @@ describe("appearance", () => {
 		addTask("Water plants");
 		expect(rowHeight("Water plants")).toBe("52px");
 		const settings = await openSettings();
-		const preview = within(settings.getByLabelText("Row preview"));
+		const preview = within(settings.getByLabelText("Task style preview"));
+		const task = within(settings.getByRole("radiogroup", { name: "Task style" }));
 		expect(preview.getByLabelText("Open Example task").textContent).toBe("Example taskTasks·Today");
-		expect(checked(settings.getByLabelText("Cozy"))).toBe("true");
+		expect(checked(task.getByLabelText("Cozy"))).toBe("true");
 		expect(rowHeight("Example task")).toBe("52px");
-		await press(settings.getByLabelText("Compact"));
-		expect(checked(settings.getByLabelText("Compact"))).toBe("true");
+		await press(task.getByLabelText("Compact"));
+		expect(checked(task.getByLabelText("Compact"))).toBe("true");
 		expect(rowHeight("Example task")).toBe("44px");
 		expect(rowHeight("Water plants")).toBe("44px");
 		fireEvent.click(preview.getByText("Example task"));
@@ -110,7 +111,7 @@ describe("appearance", () => {
 		fireEvent.contextMenu(preview.getByText("Example task"));
 		fireEvent.click(screen.getByLabelText("Close menu"));
 		expect(app.container.store.get().tasks).toHaveLength(1);
-		await press(settings.getByLabelText("Cozy"));
+		await press(task.getByLabelText("Cozy"));
 		expect(rowHeight("Water plants")).toBe("52px");
 	});
 
@@ -124,6 +125,27 @@ describe("appearance", () => {
 		act(() => app.container.settings.change({ rowStyle: "compact" }));
 		expect([size("Water plants"), heading()]).toEqual(["13px", "24px"]);
 		expect(screen.getByLabelText("Add a Task").style.fontSize).toBe("13px");
+	});
+
+	it("previews and applies the menu style separately from the task style", async () => {
+		const app = await start();
+		const settings = await openSettings();
+		const preview = settings.getByLabelText("Menu style preview");
+		const menu = within(settings.getByRole("radiogroup", { name: "Menu style" }));
+		const sidebar = () => screen.getByLabelText("Lists");
+		const marker = () => within(preview).queryByTestId("selection-marker");
+		expect(checked(menu.getByLabelText("Compact"))).toBe("true");
+		expect(preview.textContent).toBe("My Day2Tasks9Groceries3");
+		expect(marker()).toBeNull();
+		await press(menu.getByLabelText("Cozy"));
+		expect(checked(menu.getByLabelText("Cozy"))).toBe("true");
+		expect(marker()).toBeTruthy();
+		expect(within(sidebar()).getByTestId("selection-marker")).toBeTruthy();
+		expect(app.container.settings.get()).toMatchObject({ menuStyle: "cozy", rowStyle: "cozy" });
+		fireEvent.click(within(preview).getByText("Tasks"));
+		expect(app.container.store.get().selectedViewId).toBe("my-day");
+		await press(menu.getByLabelText("Compact"));
+		expect(within(sidebar()).queryByTestId("selection-marker")).toBeNull();
 	});
 
 	it("moves the add task bar below the list", async () => {

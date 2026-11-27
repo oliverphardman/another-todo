@@ -4,7 +4,7 @@ import type { MicrosoftEligibility } from "../microsoft/microsoft-sync-service";
 import { AppSettings } from "../state/app-settings";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
-import { sidebarMetrics } from "./sidebar-metrics";
+import { sidebarActions } from "./sidebar-actions";
 import { useLogOut } from "./use-log-out";
 import { useI18n } from "../i18n/i18n-context";
 
@@ -75,5 +75,5 @@ export function useAccountAction(): AccountAction | null {
 		logOut: logOut === null ? null : { label: t("account.logOut"), run: logOut },
 		signOut: auth.automatic ? null : { label: t("signOut.button"), run: () => void auth.signOut() },
 	};
-	return actions[sidebarMetrics().accountAction];
+	return actions[sidebarActions().accountAction];
 }

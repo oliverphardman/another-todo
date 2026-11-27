@@ -111,20 +111,34 @@ describe("the macOS settings window", () => {
 		const settings = app.container.settings;
 		await native.change("rowStyle", "compact");
 		expect(native.row("preview").height).toBe(44);
+		expect(native.row("menuPreview")).toMatchObject({ value: "compact", height: 28 });
+		await native.change("menuStyle", "cozy");
+		expect(native.row("menuStyle").value).toBe("cozy");
+		expect(native.row("menuPreview")).toMatchObject({
+			label: "My Day",
+			value: "cozy",
+			height: 44,
+		});
 		await native.change("addTaskPosition", "bottom");
 		await native.change("list.planned", "false");
 		await native.change("myDay.yesterday", "true");
 		await native.change("myDay.dueToday", "false");
 		expect(settings.get()).toMatchObject({
 			rowStyle: "compact",
+			menuStyle: "cozy",
 			addTaskPosition: "bottom",
 			lists: { planned: false },
 			myDay: { yesterday: true, dueToday: false },
 		});
 		expect(native.row("list.planned").value).toBe("false");
 		await native.change("rowStyle", "cozy");
+		await native.change("menuStyle", "compact");
 		await native.change("addTaskPosition", "top");
-		expect(settings.get()).toMatchObject({ rowStyle: "cozy", addTaskPosition: "top" });
+		expect(settings.get()).toMatchObject({
+			rowStyle: "cozy",
+			menuStyle: "compact",
+			addTaskPosition: "top",
+		});
 	});
 
 	it("ignores disabled, read only and unknown rows", async () => {

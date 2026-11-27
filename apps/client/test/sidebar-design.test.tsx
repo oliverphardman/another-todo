@@ -1,8 +1,9 @@
-import { cleanup, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { ColorMath } from "../src/ui/color-math";
 import { SidebarColors } from "../src/ui/sidebar-colors";
-import { sidebarMetrics } from "../src/ui/sidebar-metrics";
+import { menuLook } from "../src/ui/menu-look";
+import { sidebarActions } from "../src/ui/sidebar-actions";
 import { DARK, LIGHT } from "../src/ui/theme";
 import { renderApp } from "./support/render-app";
 
@@ -86,7 +87,7 @@ describe("SidebarColors", () => {
 	});
 });
 
-describe("sidebarMetrics", () => {
+describe("sidebarActions", () => {
 	it.each([
 		["macos", null, "logOut"],
 		["windows", "settings", "signOut"],
@@ -94,16 +95,108 @@ describe("sidebarMetrics", () => {
 		["ios", "settings", "logOut"],
 		["android", "settings", "logOut"],
 	])("gives the %s app its header button and account action", (platform, header, account) => {
-		expect(sidebarMetrics(platform).headerAction).toBe(header);
-		expect(sidebarMetrics(platform).accountAction).toBe(account);
+		expect(sidebarActions(platform).headerAction).toBe(header);
+		expect(sidebarActions(platform).accountAction).toBe(account);
 	});
 
-	it("is denser for pointer platforms than for touch", () => {
-		expect(sidebarMetrics("macos").rowHeight).toBe(28);
-		expect(sidebarMetrics("windows").rowHeight).toBe(28);
-		expect(sidebarMetrics("android").rowHeight).toBe(44);
-		expect(sidebarMetrics()).toBe(sidebarMetrics("web"));
-		expect(sidebarMetrics("ios").rowHeight).toBe(44);
+	it("uses this platform when none is named", () => {
+		expect(sidebarActions()).toBe(sidebarActions("web"));
+	});
+});
+
+describe("menuLook", () => {
+	const height = (style: "cozy" | "compact", platform: string) =>
+		menuLook(style, platform).metrics.rowHeight;
+
+	it("is denser when compact on pointer platforms than on touch", () => {
+		expect(height("compact", "macos")).toBe(28);
+		expect(height("compact", "windows")).toBe(28);
+		expect(height("compact", "android")).toBe(44);
+		expect(height("compact", "ios")).toBe(44);
+		expect(menuLook("compact")).toBe(menuLook("compact", "web"));
+	});
+
+	it.each(["macos", "windows", "web", "ios", "android"])(
+		"is equally roomy when cozy on %s",
+		(platform) => {
+			expect(menuLook("cozy", platform)).toBe(menuLook("cozy"));
+			expect(menuLook("cozy", platform).metrics).toMatchObject({
+				rowHeight: 44,
+				fontSize: 14,
+				iconSize: 20,
+				paddingStart: 24,
+				labelGap: 16,
+			});
+		},
+	);
+
+	it.each([
+		["light", LIGHT, false],
+		["dark", DARK, true],
+	])("keeps cozy icons plain and compact icons colored in %s mode", (_, palette, dark) => {
+		const icon = { viewId: "planned", theme: null, palette, dark };
+		expect(menuLook("cozy").iconColor(icon)).toBe(palette.text);
+		expect(menuLook("compact").iconColor(icon)).toBe(
+			SidebarColors.icon("planned", null, palette.sidebar, dark),
+		);
+	});
+
+	it.each([LIGHT, DARK])("keeps cozy text readable on a selected list", (palette) => {
+		const surface = menuLook("cozy").surface(palette);
+		expect(ColorMath.contrast(palette.text, surface.selected)).toBeGreaterThanOrEqual(4.5);
+	});
+});
+
+describe("menu style", () => {
+	async function start(options: Parameters<typeof renderApp>[0] = {}) {
+		const app = await renderApp(options);
+		stop = app.stop;
+		return app;
+	}
+
+	const sidebar = () => within(screen.getByLabelText("Lists"));
+	const row = (name: string) => sidebar().getByLabelText(name, { selector: "[role=button]" });
+	const label = (name: string) => within(row(name)).getByText(name);
+
+	it("is compact until changed", async () => {
+		await start();
+		expect(screen.queryByTestId("selection-marker")).toBeNull();
+		expect(row("My Day").style.paddingLeft).toBe("16px");
+		expect(screen.getByLabelText("Lists").style.backgroundColor).toBe("rgb(245, 245, 245)");
+	});
+
+	it("changes the whole sidebar at once", async () => {
+		const app = await start({ platform: "web" });
+		act(() => {
+			app.container.store.addList("Errands");
+			app.container.store.createGroupFor(app.container.store.get().lists[0]!.id, "Chores");
+			app.container.store.addList("Garden");
+			app.container.store.stopRenamingGroup();
+			app.container.store.select("my-day");
+			app.container.settings.change({ menuStyle: "cozy" });
+		});
+		expect(screen.getByLabelText("Lists").style.backgroundColor).toBe("rgb(255, 255, 255)");
+		expect(row("My Day").style.paddingLeft).toBe("24px");
+		expect(row("Errands").style.paddingLeft).toBe("44px");
+		expect(label("My Day").style.marginLeft).toBe("16px");
+		expect(sidebar().getByLabelText(/^Group /).style.paddingLeft).toBe("24px");
+		expect(sidebar().getByLabelText("Create a new list").style.paddingLeft).toBe("18px");
+		fireEvent.click(sidebar().getByLabelText("Create a new list"));
+		expect(sidebar().getByLabelText("New List").style.marginLeft).toBe("16px");
+	});
+
+	it("marks only the selected list", async () => {
+		const app = await start();
+		act(() => app.container.settings.change({ menuStyle: "cozy" }));
+		const marked = () => screen.getByTestId("selection-marker").parentElement;
+		expect(marked()).toBe(row("My Day"));
+		fireEvent.click(row("Tasks"));
+		expect(marked()).toBe(row("Tasks"));
+	});
+
+	it("starts from the server's default", async () => {
+		await start({ config: { defaultSettings: { menuStyle: "cozy" } } });
+		expect(screen.getByTestId("selection-marker")).toBeTruthy();
 	});
 });
 

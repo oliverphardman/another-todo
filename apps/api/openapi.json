@@ -1625,6 +1625,13 @@
 							"compact"
 						]
 					},
+					"menuStyle": {
+						"type": "string",
+						"enum": [
+							"cozy",
+							"compact"
+						]
+					},
 					"addTaskPosition": {
 						"type": "string",
 						"enum": [

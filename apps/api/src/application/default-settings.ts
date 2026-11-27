@@ -30,6 +30,7 @@ const wholeNumber = (min: number, max: number): Rule => ({
 
 const SHAPE: Shape = {
 	rowStyle: oneOf("cozy", "compact"),
+	menuStyle: oneOf("cozy", "compact"),
 	addTaskPosition: oneOf("top", "bottom"),
 	microsoft: { receive: flag, send: flag, intervalMinutes: wholeNumber(1, 1440) },
 	lists: { all: flag, important: flag, planned: flag, completed: flag },

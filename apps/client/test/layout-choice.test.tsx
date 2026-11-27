@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
+import { menuLook } from "../src/ui/menu-look";
 import { rowMetrics } from "../src/ui/row-metrics";
 import { renderApp, type RenderOptions } from "./support/render-app";
 
@@ -19,7 +20,8 @@ async function start(options: RenderOptions = {}) {
 	return app;
 }
 
-const PROMPT = "Choose your layout style";
+const PROMPT = "Choose your task style";
+const MENU_PROMPT = "Choose your menu style";
 
 const radio = (name: string) => screen.getByRole("radio", { name });
 
@@ -51,27 +53,74 @@ describe("choosing a layout on desktop", () => {
 		expect(heights("Compact")).toEqual(Array(3).fill(`${rowMetrics("compact").height}px`));
 	});
 
-	it("saves the chosen style and opens the app", async () => {
+	it("asks for the menu style next, with an example of each", async () => {
+		await start();
+		await proceed();
+		expect(screen.getByRole("radiogroup", { name: MENU_PROMPT })).toBeTruthy();
+		expect(screen.queryByText(PROMPT)).toBeNull();
+		expect(screen.queryByLabelText("Add a Task")).toBeNull();
+		const rows = (name: string) =>
+			Array.from(radio(name).querySelectorAll<HTMLElement>("[aria-label='My Day']")).map(
+				(row) => row.style.minHeight,
+			);
+		expect(rows("Cozy")).toEqual([`${menuLook("cozy", "macos").metrics.rowHeight}px`]);
+		expect(rows("Compact")).toEqual([`${menuLook("compact").metrics.rowHeight}px`]);
+		expect(radio("Cozy").textContent).toContain("Groceries");
+		expect(checked("Compact")).toBe("true");
+	});
+
+	it("saves both chosen styles together and opens the app", async () => {
 		const app = await start();
 		expect(checked("Cozy")).toBe("true");
 		fireEvent.click(radio("Compact"));
 		expect(checked("Compact")).toBe("true");
 		expect(checked("Cozy")).toBe("false");
-		expect(app.container.settings.get().rowStyle).toBe("cozy");
+		await proceed();
+		fireEvent.click(radio("Cozy"));
+		expect(app.container.settings.get()).toMatchObject({
+			rowStyle: "cozy",
+			menuStyle: "compact",
+		});
+		expect(app.container.settings.layoutChosen).toBe(false);
 		await proceed();
 		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
-		expect(app.container.settings.get().rowStyle).toBe("compact");
+		expect(app.container.settings.get()).toMatchObject({
+			rowStyle: "compact",
+			menuStyle: "cozy",
+		});
 		expect(JSON.parse((await app.dataStore.get("atd.settings"))!)).toEqual({
 			rowStyle: "compact",
+			menuStyle: "cozy",
 		});
 	});
 
-	it("preselects the server's default and remembers accepting it", async () => {
-		const app = await start({ config: { defaultSettings: { rowStyle: "compact" } } });
+	it("goes back to the task style without losing either choice", async () => {
+		await start();
+		expect(screen.queryByLabelText("Back")).toBeNull();
+		fireEvent.click(radio("Compact"));
+		await proceed();
+		fireEvent.click(radio("Cozy"));
+		fireEvent.click(screen.getByLabelText("Back"));
+		expect(screen.getByText(PROMPT)).toBeTruthy();
 		expect(checked("Compact")).toBe("true");
 		await proceed();
+		expect(checked("Cozy")).toBe("true");
+	});
+
+	it("preselects the server's defaults and remembers accepting them", async () => {
+		const app = await start({
+			config: { defaultSettings: { rowStyle: "compact", menuStyle: "cozy" } },
+		});
+		expect(checked("Compact")).toBe("true");
+		await proceed();
+		expect(checked("Cozy")).toBe("true");
+		await proceed();
 		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
-		expect(app.container.settings.rowStyleChosen).toBe(true);
+		expect(app.container.settings.layoutChosen).toBe(true);
+		expect(app.container.settings.get()).toMatchObject({
+			rowStyle: "compact",
+			menuStyle: "cozy",
+		});
 	});
 
 	it("is not asked again once a style has been chosen", async () => {

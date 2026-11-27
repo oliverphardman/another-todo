@@ -54,7 +54,7 @@ export function AppShell({ providers }: AppShellProps) {
 	if (status === "signedOut") {
 		return <SignInScreen providers={providers} />;
 	}
-	if (DESKTOP_PLATFORMS.includes(platform) && !settings.rowStyleChosen) {
+	if (DESKTOP_PLATFORMS.includes(platform) && !settings.layoutChosen) {
 		return <LayoutChoiceScreen />;
 	}
 	return (

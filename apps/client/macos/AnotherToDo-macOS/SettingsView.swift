@@ -92,6 +92,8 @@ private struct SettingsRowView: View {
       .pickerStyle(.segmented)
     case "preview":
       SettingsPreview(row: row)
+    case "menuPreview":
+      SettingsMenuPreview(row: row)
     case "toggle":
       Toggle(isOn: Binding(get: { row.value == "true" }, set: { change(String($0)) })) {
         Text(row.label)
@@ -145,6 +147,32 @@ private struct SettingsPreview: View {
     .background(
       RoundedRectangle(cornerRadius: 4).fill(Color(nsColor: .controlBackgroundColor))
     )
+    .accessibilityElement(children: .combine)
+  }
+}
+
+private struct SettingsMenuPreview: View {
+  let row: SettingsModel.Row
+
+  private var cozy: Bool { row.value == "cozy" }
+
+  var body: some View {
+    HStack(spacing: cozy ? 16 : 12) {
+      Image(systemName: "sun.max")
+        .font(.system(size: cozy ? 17 : 14, weight: cozy ? .light : .medium))
+        .foregroundStyle(cozy ? Color.primary : Color.secondary)
+      Text(row.label)
+        .font(.system(size: cozy ? 14 : 13, weight: .semibold))
+      Spacer()
+    }
+    .padding(.horizontal, cozy ? 24 : 16)
+    .frame(height: row.height ?? 28)
+    .background(cozy ? Color.accentColor.opacity(0.08) : Color.primary.opacity(0.1))
+    .overlay(alignment: .leading) {
+      if cozy {
+        Rectangle().fill(Color.accentColor).frame(width: 3)
+      }
+    }
     .accessibilityElement(children: .combine)
   }
 }

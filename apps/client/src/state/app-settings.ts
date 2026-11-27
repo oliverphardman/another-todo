@@ -1,7 +1,10 @@
 import type { KeyValueStore } from "../storage/key-value-store";
 import { Observable } from "./observable";
 
-export type RowStyle = "cozy" | "compact";
+export const LAYOUT_STYLES = ["cozy", "compact"] as const;
+export type LayoutStyle = (typeof LAYOUT_STYLES)[number];
+export type RowStyle = LayoutStyle;
+export type MenuStyle = LayoutStyle;
 export type AddTaskPosition = "top" | "bottom";
 
 export const OPTIONAL_LISTS = ["all", "important", "planned", "completed"] as const;
@@ -22,6 +25,7 @@ export interface MyDayPreferences {
 
 export interface AppSettingsState {
 	readonly rowStyle: RowStyle;
+	readonly menuStyle: MenuStyle;
 	readonly addTaskPosition: AddTaskPosition;
 	readonly microsoft: MicrosoftPreferences;
 	readonly lists: Readonly<Record<OptionalList, boolean>>;
@@ -30,6 +34,7 @@ export interface AppSettingsState {
 
 export const DEFAULT_SETTINGS: AppSettingsState = {
 	rowStyle: "cozy",
+	menuStyle: "compact",
 	addTaskPosition: "top",
 	microsoft: { receive: true, send: true, intervalMinutes: 2 },
 	lists: { all: true, important: true, planned: true, completed: true },
@@ -42,6 +47,7 @@ type Saved = Readonly<Record<string, unknown>>;
 
 export interface SettingsChanges {
 	readonly rowStyle?: RowStyle;
+	readonly menuStyle?: MenuStyle;
 	readonly addTaskPosition?: AddTaskPosition;
 	readonly microsoft?: Partial<MicrosoftPreferences>;
 	readonly lists?: Partial<Record<OptionalList, boolean>>;
@@ -61,7 +67,7 @@ export class AppSettings extends Observable<AppSettingsState> {
 		this.defaults = defaults;
 	}
 
-	get rowStyleChosen(): boolean {
+	get layoutChosen(): boolean {
 		return this.overrides.rowStyle !== undefined;
 	}
 
@@ -116,7 +122,8 @@ export class AppSettings extends Observable<AppSettingsState> {
 			choices.find((candidate) => candidate === stored) ?? otherwise;
 		const minutes = microsoft.intervalMinutes;
 		return {
-			rowStyle: choice(saved.rowStyle, ["cozy", "compact"], fallback.rowStyle),
+			rowStyle: choice(saved.rowStyle, LAYOUT_STYLES, fallback.rowStyle),
+			menuStyle: choice(saved.menuStyle, LAYOUT_STYLES, fallback.menuStyle),
 			addTaskPosition: choice(saved.addTaskPosition, ["top", "bottom"], fallback.addTaskPosition),
 			microsoft: {
 				receive: flag(microsoft.receive, fallback.microsoft.receive),

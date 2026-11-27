@@ -1,7 +1,14 @@
 import { Task } from "../domain/task";
 import type { I18n } from "../i18n/i18n";
-import { OPTIONAL_LISTS, type AppSettings } from "../state/app-settings";
+import {
+	LAYOUT_STYLES,
+	OPTIONAL_LISTS,
+	type AppSettings,
+	type LayoutStyle,
+} from "../state/app-settings";
 import type { NativeSettingsModel, NativeSettingsRow } from "./native-settings";
+import { STYLE_LABELS } from "./layout-labels";
+import { menuLook } from "./menu-look";
 import { rowMetrics } from "./row-metrics";
 import type { AccountAction, MicrosoftSettingsState } from "./settings-state";
 
@@ -69,27 +76,36 @@ export class NativeSettingsForm {
 		};
 	}
 
+	private static style(
+		{ t }: I18n,
+		key: string,
+		label: "settings.taskStyle" | "settings.menuStyle",
+		value: LayoutStyle,
+		change: (style: LayoutStyle) => void,
+	): Field {
+		return {
+			row: {
+				kind: "choice",
+				key,
+				label: t(label),
+				value,
+				options: LAYOUT_STYLES.map((style) => ({ value: style, label: t(STYLE_LABELS[style]) })),
+			},
+			apply: (entered) => change(entered === "compact" ? "compact" : "cozy"),
+		};
+	}
+
 	private static appearance({ settings, i18n, today }: NativeSettingsContext): FieldSection {
 		const { t } = i18n;
-		const { rowStyle, addTaskPosition } = settings.get();
+		const { rowStyle, menuStyle, addTaskPosition } = settings.get();
 		const preview = Task.create("settings-preview", t("settings.previewTask"), "");
 		return {
 			key: "appearance",
 			title: t("settings.appearance"),
 			fields: [
-				{
-					row: {
-						kind: "choice",
-						key: "rowStyle",
-						label: t("settings.rowStyle"),
-						value: rowStyle,
-						options: [
-							{ value: "cozy", label: t("settings.rowCozy") },
-							{ value: "compact", label: t("settings.rowCompact") },
-						],
-					},
-					apply: (value) => settings.change({ rowStyle: value === "compact" ? "compact" : "cozy" }),
-				},
+				NativeSettingsForm.style(i18n, "rowStyle", "settings.taskStyle", rowStyle, (next) =>
+					settings.change({ rowStyle: next }),
+				),
 				{
 					row: {
 						kind: "preview",
@@ -97,6 +113,18 @@ export class NativeSettingsForm {
 						label: preview.title,
 						detail: [t("view.tasks"), i18n.dueLabel(today, today)].join(" · "),
 						height: rowMetrics(rowStyle).height,
+					},
+				},
+				NativeSettingsForm.style(i18n, "menuStyle", "settings.menuStyle", menuStyle, (next) =>
+					settings.change({ menuStyle: next }),
+				),
+				{
+					row: {
+						kind: "menuPreview",
+						key: "menuPreview",
+						label: t("view.myDay"),
+						value: menuStyle,
+						height: menuLook(menuStyle, "macos").metrics.rowHeight,
 					},
 				},
 				{

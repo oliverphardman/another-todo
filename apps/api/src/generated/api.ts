@@ -546,6 +546,8 @@ export interface components {
             /** @enum {string} */
             rowStyle?: "cozy" | "compact";
             /** @enum {string} */
+            menuStyle?: "cozy" | "compact";
+            /** @enum {string} */
             addTaskPosition?: "top" | "bottom";
             microsoft?: {
                 receive?: boolean;

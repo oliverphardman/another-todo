@@ -106,10 +106,16 @@ describe("every user-visible string comes from the message catalog", () => {
 
 	it("the desktop layout choice", async () => {
 		await start({ platform: "macos" });
-		byText("layout.prompt");
-		byLabel("settings.rowCozy");
-		byLabel("settings.rowCompact");
+		byText("layout.taskPrompt");
+		byLabel("settings.styleCozy");
+		byLabel("settings.styleCompact");
 		byText("layout.later");
+		expect(unlocalized()).toEqual([]);
+		await act(async () => {
+			fireEvent.click(byLabel("layout.continue"));
+		});
+		byText("layout.menuPrompt");
+		byLabel("layout.back");
 		expect(unlocalized()).toEqual([]);
 	});
 
@@ -385,7 +391,8 @@ describe("every user-visible string comes from the message catalog", () => {
 			byText(key);
 		}
 		byLabel("settings.close");
-		byLabel("settings.preview");
+		byLabel("settings.taskPreview");
+		byLabel("settings.menuPreview");
 		byLabel("settings.msInterval");
 		byLabel("signOut.button");
 		expect(unlocalized()).toEqual([]);

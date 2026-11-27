@@ -1,35 +1,53 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { View } from "react-native";
+import type { MessageKey } from "../i18n/en-us";
 import { useI18n } from "../i18n/i18n-context";
-import type { RowStyle } from "../state/app-settings";
+import { LAYOUT_STYLES, type LayoutStyle } from "../state/app-settings";
 import { AppText } from "./app-text";
 import { BrandButton } from "./brand-button";
 import { BrandIntro } from "./brand-intro";
 import { CenteredScreen } from "./centered-screen";
 import { useContainer } from "./container-context";
 import { useLayoutMode, useObservable } from "./hooks";
+import { STYLE_LABELS } from "./layout-labels";
+import { MenuPreview } from "./menu-preview";
 import { PressableSurface } from "./pressable-surface";
 import { RowPreview } from "./row-preview";
 import { useTheme } from "./theme-context";
 
 const CARD_WIDTH = 300;
 
-const CHOICES = [
-	{ style: "cozy", label: "settings.rowCozy", description: "layout.cozy" },
-	{ style: "compact", label: "settings.rowCompact", description: "layout.compact" },
-] as const;
+interface LayoutStep {
+	readonly key: "rowStyle" | "menuStyle";
+	readonly prompt: MessageKey;
+	readonly descriptions: Readonly<Record<LayoutStyle, MessageKey>>;
+	readonly preview: (style: LayoutStyle, examples: readonly string[]) => ReactNode;
+}
+
+const TASK_STEP: LayoutStep = {
+	key: "rowStyle",
+	prompt: "layout.taskPrompt",
+	descriptions: { cozy: "layout.taskCozy", compact: "layout.taskCompact" },
+	preview: (style, examples) => <RowPreview rowStyle={style} titles={examples} />,
+};
+
+const MENU_STEP: LayoutStep = {
+	key: "menuStyle",
+	prompt: "layout.menuPrompt",
+	descriptions: { cozy: "layout.menuCozy", compact: "layout.menuCompact" },
+	preview: (style) => <MenuPreview menuStyle={style} />,
+};
 
 interface LayoutCardProps {
-	readonly rowStyle: RowStyle;
 	readonly label: string;
 	readonly description: string;
 	readonly selected: boolean;
 	readonly onSelect: () => void;
+	readonly children: ReactNode;
 }
 
-function LayoutCard({ rowStyle, label, description, selected, onSelect }: LayoutCardProps) {
+function LayoutCard({ label, description, selected, onSelect, children }: LayoutCardProps) {
 	const palette = useTheme();
-	const { t } = useI18n();
 	return (
 		<View
 			style={{
@@ -72,10 +90,7 @@ function LayoutCard({ rowStyle, label, description, selected, onSelect }: Layout
 				<AppText size={13} tone="secondary" style={{ minHeight: 36, marginBottom: 10 }}>
 					{description}
 				</AppText>
-				<RowPreview
-					rowStyle={rowStyle}
-					titles={[t("layout.exampleFirst"), t("layout.exampleSecond"), t("layout.exampleThird")]}
-				/>
+				{children}
 			</PressableSurface>
 		</View>
 	);
@@ -84,35 +99,52 @@ function LayoutCard({ rowStyle, label, description, selected, onSelect }: Layout
 export function LayoutChoiceScreen() {
 	const { settings } = useContainer();
 	const { t } = useI18n();
-	const { rowStyle } = useObservable(settings);
-	const [chosen, setChosen] = useState(rowStyle);
+	const { rowStyle, menuStyle } = useObservable(settings);
+	const [chosen, setChosen] = useState({ rowStyle, menuStyle });
+	const [step, setStep] = useState(TASK_STEP);
 	const stacked = useLayoutMode() === "compact";
+	const first = step === TASK_STEP;
+	const examples = [t("layout.exampleFirst"), t("layout.exampleSecond"), t("layout.exampleThird")];
 	return (
 		<CenteredScreen>
 			<BrandIntro animate={false}>
 				<AppText tone="onAccent" style={{ marginBottom: 12, textAlign: "center" }}>
-					{t("layout.prompt")}
+					{t(step.prompt)}
 				</AppText>
 				<View
+					key={step.key}
 					accessibilityRole="radiogroup"
-					accessibilityLabel={t("layout.prompt")}
+					accessibilityLabel={t(step.prompt)}
 					style={{ flexDirection: stacked ? "column" : "row", gap: 12 }}
 				>
-					{CHOICES.map(({ style, label, description }) => (
+					{LAYOUT_STYLES.map((style) => (
 						<LayoutCard
 							key={style}
-							rowStyle={style}
-							label={t(label)}
-							description={t(description)}
-							selected={chosen === style}
-							onSelect={() => setChosen(style)}
-						/>
+							label={t(STYLE_LABELS[style])}
+							description={t(step.descriptions[style])}
+							selected={chosen[step.key] === style}
+							onSelect={() => setChosen({ ...chosen, [step.key]: style })}
+						>
+							{step.preview(style, examples)}
+						</LayoutCard>
 					))}
 				</View>
 				<BrandButton
 					label={t("layout.continue")}
-					onPress={() => settings.change({ rowStyle: chosen })}
+					onPress={() => (first ? setStep(MENU_STEP) : settings.change(chosen))}
 				/>
+				{first ? null : (
+					<PressableSurface
+						accessibilityRole="button"
+						accessibilityLabel={t("layout.back")}
+						onPress={() => setStep(TASK_STEP)}
+						style={{ marginTop: 12, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 4 }}
+					>
+						<AppText tone="onAccent" weight="600">
+							{t("layout.back")}
+						</AppText>
+					</PressableSurface>
+				)}
 				<AppText size={13} tone="onAccent" style={{ marginTop: 16, textAlign: "center" }}>
 					{t("layout.later")}
 				</AppText>

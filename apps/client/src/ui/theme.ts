@@ -5,6 +5,10 @@ export interface Palette {
 	readonly sidebarSelected: string;
 	readonly sidebarHover: string;
 	readonly sidebarField: string;
+	readonly menu: string;
+	readonly menuBorder: string;
+	readonly menuHover: string;
+	readonly menuSelected: string;
 	readonly ripple: string;
 	readonly surface: string;
 	readonly surfaceHover: string;
@@ -30,6 +34,10 @@ export const LIGHT: Palette = {
 	sidebarSelected: "#e1e1e1",
 	sidebarHover: "#ebebeb",
 	sidebarField: "#ffffff",
+	menu: "#ffffff",
+	menuBorder: "#edebe9",
+	menuHover: "#f5f5f5",
+	menuSelected: "#eff6fc",
 	ripple: "rgba(0, 0, 0, 0.18)",
 	surface: "#ffffff",
 	surfaceHover: "#f5f5f5",
@@ -55,6 +63,10 @@ export const DARK: Palette = {
 	sidebarSelected: "#3a3a3a",
 	sidebarHover: "#2f2f2f",
 	sidebarField: "#1b1b1b",
+	menu: "#252525",
+	menuBorder: "#383838",
+	menuHover: "#2f2f2f",
+	menuSelected: "#2b3544",
 	ripple: "rgba(255, 255, 255, 0.24)",
 	surface: "#292929",
 	surfaceHover: "#333333",

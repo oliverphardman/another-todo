@@ -49,6 +49,7 @@ that device. This shows every setting with its built-in value:
 ```json
 {
 	"rowStyle": "cozy",
+	"menuStyle": "compact",
 	"addTaskPosition": "top",
 	"microsoft": { "receive": true, "send": true, "intervalMinutes": 2 },
 	"lists": { "all": true, "important": true, "planned": true, "completed": true },
@@ -56,12 +57,12 @@ that device. This shows every setting with its built-in value:
 }
 ```
 
-`rowStyle` is `cozy` or `compact`, `addTaskPosition` is `top` or `bottom`, and `intervalMinutes` is 1 to 1440. In a
+`rowStyle` (the task style) and `menuStyle` (the list sidebar) are `cozy` or `compact`, `addTaskPosition` is `top` or `bottom`, and `intervalMinutes` is 1 to 1440. In a
 `.env` file, write it on one line in single quotes: `DEFAULT_SETTINGS='{"rowStyle":"compact"}'`. The server refuses
 to start if it contains anything else. Apps pick up a change the next time they start.
 
-The macOS and Windows apps ask which row style to use after the first sign-in. Your `rowStyle` is the option selected
-when they ask.
+The macOS and Windows apps ask which task style and menu style to use after the first sign-in. Your `rowStyle` and
+`menuStyle` are the options selected when they ask.
 
 ## Accounts
 
