@@ -496,9 +496,11 @@ export interface components {
             hideCompleted: boolean;
             theme: {
                 /** @enum {string} */
-                type: "color" | "photo";
+                type: "color" | "photo" | "preset";
                 color?: string;
                 photoId?: string;
+                /** @description A photo that ships with the apps */
+                presetId?: string;
             } | null;
             /** Format: date-time */
             updatedAt: string;
@@ -513,9 +515,11 @@ export interface components {
             hideCompleted: boolean;
             theme: {
                 /** @enum {string} */
-                type: "color" | "photo";
+                type: "color" | "photo" | "preset";
                 color?: string;
                 photoId?: string;
+                /** @description A photo that ships with the apps */
+                presetId?: string;
             } | null;
             sortDescending?: boolean;
         };
@@ -1257,6 +1261,8 @@ export interface operations {
                         notice: string | null;
                         realtimeUrl: string | null;
                         defaultSettings: components["schemas"]["DefaultSettings"];
+                        /** @description Whether view settings accept the photos that ship with the apps */
+                        presetThemes: boolean;
                         /** @description The largest file the server accepts; photos are also limited to 5 MB */
                         maxUploadBytes: number;
                         /** @description Where an app signs in when authentication is external */

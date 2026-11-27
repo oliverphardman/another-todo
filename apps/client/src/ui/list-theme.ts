@@ -1,10 +1,11 @@
+import type { ImageSourcePropType } from "react-native";
 import type { ThemeSetting } from "../domain/view-settings";
 import { ColorMath } from "./color-math";
 import { DARK, LIGHT, type Palette } from "./theme";
 
 export interface ResolvedTheme {
 	readonly overrides: Partial<Palette>;
-	readonly imageUrl: string | null;
+	readonly image: ImageSourcePropType | null;
 }
 
 export type Tone = "light" | "dark";
@@ -27,7 +28,7 @@ export class ListTheme {
 
 	static resolve(
 		setting: ThemeSetting | null,
-		photoUrl: string | null,
+		image: ImageSourcePropType | null,
 		dark: boolean,
 		defaultColor: string,
 	): ResolvedTheme {
@@ -41,7 +42,7 @@ export class ListTheme {
 				)
 			: ColorMath.ensureContrast(color, "#ffffff", MINIMUM_CONTRAST, "#000000");
 		const accentSoft = ColorMath.mix(accent, dark ? "#000000" : "#ffffff", dark ? 0.65 : 0.85);
-		if (setting?.type === "photo" && photoUrl !== null) {
+		if (image !== null) {
 			return {
 				overrides: {
 					accent,
@@ -50,18 +51,18 @@ export class ListTheme {
 					title: "#ffffff",
 					...ListTheme.photoField(dark ? "dark" : "light"),
 				},
-				imageUrl: photoUrl,
+				image,
 			};
 		}
 		const addField = ColorMath.mix(color, "#000000", dark ? DARK_FIELD_SHADE : LIGHT_FIELD_SHADE);
 		const field = { addField, onAddField: ColorMath.readableOn(addField) };
 		if (dark) {
-			return { overrides: { accent, accentSoft, title: accent, ...field }, imageUrl: null };
+			return { overrides: { accent, accentSoft, title: accent, ...field }, image: null };
 		}
 		const onAccent = ColorMath.readableOn(color);
 		return {
 			overrides: { background: color, onAccent, title: onAccent, accent, accentSoft, ...field },
-			imageUrl: null,
+			image: null,
 		};
 	}
 }

@@ -35,6 +35,7 @@ export const TEST_CONFIG: AppConfig = {
 	notice: null,
 	maxUploadBytes: 25 * 1024 * 1024,
 	defaultSettings: null,
+	presetThemes: true,
 };
 
 export interface TestContainer {
@@ -69,6 +70,7 @@ export function createTestContainer(
 	microsoftAvailable = true,
 	overrides: Partial<AppConfig> = {},
 	server?: ServerControls,
+	platform = "web",
 ): TestContainer {
 	const clock = new FixedClock();
 	const connectivity = new ManualConnectivity();
@@ -93,7 +95,7 @@ export function createTestContainer(
 	const container = createContainer(
 		{ ...TEST_CONFIG, ...overrides },
 		{
-			platform: "web",
+			platform,
 			server,
 			dataStore,
 			tokenStore,

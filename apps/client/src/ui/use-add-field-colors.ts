@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ImageEdge } from "../photos/photo-tones";
+import { PRESET_PHOTOS } from "../photos/preset-photos";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { ListTheme, type FieldColors } from "./list-theme";
@@ -21,6 +22,9 @@ export function useAddFieldColors(edge: ImageEdge): FieldColors {
 			});
 		}
 	}, [photoTones, photoId, url, edge]);
-	const tone = photoId === null || url === null ? null : photoTones.cached(photoId, edge);
+	const preset =
+		theme?.type === "preset" ? PRESET_PHOTOS.find(({ id }) => id === theme.presetId) : undefined;
+	const sampled = photoId === null || url === null ? null : photoTones.cached(photoId, edge);
+	const tone = preset?.tones[edge] ?? sampled;
 	return tone === null ? { addField, onAddField } : ListTheme.photoField(tone);
 }

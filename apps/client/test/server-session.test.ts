@@ -26,6 +26,7 @@ describe("ServerInfoLoader", () => {
 			signIn: null,
 			maxUploadBytes: 25 * 1024 * 1024,
 			defaultSettings: null,
+			presetThemes: false,
 		});
 		expect(urls).toEqual(["https://todo.example.com/config"]);
 	});
@@ -39,6 +40,17 @@ describe("ServerInfoLoader", () => {
 			reply({ authentication: "none", maxUploadBytes: advertised }),
 		);
 		expect((await loader.load("https://x")).maxUploadBytes).toBe(used);
+	});
+
+	it.each([
+		[true, true],
+		[false, false],
+		["yes", false],
+	])("takes %s as the server's support for preset photos", async (advertised, used) => {
+		const loader = new ServerInfoLoader(async () =>
+			reply({ authentication: "none", presetThemes: advertised }),
+		);
+		expect((await loader.load("https://x")).presetThemes).toBe(used);
 	});
 
 	it("passes on the server's default settings", async () => {
@@ -66,6 +78,7 @@ describe("ServerInfoLoader", () => {
 			signIn: null,
 			maxUploadBytes: 25 * 1024 * 1024,
 			defaultSettings: null,
+			presetThemes: false,
 		});
 	});
 

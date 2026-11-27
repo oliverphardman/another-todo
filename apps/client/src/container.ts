@@ -18,6 +18,7 @@ import { MicrosoftSyncService } from "./microsoft/microsoft-sync-service";
 import { createImageSampler } from "./photos/create-image-sampler";
 import type { ImageSampler } from "./photos/image-sampler";
 import { PhotoLibrary } from "./photos/photo-library";
+import { PRESET_PHOTOS, type PresetPhoto } from "./photos/preset-photos";
 import { PhotoTones } from "./photos/photo-tones";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { createExportPlatform } from "./export/export-platform";
@@ -55,6 +56,7 @@ import { SyncCoordinator } from "./sync/sync-coordinator";
 import { SyncEngine } from "./sync/sync-engine";
 
 export interface Container {
+	readonly platform: string;
 	readonly config: AppConfig;
 	readonly server: ServerControls;
 	readonly auth: AuthenticationService;
@@ -62,6 +64,7 @@ export interface Container {
 	readonly store: TodoStore;
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
+	readonly presetPhotos: readonly PresetPhoto[];
 	readonly photoTones: PhotoTones;
 	readonly attachments: TaskAttachments;
 	readonly reminders: ReminderService;
@@ -185,6 +188,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		settings,
 	);
 	return {
+		platform: overrides.platform,
 		settings,
 		config,
 		server: overrides.server ?? {
@@ -198,6 +202,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		microsoft,
 		sync,
 		photos,
+		presetPhotos: config.presetThemes ? PRESET_PHOTOS : [],
 		photoTones: new PhotoTones(overrides.imageSampler ?? createImageSampler()),
 		attachments,
 		reminders,

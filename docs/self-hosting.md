@@ -60,6 +60,9 @@ that device. This shows every setting with its built-in value:
 `.env` file, write it on one line in single quotes: `DEFAULT_SETTINGS='{"rowStyle":"compact"}'`. The server refuses
 to start if it contains anything else. Apps pick up a change the next time they start.
 
+The macOS and Windows apps ask which row style to use after the first sign-in. Your `rowStyle` is the option selected
+when they ask.
+
 ## Accounts
 
 The administrator creates other accounts with the API:

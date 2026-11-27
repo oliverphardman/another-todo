@@ -37,6 +37,7 @@ describe("self-hosted server entry point", () => {
 			realtimeUrl: null,
 			signIn: null,
 			maxUploadBytes: 10485760,
+			presetThemes: true,
 			defaultSettings: {},
 		});
 		expect((await fetch(`${base}/tasks`)).status).toBe(401);

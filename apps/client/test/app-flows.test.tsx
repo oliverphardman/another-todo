@@ -2,6 +2,8 @@ import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-libra
 import { Linking } from "react-native";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderApp } from "./support/render-app";
+import { EN_US } from "../src/i18n/en-us";
+import { PRESET_PHOTOS } from "../src/photos/preset-photos";
 
 let stop: (() => void) | undefined;
 
@@ -1005,6 +1007,54 @@ describe("change theme", () => {
 		});
 		await waitFor(() => expect(screen.queryByLabelText("Use photo beach.png")).toBeNull());
 		expect(app.photoGateway.photos).toEqual([]);
+	});
+
+	it("offers the included photos and uses the chosen one as the background", async () => {
+		const app = await start();
+		openTheme();
+		for (const preset of PRESET_PHOTOS) {
+			expect(screen.getByLabelText(`Use photo ${EN_US[preset.nameKey]}`)).toBeTruthy();
+		}
+		expect(screen.queryByLabelText("Delete photo Aurora")).toBeNull();
+		await act(async () => {
+			fireEvent.click(screen.getByLabelText("Use photo Aurora"));
+		});
+		expect(app.container.store.settingsFor("my-day").theme).toEqual({
+			type: "preset",
+			presetId: "aurora",
+		});
+		expect(screen.getByLabelText("List background photo")).toBeTruthy();
+		expect(screen.getByLabelText("Use photo Aurora").getAttribute("aria-checked")).toBe("true");
+		expect(screen.getByLabelText("Use photo Coast").getAttribute("aria-checked")).toBe("false");
+		expect(screen.getByLabelText("Blue theme").getAttribute("aria-checked")).toBe("false");
+		await waitFor(() =>
+			expect(app.requests).toContainEqual(
+				expect.objectContaining({
+					method: "PUT",
+					url: "https://api.test/view-settings/my-day",
+					body: expect.objectContaining({ theme: { type: "preset", presetId: "aurora" } }),
+				}),
+			),
+		);
+		fireEvent.click(screen.getByLabelText("Blue theme"));
+		expect(screen.queryByLabelText("List background photo")).toBeNull();
+	});
+
+	it("hides the included photos when the server cannot save them", async () => {
+		await start({ config: { presetThemes: false } });
+		openTheme();
+		expect(screen.queryByLabelText("Use photo Aurora")).toBeNull();
+		expect(screen.getByLabelText("Upload photo")).toBeTruthy();
+	});
+
+	it("falls back to the default look when an included photo is unknown to this version", async () => {
+		const app = await start();
+		act(() => {
+			app.container.store.updateSettings("my-day", {
+				theme: { type: "preset", presetId: "from-the-future" },
+			});
+		});
+		expect(screen.queryByLabelText("List background photo")).toBeNull();
 	});
 
 	it("falls back to the default look when the chosen photo is not available", async () => {

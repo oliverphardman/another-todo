@@ -1,17 +1,17 @@
 import { useI18n } from "../i18n/i18n-context";
 import { useEffect, useState } from "react";
-import { Image, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { THEME_COLORS, ViewDefaults, type ThemeSetting } from "../domain/view-settings";
 import { ColorMath } from "./color-math";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon } from "./icon";
+import { PhotoTile, THUMBNAIL } from "./photo-tile";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
 const SWATCH = 36;
-const THUMBNAIL = 72;
 
 export interface ThemePanelProps {
 	readonly viewId: string;
@@ -19,7 +19,7 @@ export interface ThemePanelProps {
 }
 
 export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
-	const { store, photos } = useContainer();
+	const { store, photos, presetPhotos } = useContainer();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -84,31 +84,30 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 				{t("theme.photos")}
 			</AppText>
 			<View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+				{presetPhotos.map((preset) => {
+					const name = t(preset.nameKey);
+					return (
+						<PhotoTile
+							key={preset.id}
+							name={name}
+							label={t("photo.use", { name })}
+							source={preset.thumbnail}
+							selected={current?.type === "preset" && current.presetId === preset.id}
+							onPress={() => choose({ type: "preset", presetId: preset.id })}
+						/>
+					);
+				})}
 				{library.photos.map((photo) => {
 					const selected = current?.type === "photo" && current.photoId === photo.id;
 					return (
 						<View key={photo.id} style={{ width: THUMBNAIL, height: THUMBNAIL }}>
-							<PressableSurface
-								accessibilityRole="radio"
-								accessibilityLabel={t("photo.use", { name: photo.name })}
-								aria-checked={selected}
+							<PhotoTile
+								name={photo.name}
+								label={t("photo.use", { name: photo.name })}
+								source={{ uri: photo.url }}
+								selected={selected}
 								onPress={() => choose({ type: "photo", photoId: photo.id })}
-								style={{
-									width: THUMBNAIL,
-									height: THUMBNAIL,
-									borderRadius: 6,
-									overflow: "hidden",
-									borderWidth: selected ? 2 : 0,
-									borderColor: palette.accent,
-								}}
-							>
-								<Image
-									accessibilityLabel={photo.name}
-									source={{ uri: photo.url }}
-									style={{ width: "100%", height: "100%" }}
-									resizeMode="cover"
-								/>
-							</PressableSurface>
+							/>
 							<PressableSurface
 								accessibilityRole="button"
 								accessibilityLabel={t("photo.delete", { name: photo.name })}

@@ -45,7 +45,7 @@ describe("ListTheme", () => {
 		expect(periwinkle.overrides.background).toBe("#6074c3");
 		expect(periwinkle.overrides.onAccent).toBe("#ffffff");
 		expect(ColorMath.contrast(periwinkle.overrides.accent!, "#ffffff")).toBeGreaterThanOrEqual(4.5);
-		expect(periwinkle.imageUrl).toBeNull();
+		expect(periwinkle.image).toBeNull();
 		const peach = ListTheme.resolve(null, null, false, "#f9e7de");
 		expect(peach.overrides.background).toBe("#f9e7de");
 		expect(peach.overrides.onAccent).toBe("#1b1a19");
@@ -76,18 +76,18 @@ describe("ListTheme", () => {
 		expect(ColorMath.contrast(dark.overrides.accent!, DARK.surface)).toBeGreaterThanOrEqual(4.5);
 		expect(DARK.background).toBe("#1e1e1e");
 		expect(DARK.sidebar).toBe("#252525");
-		expect(dark.imageUrl).toBeNull();
+		expect(dark.image).toBeNull();
 	});
 
 	it("always shows a photo, in light and dark mode, with white text", () => {
 		for (const mode of [false, true]) {
 			const themed = ListTheme.resolve(
 				{ type: "photo", photoId: "p" },
-				"https://photos.test/p",
+				{ uri: "https://photos.test/p" },
 				mode,
 				LIST_THEME_COLOR,
 			);
-			expect(themed.imageUrl).toBe("https://photos.test/p");
+			expect(themed.image).toEqual({ uri: "https://photos.test/p" });
 			expect(themed.overrides.background).toBeUndefined();
 			expect(themed.overrides.onAccent).toBe("#ffffff");
 		}
@@ -111,7 +111,12 @@ describe("ListTheme", () => {
 			[false, "light"],
 			[true, "dark"],
 		] as const) {
-			const themed = ListTheme.resolve(setting, "https://photos.test/p", dark, LIST_THEME_COLOR);
+			const themed = ListTheme.resolve(
+				setting,
+				{ uri: "https://photos.test/p" },
+				dark,
+				LIST_THEME_COLOR,
+			);
 			expect(themed.overrides).toMatchObject(ListTheme.photoField(tone));
 		}
 		expect(ListTheme.photoField("light")).toEqual({
@@ -132,7 +137,7 @@ describe("ListTheme", () => {
 
 	it("falls back to the color when the photo's link is not known", () => {
 		const fallback = ListTheme.resolve({ type: "photo", photoId: "p" }, null, false, "#f9e7de");
-		expect(fallback.imageUrl).toBeNull();
+		expect(fallback.image).toBeNull();
 		expect(fallback.overrides.background).toBe("#f9e7de");
 	});
 });

@@ -13,7 +13,7 @@ const renderBackground = () =>
 	render(
 		<ThemeProvider scheme="light">
 			<I18nProvider>
-				<PaneBackground imageUrl="https://img.test/a.png">
+				<PaneBackground image={{ uri: "https://img.test/a.png" }}>
 					<p>content</p>
 				</PaneBackground>
 			</I18nProvider>
@@ -43,7 +43,7 @@ describe("PaneBackground", () => {
 		render(
 			<ThemeProvider scheme="light">
 				<I18nProvider>
-					<PaneBackground imageUrl={null}>
+					<PaneBackground image={null}>
 						<p>plain</p>
 					</PaneBackground>
 				</I18nProvider>

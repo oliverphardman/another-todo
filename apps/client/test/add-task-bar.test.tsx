@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { LIST_THEME_COLOR } from "../src/domain/view-settings";
+import { PRESET_PHOTOS } from "../src/photos/preset-photos";
 import { ColorMath } from "../src/ui/color-math";
 import { IconArtwork } from "../src/ui/icon-artwork";
 import { DARK, LIGHT } from "../src/ui/theme";
@@ -106,6 +107,25 @@ describe("Add a Task field", () => {
 		expect(bar().style.backgroundColor).toBe(rgb(LIGHT.surface));
 		expect(app.imageSampler.calls).toHaveLength(2);
 	});
+
+	it.each(["top", "bottom"] as const)(
+		"knows an included photo's tone at the %s without sampling it",
+		async (position) => {
+			const app = await start();
+			act(() => app.container.settings.change({ addTaskPosition: position }));
+			for (const preset of PRESET_PHOTOS) {
+				act(() =>
+					app.container.store.updateSettings("tasks", {
+						theme: { type: "preset", presetId: preset.id },
+					}),
+				);
+				const palette = preset.tones[position] === "dark" ? DARK : LIGHT;
+				expect(bar().style.backgroundColor, preset.id).toBe(rgb(palette.surface));
+				expect(input().style.color, preset.id).toBe(rgb(palette.text));
+			}
+			expect(app.imageSampler.calls).toEqual([]);
+		},
+	);
 
 	it.each([
 		["light", LIGHT],

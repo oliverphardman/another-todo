@@ -13,6 +13,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Default theme color for Planned is #D5F1EE
 - [x] Completed check circles are filled with the list's color with a white check (the fade-in and move-to-completed animation is still to do, see section 3)
 - [x] Light and dark mode follow the system preference
+- [x] Royalty-free photos included in the theme menu (docs/theme-images.md)
 
 ## 2. Localization
 

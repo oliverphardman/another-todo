@@ -417,6 +417,16 @@ describe("View settings API", () => {
 		expect((await api(event({ path: "/view-settings", sub: null }))).status).toBe(401);
 	});
 
+	it("accepts a preset photo theme and returns it", async () => {
+		const api = createTestApi();
+		const theme = { type: "preset", presetId: "aurora" };
+		const saved = await api(settings({ sort: null, hideCompleted: false, theme }));
+		expect(saved.status).toBe(200);
+		expect(saved.body.theme).toEqual(theme);
+		const listed = await api(event({ path: "/view-settings" }));
+		expect(listed.body.settings[0].theme).toEqual(theme);
+	});
+
 	it("removes a list's settings when the list is deleted", async () => {
 		const api = createTestApi();
 		const list = (await api(event({ method: "POST", path: "/lists", body: { name: "Temp" } })))

@@ -18,7 +18,7 @@ export class ConfigController {
 	router(): Router {
 		const router = Router();
 		router.get("/config", (_request, response) => {
-			response.json(this.config);
+			response.json({ ...this.config, presetThemes: true });
 		});
 		return router;
 	}

@@ -653,7 +653,8 @@
 										"realtimeUrl",
 										"signIn",
 										"maxUploadBytes",
-										"defaultSettings"
+										"defaultSettings",
+										"presetThemes"
 									],
 									"properties": {
 										"authentication": {
@@ -683,6 +684,10 @@
 										},
 										"defaultSettings": {
 											"$ref": "#/components/schemas/DefaultSettings"
+										},
+										"presetThemes": {
+											"type": "boolean",
+											"description": "Whether view settings accept the photos that ship with the apps"
 										},
 										"maxUploadBytes": {
 											"type": "integer",
@@ -1431,7 +1436,8 @@
 								"type": "string",
 								"enum": [
 									"color",
-									"photo"
+									"photo",
+									"preset"
 								]
 							},
 							"color": {
@@ -1441,6 +1447,11 @@
 							"photoId": {
 								"type": "string",
 								"pattern": "^[A-Za-z0-9_-]{1,64}$"
+							},
+							"presetId": {
+								"type": "string",
+								"pattern": "^[A-Za-z0-9_-]{1,64}$",
+								"description": "A photo that ships with the apps"
 							}
 						}
 					},
@@ -1503,7 +1514,8 @@
 								"type": "string",
 								"enum": [
 									"color",
-									"photo"
+									"photo",
+									"preset"
 								]
 							},
 							"color": {
@@ -1513,6 +1525,11 @@
 							"photoId": {
 								"type": "string",
 								"pattern": "^[A-Za-z0-9_-]{1,64}$"
+							},
+							"presetId": {
+								"type": "string",
+								"pattern": "^[A-Za-z0-9_-]{1,64}$",
+								"description": "A photo that ships with the apps"
 							}
 						}
 					},
