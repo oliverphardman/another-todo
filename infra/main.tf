@@ -421,6 +421,32 @@ resource "aws_lambdaweb_function" "api" {
   function_name = "${local.name}-api"
 }
 
+locals {
+  api_environment = {
+    AWS_LAMBDA_NODEJS_ENTRYPOINT = "index.mjs"
+    TABLE_NAME                   = aws_dynamodb_table.tasks.name
+    LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
+    SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
+    PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
+    ATTACHMENTS_TABLE_NAME       = aws_dynamodb_table.attachments.name
+    GROUPS_TABLE_NAME            = aws_dynamodb_table.groups.name
+    SHARES_TABLE_NAME            = aws_dynamodb_table.shares.name
+    PHOTOS_BUCKET                = aws_s3_bucket.photos.id
+    MEDIA_PUBLIC_URL             = "https://${local.media_domain}"
+    CONNECTIONS_TABLE_NAME       = aws_dynamodb_table.connections.name
+    WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"
+    COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
+    COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
+    COGNITO_AUTH_URL             = "https://${local.auth_domain}"
+    CORS_ORIGINS                 = join(",", local.cors_origins)
+    PUBLIC_API_URL               = "https://${local.api_domain}"
+    ENFORCED_USERNAME            = var.enforced_username
+    SERVER_NOTICE                = var.server_notice
+    MAX_UPLOAD_MB                = var.max_upload_mb
+    DEFAULT_SETTINGS             = var.default_settings
+  }
+}
+
 resource "aws_lambdaweb_function_revision" "api" {
   function_name = aws_lambdaweb_function.api.function_name
 
@@ -443,29 +469,7 @@ resource "aws_lambdaweb_function_revision" "api" {
     timeout_seconds                 = var.timeout_seconds
     max_concurrency_per_environment = var.max_concurrency_per_environment
 
-    environment_variables = {
-      AWS_LAMBDA_NODEJS_ENTRYPOINT = "index.mjs"
-      TABLE_NAME                   = aws_dynamodb_table.tasks.name
-      LISTS_TABLE_NAME             = aws_dynamodb_table.lists.name
-      SETTINGS_TABLE_NAME          = aws_dynamodb_table.settings.name
-      PHOTOS_TABLE_NAME            = aws_dynamodb_table.photos.name
-      ATTACHMENTS_TABLE_NAME       = aws_dynamodb_table.attachments.name
-      GROUPS_TABLE_NAME            = aws_dynamodb_table.groups.name
-      SHARES_TABLE_NAME            = aws_dynamodb_table.shares.name
-      PHOTOS_BUCKET                = aws_s3_bucket.photos.id
-      MEDIA_PUBLIC_URL             = "https://${local.media_domain}"
-      CONNECTIONS_TABLE_NAME       = aws_dynamodb_table.connections.name
-      WEBSOCKET_MANAGEMENT_URL     = "https://${aws_apigatewayv2_api.websocket.id}.execute-api.${var.region}.amazonaws.com/${aws_apigatewayv2_stage.websocket.name}"
-      COGNITO_USER_POOL_ID         = aws_cognito_user_pool.main.id
-      COGNITO_CLIENT_ID            = aws_cognito_user_pool_client.app.id
-      COGNITO_AUTH_URL             = "https://${local.auth_domain}"
-      CORS_ORIGINS                 = join(",", local.cors_origins)
-      PUBLIC_API_URL               = "https://${local.api_domain}"
-      ENFORCED_USERNAME            = var.enforced_username
-      SERVER_NOTICE                = var.server_notice
-      MAX_UPLOAD_MB                = var.max_upload_mb
-      DEFAULT_SETTINGS             = var.default_settings
-    }
+    environment_variables = { for name, value in local.api_environment : name => value if value != "" }
   }
 
   depends_on = [aws_route53_record.media]
