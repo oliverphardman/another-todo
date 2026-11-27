@@ -34,10 +34,6 @@
 - Use Prettier
 - Use pnpm over npm
 
-## API
-
-- Use Amazon Lambda Web Functions to host the API rather than serverless-express
-
 ## Client
 
 - Aim for perfect UI replication of the original Microsoft To Do app, ensuring it is fully responsive and works on all screen sizes
@@ -54,6 +50,11 @@ The clients prompt for the server URL unless it is enforced. Most people will us
 The demo gets no special treatment: it is a deployment that uses the same variables. Do not add demo flags, demo credentials or a separate demo sign-in path to the code; the only demo-specific behavior is the yellow notice, which is shown whenever the server sends one.
 
 Not done yet: publishing the container image to a registry (compose builds it locally), a generic OIDC auth provider, and user management beyond POST /auth/users.
+
+## Providers
+
+Operations should use a generic interface independent of any specific provider. For example, Microsoft To Do and our own API are both providers.
+Clients must be able to link multiple providers.
 
 ## Repo context
 
