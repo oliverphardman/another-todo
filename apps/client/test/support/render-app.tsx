@@ -9,11 +9,15 @@ import type { AppConfig } from "../../src/config/app-config";
 import type { ServerControls } from "../../src/config/server-session";
 import type { IdentityProvider } from "../../src/auth/authorization-server";
 
-export function setViewport(width: number): void {
+export function setViewport(width: number, height = 768): void {
 	Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
 	Object.defineProperty(document.documentElement, "clientWidth", {
 		configurable: true,
 		value: width,
+	});
+	Object.defineProperty(document.documentElement, "clientHeight", {
+		configurable: true,
+		value: height,
 	});
 	window.dispatchEvent(new Event("resize"));
 }

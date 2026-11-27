@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -45,19 +45,26 @@ export function TaskRow({
 	const { motion } = useContainer();
 	const metrics = rowMetrics(rowStyle);
 	const fill = useRef(new Animated.Value(task.completed ? 1 : 0)).current;
-	const filled = useRef(task.completed);
-	useEffect(() => {
-		if (filled.current === task.completed) {
+	const mark = useRef({ id: task.id, ticked: task.completed });
+	if (mark.current.id !== task.id) {
+		mark.current = { id: task.id, ticked: task.completed };
+	}
+	mark.current.ticked ||= task.completed;
+	const filled = useRef({ id: task.id, completed: task.completed });
+	useLayoutEffect(() => {
+		const before = filled.current;
+		filled.current = { id: task.id, completed: task.completed };
+		const reused = before.id !== task.id;
+		if (!reused && before.completed === task.completed) {
 			return;
 		}
-		filled.current = task.completed;
 		const toValue = task.completed ? 1 : 0;
-		if (motion.fillMs === 0) {
+		if (reused || motion.fillMs === 0) {
 			fill.setValue(toValue);
 			return;
 		}
 		Animated.timing(fill, { toValue, duration: motion.fillMs, useNativeDriver: false }).start();
-	}, [task.completed, motion.fillMs, fill]);
+	}, [task.id, task.completed, motion.fillMs, fill]);
 	return (
 		<View
 			{...({
@@ -87,9 +94,11 @@ export function TaskRow({
 			>
 				<View>
 					<Icon glyph="circle" size={22} color={palette.accent} />
-					<Animated.View style={{ position: "absolute", opacity: fill }}>
-						<CheckedCircle size={22} color={palette.accent} />
-					</Animated.View>
+					{mark.current.ticked ? (
+						<Animated.View style={{ position: "absolute", opacity: fill }}>
+							<CheckedCircle size={22} color={palette.accent} />
+						</Animated.View>
+					) : null}
 				</View>
 			</PressableSurface>
 			<PressableSurface

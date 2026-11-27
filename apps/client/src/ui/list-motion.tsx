@@ -1,10 +1,12 @@
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Animated, Easing, Platform } from "react-native";
+import { RowSlots } from "./row-slots";
 
 export interface MovingItem {
 	readonly key: string;
+	readonly kind: "task" | "section";
 	readonly estimatedHeight: number;
-	readonly element: ReactNode;
+	readonly render: () => ReactNode;
 }
 
 export interface MovingListProps {
@@ -24,13 +26,13 @@ interface Snapshot {
 export class ListPositions {
 	static of(
 		items: readonly MovingItem[],
-		heights: ReadonlyMap<string, number>,
+		heightOf: (key: string) => number | undefined,
 	): ReadonlyMap<string, number> {
 		let top = 0;
 		return new Map(
 			items.map((item) => {
 				const position = [item.key, top] as const;
-				top += heights.get(item.key) ?? item.estimatedHeight;
+				top += heightOf(item.key) ?? item.estimatedHeight;
 				return position;
 			}),
 		);
@@ -43,6 +45,9 @@ export function MovingList({ scope, trigger, raised, duration, items }: MovingLi
 	const heights = useRef(new Map<string, number>()).current;
 	const offsets = useRef(new Map<string, Animated.Value>()).current;
 	const previous = useRef<Snapshot | null>(null);
+	const [slots] = useState(() => new RowSlots());
+	const assigned = slots.assign(scope, items);
+	const slotOf = (key: string): string => assigned.get(key)!;
 	const offsetFor = (key: string): Animated.Value => {
 		const existing = offsets.get(key);
 		if (existing !== undefined) {
@@ -54,8 +59,11 @@ export function MovingList({ scope, trigger, raised, duration, items }: MovingLi
 	};
 	useLayoutEffect(() => {
 		const before = previous.current;
-		const positions = ListPositions.of(items, heights);
+		const positions = ListPositions.of(items, (key) => heights.get(slotOf(key)));
 		previous.current = { scope, trigger, positions };
+		if (before !== null && before.scope !== scope) {
+			offsets.forEach((offset) => offset.setValue(0));
+		}
 		if (duration === 0 || before?.scope !== scope || before.trigger === trigger) {
 			return;
 		}
@@ -64,7 +72,7 @@ export function MovingList({ scope, trigger, raised, duration, items }: MovingLi
 			if (from === undefined || from === position) {
 				continue;
 			}
-			const offset = offsetFor(key);
+			const offset = offsetFor(slotOf(key));
 			offset.setValue(from - position);
 			Animated.timing(offset, {
 				toValue: 0,
@@ -76,14 +84,14 @@ export function MovingList({ scope, trigger, raised, duration, items }: MovingLi
 	});
 	return items.map((item) => (
 		<Animated.View
-			key={item.key}
-			onLayout={(event) => heights.set(item.key, event.nativeEvent.layout.height)}
+			key={slotOf(item.key)}
+			onLayout={(event) => heights.set(slotOf(item.key), event.nativeEvent.layout.height)}
 			style={{
 				zIndex: raised.has(item.key) ? 1 : 0,
-				transform: [{ translateY: offsetFor(item.key) }],
+				transform: [{ translateY: offsetFor(slotOf(item.key)) }],
 			}}
 		>
-			{item.element}
+			{item.render()}
 		</Animated.View>
 	));
 }

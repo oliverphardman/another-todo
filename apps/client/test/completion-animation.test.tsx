@@ -156,8 +156,13 @@ describe("completing a task with motion", () => {
 
 describe("ListPositions", () => {
 	it("stacks measured heights, estimating the ones not yet measured", () => {
-		const items = ["a", "b", "c"].map((key) => ({ key, estimatedHeight: 10, element: null }));
-		expect([...ListPositions.of(items, new Map([["a", 70]]))]).toEqual([
+		const items = ["a", "b", "c"].map((key) => ({
+			key,
+			kind: "task" as const,
+			estimatedHeight: 10,
+			render: () => null,
+		}));
+		expect([...ListPositions.of(items, (key) => (key === "a" ? 70 : undefined))]).toEqual([
 			["a", 0],
 			["b", 70],
 			["c", 80],

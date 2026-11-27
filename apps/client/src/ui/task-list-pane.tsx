@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { TextField } from "./text-field";
 import { DueDay } from "../domain/due-day";
@@ -31,6 +31,7 @@ import { TaskRow } from "./task-row";
 import { TaskSubtitleParts } from "./task-subtitle";
 import { rowMetrics } from "./row-metrics";
 import { MovingList, type MovingItem } from "./list-motion";
+import { useRowWindow } from "./row-window";
 
 export interface TaskListPaneProps {
 	readonly mode: LayoutMode;
@@ -108,18 +109,22 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const completedIds = state.tasks.filter((task) => task.completed).map((task) => task.id);
 	const moved = useRef({ trigger: "", ids: new Set<string>(), completed: completedIds });
 	const trigger = completedIds.join(" ");
+	const known = useRef(new Set<string>());
 	if (moved.current.trigger !== trigger) {
 		const before = new Set(moved.current.completed);
 		const after = new Set(completedIds);
 		moved.current = {
 			trigger,
 			completed: completedIds,
-			ids: new Set([
-				...completedIds.filter((id) => !before.has(id)),
-				...[...before].filter((id) => !after.has(id)),
-			]),
+			ids: new Set(
+				[
+					...completedIds.filter((id) => !before.has(id)),
+					...[...before].filter((id) => !after.has(id)),
+				].filter((id) => known.current.has(id)),
+			),
 		};
 	}
+	known.current = new Set(state.tasks.map((task) => task.id));
 	const row = (task: Task) => (
 		<TaskRow
 			rowStyle={rowStyle}
@@ -129,7 +134,6 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					? (event) => beginDrag(task.id, event)
 					: null
 			}
-			key={task.id}
 			task={task}
 			subtitle={TaskSubtitleParts.of(task, view, store, i18n)}
 			overdue={task.dueDay !== null && DueDay.isOverdue(task.dueDay, today)}
@@ -167,8 +171,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const rows = (tasks: readonly Task[]): MovingItem[] =>
 		tasks.map((task) => ({
 			key: task.id,
+			kind: "task",
 			estimatedHeight: rowMetrics(rowStyle).pitch,
-			element: row(task),
+			render: () => row(task),
 		}));
 	const section = (
 		key: string,
@@ -183,8 +188,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			: [
 					{
 						key,
+						kind: "section",
 						estimatedHeight: SECTION_HEIGHT,
-						element: (
+						render: () => (
 							<SectionHeader
 								title={title}
 								toggleLabel={toggleLabel}
@@ -214,6 +220,11 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			done,
 		),
 	];
+	const shownRows = useRowWindow(view.id, rowMetrics(rowStyle).pitch, items, moved.current.ids);
+	const scroller = useRef<ScrollView>(null);
+	useLayoutEffect(() => {
+		scroller.current?.scrollTo({ y: 0, animated: false });
+	}, [view.id]);
 	const addBar = (
 		<AddTaskBar placeholder={t("task.add")} onSubmit={(text) => store.addTask(text)} />
 	);
@@ -283,6 +294,10 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			</View>
 			<SortChip />
 			<ScrollView
+				ref={scroller}
+				onScroll={shownRows.onScroll}
+				onLayout={shownRows.onLayout}
+				scrollEventThrottle={16}
 				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{
 					flexGrow: 1,
@@ -301,7 +316,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					trigger={trigger}
 					raised={moved.current.ids}
 					duration={motion.travelMs}
-					items={items}
+					items={shownRows.items}
 				/>
 			</ScrollView>
 			{view.allowsAdding && addTaskPosition === "bottom" ? (
