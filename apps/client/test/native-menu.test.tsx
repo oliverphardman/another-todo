@@ -211,6 +211,26 @@ describe("native menu icons", () => {
 	});
 });
 
+describe("sort menu icons", () => {
+	const expected = [
+		["Importance", "star"],
+		["Alphabetically", "arrowsUpDown"],
+		["Due Date", "dueDate"],
+		["Creation Date", "createdDate"],
+		["Added to My Day", "sun"],
+	] as const;
+
+	it("gives each native sort option its own icon", async () => {
+		await start();
+		fireEvent.click(screen.getByLabelText("List options"));
+		await waitFor(() => expect(fake().shown).toHaveLength(1));
+		const sort = fake().shown[0]!.find((item) => item.label === "Sort")!;
+		expect(sort.children!.map((item) => [item.label, item.icon])).toEqual(
+			expected.map(([label, glyph]) => [label, IconArtwork.svg(glyph)]),
+		);
+	});
+});
+
 describe("native context menus", () => {
 	async function withTask() {
 		const app = await start();

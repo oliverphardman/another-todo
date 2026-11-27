@@ -35,6 +35,8 @@ const GLYPHS: IconGlyph[] = [
 	"print",
 	"arrowsUpDown",
 	"calendarPlus",
+	"dueDate",
+	"createdDate",
 	"plus",
 	"calendar",
 	"home",

@@ -1,21 +1,13 @@
 import { useI18n } from "../i18n/i18n-context";
-import { SORT_OPTIONS, type SortKey } from "../domain/view-settings";
+import { SORT_OPTIONS } from "../domain/view-settings";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
-import type { IconGlyph } from "./icon";
 import { MenuDivider, MenuItem, MenuOverlay, MenuPanel } from "./menu";
+import { SORT_GLYPHS } from "./sort-glyphs";
 import { ThemePanel } from "./theme-panel";
 import { usePrintList } from "./use-print-list";
 
 export type ListPanel = "menu" | "sort" | "theme";
-
-const SORT_GLYPHS: Record<SortKey, IconGlyph> = {
-	importance: "star",
-	alphabetical: "arrowsUpDown",
-	due: "calendar",
-	created: "calendarPlus",
-	myDay: "sun",
-};
 
 const TOP = 56;
 const MAIN_WIDTH = 240;

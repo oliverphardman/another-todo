@@ -20,6 +20,8 @@ export type IconGlyph =
 	| "search"
 	| "arrowsUpDown"
 	| "calendarPlus"
+	| "dueDate"
+	| "createdDate"
 	| "bell"
 	| "repeat"
 	| "tag"
@@ -108,6 +110,12 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
 	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },
 	calendarPlus: { d: "M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4M12 12.5v4M10 14.5h4" },
+	dueDate: {
+		d: "M7.5 4.5h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3zM4.5 9h15M8.5 2.8v1.7M15.5 2.8v1.7M8.2 13.8a.8.8 0 1 0 1.6 0 .8.8 0 0 0-1.6 0",
+	},
+	createdDate: {
+		d: "M17.4 11.3a7.5 7.5 0 1 0-6.1 6.1M10 6.8v6.4M6.8 10h6.4M15.8 14.8h3.9a1.5 1.5 0 0 1 1.5 1.5v3.4a1.5 1.5 0 0 1-1.5 1.5h-3.9a1.5 1.5 0 0 1-1.5-1.5v-3.4a1.5 1.5 0 0 1 1.5-1.5zM14.8 17.9h5.9M14.8 19.1h5.9M15.2 20.2h5.1",
+	},
 	move: { d: "M5 12h14M14 7l5 5-5 5" },
 	star: {
 		d: "M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z",

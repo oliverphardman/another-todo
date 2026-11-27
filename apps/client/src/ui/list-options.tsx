@@ -3,6 +3,7 @@ import type { TaskView } from "../domain/task-view";
 import type { I18n } from "../i18n/i18n";
 import type { TodoStore } from "../state/todo-store";
 import type { ContextMenuEntry } from "./context-menu";
+import { SORT_GLYPHS } from "./sort-glyphs";
 import { ThemePanel } from "./theme-panel";
 
 export interface ListOptionsContext {
@@ -40,7 +41,7 @@ export function buildListOptions({
 			entries: SORT_OPTIONS.map((option): ContextMenuEntry => ({
 				kind: "action",
 				key: `sort-${option.key}`,
-				glyph: "sort",
+				glyph: SORT_GLYPHS[option.key],
 				label: t(option.labelKey),
 				checked: settings.sort === option.key,
 				onPress: () =>
