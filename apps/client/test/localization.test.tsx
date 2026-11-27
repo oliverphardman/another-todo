@@ -104,6 +104,15 @@ describe("every user-visible string comes from the message catalog", () => {
 		expect(unlocalized()).toEqual([]);
 	});
 
+	it("the desktop layout choice", async () => {
+		await start({ platform: "macos" });
+		byText("layout.prompt");
+		byLabel("settings.rowCozy");
+		byLabel("settings.rowCompact");
+		byText("layout.later");
+		expect(unlocalized()).toEqual([]);
+	});
+
 	it("the notice banner", async () => {
 		await start({ config: { notice: "Public demo" } });
 		byLabel("notice.dismiss");

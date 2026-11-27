@@ -18,6 +18,7 @@ import { SlidingPane } from "./sliding-pane";
 import { CenteredScreen } from "./centered-screen";
 import { DrawerLayout } from "./drawer-layout";
 import { KeyboardSafe } from "./keyboard-safe";
+import { LayoutChoiceScreen } from "./layout-choice-screen";
 import { ConsumedInsets } from "./safe-area";
 import { ThemeOverride } from "./theme-context";
 import { useBackHandler } from "./use-back-handler";
@@ -31,15 +32,18 @@ export interface AppShellProps {
 	readonly providers: readonly IdentityProvider[];
 }
 
+const DESKTOP_PLATFORMS: readonly string[] = ["macos", "windows"];
+
 function ThemedArea({ children }: { children: ReactNode }) {
 	const { overrides } = useListTheme();
 	return <ThemeOverride overrides={overrides}>{children}</ThemeOverride>;
 }
 
 export function AppShell({ providers }: AppShellProps) {
-	const { auth } = useContainer();
+	const { auth, settings, platform } = useContainer();
 	const { t } = useI18n();
 	const status = useObservable(auth);
+	useObservable(settings);
 	if (status === "loading") {
 		return (
 			<CenteredScreen>
@@ -49,6 +53,9 @@ export function AppShell({ providers }: AppShellProps) {
 	}
 	if (status === "signedOut") {
 		return <SignInScreen providers={providers} />;
+	}
+	if (DESKTOP_PLATFORMS.includes(platform) && !settings.rowStyleChosen) {
+		return <LayoutChoiceScreen />;
 	}
 	return (
 		<ConfirmHost>

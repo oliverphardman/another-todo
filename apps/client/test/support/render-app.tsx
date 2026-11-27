@@ -24,6 +24,7 @@ export function setViewport(width: number, height = 768): void {
 
 export interface RenderOptions {
 	readonly width?: number;
+	readonly platform?: string;
 	readonly signedIn?: boolean;
 	readonly restore?: boolean;
 	readonly scheme?: "light" | "dark";
@@ -46,11 +47,13 @@ export async function renderApp(options: RenderOptions = {}) {
 		options.microsoftAvailable,
 		options.config,
 		options.server,
+		options.platform,
 	);
 	for (const [key, value] of Object.entries(options.saved ?? {})) {
 		await test.dataStore.set(key, value);
 	}
 	await test.container.paneWidths.load();
+	await test.container.settings.load();
 	if (options.accessToken !== undefined) {
 		test.authorizationServer.authorizeResult = {
 			accessToken: options.accessToken,

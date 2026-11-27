@@ -1,14 +1,13 @@
 import { View } from "react-native";
-import { Task } from "../domain/task";
 import { useI18n } from "../i18n/i18n-context";
 import { OPTIONAL_LISTS } from "../state/app-settings";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { PressableSurface } from "./pressable-surface";
+import { RowPreview } from "./row-preview";
 import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-controls";
 import { useAccountAction, useMicrosoftSettings, type SyncDirectionKey } from "./settings-state";
-import { TaskRow } from "./task-row";
 import { TextField } from "./text-field";
 import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
@@ -28,7 +27,9 @@ export function AppearanceSection() {
 				]}
 				onChange={(next) => settings.change({ rowStyle: next })}
 			/>
-			<RowPreview />
+			<View accessibilityLabel={t("settings.preview")}>
+				<RowPreview rowStyle={rowStyle} titles={[t("settings.previewTask")]} />
+			</View>
 			<Choice
 				label={t("settings.addPosition")}
 				value={addTaskPosition}
@@ -39,41 +40,6 @@ export function AppearanceSection() {
 				onChange={(next) => settings.change({ addTaskPosition: next })}
 			/>
 		</SettingsSection>
-	);
-}
-
-const ignore = () => undefined;
-
-function RowPreview() {
-	const { settings, store } = useContainer();
-	const i18n = useI18n();
-	const { t } = i18n;
-	const palette = useTheme();
-	const { rowStyle } = useObservable(settings);
-	const example = Task.create("settings-preview", t("settings.previewTask"), "");
-	const subtitle = [{ text: t("view.tasks") }, { text: i18n.dueLabel(store.today, store.today) }];
-	return (
-		<View
-			accessibilityLabel={t("settings.preview")}
-			pointerEvents="none"
-			style={{ padding: 8, borderRadius: 6, backgroundColor: palette.background }}
-		>
-			<View aria-hidden importantForAccessibility="no-hide-descendants">
-				<TaskRow
-					task={example}
-					subtitle={subtitle}
-					overdue={false}
-					selected={false}
-					rowStyle={rowStyle}
-					onToggleCompleted={ignore}
-					onToggleImportant={ignore}
-					onSelect={ignore}
-					marker={null}
-					onDragStart={null}
-					buildMenu={() => []}
-				/>
-			</View>
-		</View>
 	);
 }
 

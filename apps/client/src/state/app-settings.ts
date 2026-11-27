@@ -61,6 +61,10 @@ export class AppSettings extends Observable<AppSettingsState> {
 		this.defaults = defaults;
 	}
 
+	get rowStyleChosen(): boolean {
+		return this.overrides.rowStyle !== undefined;
+	}
+
 	static minutes(value: number): number {
 		return Math.round(Math.min(SYNC_MINUTES.max, Math.max(SYNC_MINUTES.min, value)));
 	}
