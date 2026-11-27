@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.1](https://github.com/oliverphardman/another-todo/compare/v1.6.0...v1.6.1) (2026-11-27)
+
+
+### Fixes
+
+* **client:** bundle the preset photos in the Windows app ([e482c97](https://github.com/oliverphardman/another-todo/commit/e482c976f6d7ce3944147d6b6c17c473032281c3))
+* **client:** bundle the preset photos in the Windows app ([#24](https://github.com/oliverphardman/another-todo/issues/24)) ([12ec4d1](https://github.com/oliverphardman/another-todo/commit/12ec4d17da7e56f3e3af6b32089dece53d802131))
+
 ## [1.6.0](https://github.com/oliverphardman/another-todo/compare/v1.5.2...v1.6.0) (2026-11-27)
 
 
