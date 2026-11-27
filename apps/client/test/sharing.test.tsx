@@ -162,6 +162,7 @@ describe("sharing a list", () => {
 			"Change Theme…",
 			"Duplicate List",
 			"Print List",
+			"Export List…",
 			"Hide Completed Tasks",
 			"Delete List",
 		]);

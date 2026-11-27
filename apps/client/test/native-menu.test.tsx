@@ -201,12 +201,16 @@ describe("native menu icons", () => {
 			.join(",")
 			.split(",|,");
 		expect(sections[0]!.startsWith("Create Group,")).toBe(true);
-		expect(sections.slice(1)).toEqual(["Share List,Rename List,Print List", "Delete List"]);
+		expect(sections.slice(1)).toEqual([
+			"Share List,Rename List,Print List,Export List…",
+			"Delete List",
+		]);
 		const icon = (label: string) => items.find((item) => item.label === label)!.icon;
 		expect(icon("Create Group")).toBe(IconArtwork.svg("group"));
 		expect(icon("Share List")).toBe(IconArtwork.svg("addPerson"));
 		expect(icon("Rename List")).toBe(IconArtwork.svg("rename"));
 		expect(icon("Print List")).toBe(IconArtwork.svg("print"));
+		expect(icon("Export List…")).toBe(IconArtwork.svg("export"));
 		expect(icon("Delete List")).toBe(IconArtwork.svg("trash"));
 	});
 });

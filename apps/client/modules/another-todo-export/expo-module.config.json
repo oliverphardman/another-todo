@@ -1,0 +1,9 @@
+{
+	"platforms": ["ios", "android"],
+	"ios": {
+		"modules": ["AnotherToDoExportModule"]
+	},
+	"android": {
+		"modules": ["dev.oliverhardman.anothertodo.export.AnotherToDoExportModule"]
+	}
+}

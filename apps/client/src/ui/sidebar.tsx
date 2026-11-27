@@ -22,6 +22,7 @@ import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
 import { buildListContextMenu } from "./list-context-menu";
 import { usePrintList } from "./use-print-list";
+import { useExportActions } from "./export-host";
 import { fontStyle } from "./typeface";
 import { insetPadding, useInsets } from "./safe-area";
 import { StatusBarTone } from "./status-bar-tone";
@@ -44,6 +45,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const dark = useIsDark();
 	const metrics = useMenuMetrics();
 	const print = usePrintList();
+	const exportList = useExportActions()?.exportView ?? null;
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
 		const entries: ContextMenuEntry[] = [
@@ -204,6 +206,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			i18n,
 			listId: viewId,
 			print,
+			exportList,
 			onRename: () => {
 				store.startRenaming(viewId);
 				onSelected();

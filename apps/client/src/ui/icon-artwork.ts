@@ -9,6 +9,7 @@ export type IconGlyph =
 	| "palette"
 	| "duplicate"
 	| "print"
+	| "export"
 	| "rename"
 	| "settings"
 	| "tick"
@@ -108,6 +109,7 @@ const PATHS: Record<IconGlyph, { d: string; fill?: boolean }> = {
 		d: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 19c0-3 3-5 6-5s6 2 6 5M16 6a3 3 0 0 1 0 5M17 14c2 .5 4 2 4 5",
 	},
 	print: { d: "M7 9V4h10v5M7 17H5V9h14v8h-2M7 14h10v6H7z" },
+	export: { d: "M12 15V4M8 8l4-4 4 4M7 11H5v9h14v-9h-2" },
 	arrowsUpDown: { d: "M8 19V5M5 8l3-3 3 3M16 5v14M13 16l3 3 3-3" },
 	calendarPlus: { d: "M5 5h14v15H5zM5 9.5h14M9 3v4M15 3v4M12 12.5v4M10 14.5h4" },
 	dueDate: {

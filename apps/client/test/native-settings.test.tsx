@@ -87,6 +87,7 @@ describe("the macOS settings window", () => {
 			"Server",
 			"Lists",
 			"My Day",
+			"Export",
 			"",
 		]);
 		expect(native.row("preview")).toMatchObject({

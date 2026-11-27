@@ -9,6 +9,7 @@ import { useLayoutMode, useObservable } from "./hooks";
 import { Layout } from "./theme";
 import { ConfirmHost, useConfirm } from "./confirm";
 import { ContextMenuHost } from "./context-menu";
+import { ExportHost } from "./export-host";
 import { MenuBarSync } from "./menu-bar-sync";
 import { NativeSettingsSync } from "./native-settings-sync";
 import { NoticeBanner } from "./notice-banner";
@@ -60,15 +61,17 @@ export function AppShell({ providers }: AppShellProps) {
 	return (
 		<ConfirmHost>
 			<ContextMenuHost>
-				<SettingsHost>
-					<MenuBarSync />
-					<NativeSettingsSync />
-					<KeyboardSafe>
-						<NoticeBanner>
-							<MainLayout />
-						</NoticeBanner>
-					</KeyboardSafe>
-				</SettingsHost>
+				<ExportHost>
+					<SettingsHost>
+						<MenuBarSync />
+						<NativeSettingsSync />
+						<KeyboardSafe>
+							<NoticeBanner>
+								<MainLayout />
+							</NoticeBanner>
+						</KeyboardSafe>
+					</SettingsHost>
+				</ExportHost>
 			</ContextMenuHost>
 		</ConfirmHost>
 	);

@@ -1,0 +1,41 @@
+@startuml export
+title Exporting lists
+
+skinparam componentStyle rectangle
+
+package "UI" {
+  component "List options menu\nSidebar list menu\nmacOS List menu" as Menus
+  component "Settings\n(in app and macOS window)" as Settings
+  component "ExportHost\nExportDialog" as Dialog
+}
+
+package "Export (client only, works offline)" {
+  component "Exporter" as Exporter
+  component "ExportDocumentBuilder\nViewSelection / ListsSelection" as Builder
+  component "ExportFormat\nCSV / XLSX / JSON / PDF" as Formats
+  interface "FileSaver" as Saver
+  interface "PdfRenderer" as Pdf
+}
+
+component "TodoStore" as Store
+
+package "Platform adapters" {
+  component "BrowserFileSaver\n(save picker or download)" as Browser
+  component "ModuleFileSaver\nAnotherToDoExport module:\nNSSavePanel / document picker /\nStorage Access Framework / IFileSaveDialog" as Module
+  component "CanvasPdfRenderer\n(web)" as Canvas
+  component "HtmlPdfRenderer\nWKWebView (macOS)\nWebView2 (Windows)\nexpo-print (iOS, Android)" as Html
+}
+
+Menus --> Dialog : current list
+Settings --> Dialog : choose lists
+Dialog --> Exporter
+Exporter --> Builder
+Builder --> Store
+Exporter --> Formats
+Formats --> Pdf
+Exporter --> Saver
+Saver <|.. Browser
+Saver <|.. Module
+Pdf <|.. Canvas
+Pdf <|.. Html
+@enduml

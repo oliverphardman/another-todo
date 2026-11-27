@@ -9,6 +9,7 @@ export interface MenuBarContext {
 	readonly store: TodoStore;
 	readonly i18n: I18n;
 	readonly print: () => void;
+	readonly exportList: (() => void) | null;
 	readonly deleteTasks: (taskIds: readonly string[]) => void;
 	readonly logOut: (() => void) | null;
 }
@@ -77,9 +78,9 @@ export class MenuBarMenus {
 		];
 	}
 
-	private static list({ store, i18n, print }: MenuBarContext): ContextMenuEntry[] {
+	private static list({ store, i18n, print, exportList }: MenuBarContext): ContextMenuEntry[] {
 		const view = store.selectedView;
-		const options = buildListOptions({ store, i18n, view, print });
+		const options = buildListOptions({ store, i18n, view, print, exportList });
 		if (!view.isCustomList) {
 			return options;
 		}
@@ -88,6 +89,7 @@ export class MenuBarMenus {
 			i18n,
 			listId: view.id,
 			print,
+			exportList,
 			onRename: () => store.startRenaming(view.id),
 		});
 		const shared = new Set(actions.map((entry) => entry.key));

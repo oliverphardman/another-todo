@@ -170,3 +170,5 @@ infra/.build/
 .claude/worktrees/
 
 TODO.md
+
+.DS_Store

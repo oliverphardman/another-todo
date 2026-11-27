@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useI18n } from "../i18n/i18n-context";
 import { useContainer } from "./container-context";
+import { useExportActions } from "./export-host";
 import { useObservable } from "./hooks";
 import { NativeSettings } from "./native-settings";
 import { NativeSettingsForm } from "./native-settings-form";
@@ -41,6 +42,7 @@ function NativeSettingsWindow() {
 	const microsoft = useMicrosoftSettings();
 	const account = useAccountAction();
 	const signedOut = useSignedOutMessage();
+	const exportLists = useExportActions()?.exportLists ?? null;
 	const form = new NativeSettingsForm({
 		settings,
 		i18n,
@@ -48,6 +50,7 @@ function NativeSettingsWindow() {
 		serverUrl: config.serverUrl,
 		microsoft,
 		account,
+		exportLists,
 	});
 	const latest = useRef(form);
 	latest.current = form;

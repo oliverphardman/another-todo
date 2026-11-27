@@ -1,0 +1,15 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'dev.oliverhardman.anothertodo.export'
+version = '1.0.0'
+
+android {
+  namespace 'dev.oliverhardman.anothertodo.export'
+  defaultConfig {
+    versionCode 1
+    versionName '1.0.0'
+  }
+}

@@ -23,17 +23,29 @@ export interface CheckboxProps {
 	readonly checked: boolean;
 	readonly onChange: (checked: boolean) => void;
 	readonly disabled?: boolean;
+	readonly mixed?: boolean;
 	readonly hint?: string;
+	readonly heading?: string;
 }
 
-export function Checkbox({ label, checked, onChange, disabled = false, hint }: CheckboxProps) {
+export function Checkbox({
+	label,
+	checked,
+	onChange,
+	disabled = false,
+	mixed = false,
+	hint,
+	heading,
+}: CheckboxProps) {
 	const palette = useTheme();
+	const state = mixed ? "mixed" : checked;
+	const filled = state !== false;
 	return (
 		<PressableSurface
 			accessibilityRole="checkbox"
 			accessibilityLabel={label}
-			accessibilityState={{ checked, disabled }}
-			aria-checked={checked}
+			accessibilityState={{ checked: state, disabled }}
+			aria-checked={state}
 			disabled={disabled}
 			onPress={() => onChange(!checked)}
 			style={{
@@ -49,16 +61,23 @@ export function Checkbox({ label, checked, onChange, disabled = false, hint }: C
 					height: 18,
 					borderRadius: 3,
 					borderWidth: 1.5,
-					borderColor: checked ? palette.accent : palette.textSecondary,
-					backgroundColor: checked ? palette.accent : "transparent",
+					borderColor: filled ? palette.accent : palette.textSecondary,
+					backgroundColor: filled ? palette.accent : "transparent",
 					alignItems: "center",
 					justifyContent: "center",
 				}}
 			>
-				{checked ? <Icon glyph="tick" size={14} color={palette.surface} strokeWidth={3} /> : null}
+				{state === true ? (
+					<Icon glyph="tick" size={14} color={palette.surface} strokeWidth={3} />
+				) : null}
+				{state === "mixed" ? (
+					<View style={{ width: 8, height: 2, backgroundColor: palette.surface }} />
+				) : null}
 			</View>
 			<View style={{ flex: 1, marginLeft: 10 }}>
-				<AppText size={14}>{label}</AppText>
+				<AppText size={14} weight={heading === undefined ? "400" : "600"}>
+					{heading ?? label}
+				</AppText>
 				{hint === undefined ? null : (
 					<AppText size={12} tone="secondary">
 						{hint}

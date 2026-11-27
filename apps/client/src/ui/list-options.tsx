@@ -11,6 +11,7 @@ export interface ListOptionsContext {
 	readonly i18n: I18n;
 	readonly view: TaskView;
 	readonly print: () => void;
+	readonly exportList: (() => void) | null;
 }
 
 export function buildListOptions({
@@ -18,6 +19,7 @@ export function buildListOptions({
 	i18n,
 	view,
 	print,
+	exportList,
 }: ListOptionsContext): ContextMenuEntry[] {
 	const { t } = i18n;
 	const settings = store.settingsFor(view.id);
@@ -75,6 +77,15 @@ export function buildListOptions({
 		label: t("menu.print"),
 		onPress: print,
 	});
+	if (exportList !== null) {
+		entries.push({
+			kind: "action",
+			key: "export",
+			glyph: "export",
+			label: t("ctx.exportList"),
+			onPress: exportList,
+		});
+	}
 	if (view.separatesCompleted) {
 		entries.push({
 			kind: "action",
