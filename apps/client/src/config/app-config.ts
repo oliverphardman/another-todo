@@ -15,6 +15,7 @@ export interface AppConfig {
 	readonly notice: string | null;
 	readonly maxUploadBytes: number;
 	readonly defaultSettings: unknown;
+	readonly presetThemes: boolean;
 }
 
 export interface BuildConfig {
@@ -36,6 +37,7 @@ export interface ServerInfo {
 	readonly signIn: SignInSettings | null;
 	readonly maxUploadBytes: number;
 	readonly defaultSettings: unknown;
+	readonly presetThemes: boolean;
 }
 
 export interface RuntimeConfig {
@@ -74,6 +76,7 @@ export class AppConfigReader {
 			notice: info.notice,
 			maxUploadBytes: info.maxUploadBytes,
 			defaultSettings: info.defaultSettings,
+			presetThemes: info.presetThemes,
 		};
 	}
 

@@ -53,7 +53,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const [showDone, setShowDone] = useState(true);
 	const [showYesterday, setShowYesterday] = useState(true);
 	const [panel, setPanel] = useState<ListPanel | null>(null);
-	const { imageUrl } = useListTheme();
+	const { image } = useListTheme();
 	const view = store.selectedView;
 	const print = usePrintList();
 	const options = useContextMenuTrigger(t("list.options"), () =>
@@ -235,7 +235,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 		/>
 	);
 	return (
-		<PaneBackground imageUrl={imageUrl}>
+		<PaneBackground image={image}>
 			<StatusBarTone foreground={palette.onAccent} />
 			<SyncBanner />
 			<View

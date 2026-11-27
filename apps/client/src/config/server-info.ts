@@ -38,6 +38,7 @@ export class ServerInfoLoader {
 						? body.maxUploadBytes
 						: UNADVERTISED_UPLOAD_BYTES,
 				defaultSettings: body.defaultSettings ?? null,
+				presetThemes: body.presetThemes === true,
 			};
 		} catch {
 			throw new ServerUnreachableError(serverUrl);

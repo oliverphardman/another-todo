@@ -1,10 +1,11 @@
+import type { ImageSourcePropType } from "react-native";
 import type { ThemeSetting } from "../domain/view-settings";
 import { ColorMath } from "./color-math";
 import { DARK, type Palette } from "./theme";
 
 export interface ResolvedTheme {
 	readonly overrides: Partial<Palette>;
-	readonly imageUrl: string | null;
+	readonly image: ImageSourcePropType | null;
 }
 
 const MINIMUM_CONTRAST = 4.5;
@@ -12,7 +13,7 @@ const MINIMUM_CONTRAST = 4.5;
 export class ListTheme {
 	static resolve(
 		setting: ThemeSetting | null,
-		photoUrl: string | null,
+		image: ImageSourcePropType | null,
 		dark: boolean,
 		defaultColor: string,
 	): ResolvedTheme {
@@ -26,19 +27,19 @@ export class ListTheme {
 				)
 			: ColorMath.ensureContrast(color, "#ffffff", MINIMUM_CONTRAST, "#000000");
 		const accentSoft = ColorMath.mix(accent, dark ? "#000000" : "#ffffff", dark ? 0.65 : 0.85);
-		if (setting?.type === "photo" && photoUrl !== null) {
+		if (image !== null) {
 			return {
 				overrides: { accent, accentSoft, onAccent: "#ffffff", title: "#ffffff" },
-				imageUrl: photoUrl,
+				image,
 			};
 		}
 		if (dark) {
-			return { overrides: { accent, accentSoft, title: accent }, imageUrl: null };
+			return { overrides: { accent, accentSoft, title: accent }, image: null };
 		}
 		const onAccent = ColorMath.readableOn(color);
 		return {
 			overrides: { background: color, onAccent, title: onAccent, accent, accentSoft },
-			imageUrl: null,
+			image: null,
 		};
 	}
 }

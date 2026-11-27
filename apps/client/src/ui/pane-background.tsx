@@ -1,19 +1,19 @@
 import { useI18n } from "../i18n/i18n-context";
 import type { ReactNode } from "react";
-import { Image, Platform, View, useWindowDimensions } from "react-native";
+import { Image, Platform, View, useWindowDimensions, type ImageSourcePropType } from "react-native";
 import { useTheme } from "./theme-context";
 import { SafeArea } from "./safe-area";
 
 export function PaneBackground({
-	imageUrl,
+	image,
 	children,
 }: {
-	imageUrl: string | null;
+	image: ImageSourcePropType | null;
 	children: ReactNode;
 }) {
 	const palette = useTheme();
 	const { t } = useI18n();
-	if (imageUrl === null) {
+	if (image === null) {
 		return (
 			<View style={{ flex: 1, backgroundColor: palette.background }}>
 				<SafeArea>{children}</SafeArea>
@@ -34,7 +34,7 @@ export function PaneBackground({
 		>
 			<Image
 				accessibilityLabel={t("list.backgroundPhoto")}
-				source={{ uri: imageUrl }}
+				source={image}
 				resizeMode="cover"
 				style={
 					Platform.OS === "web"

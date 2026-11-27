@@ -33,6 +33,7 @@ export const TEST_CONFIG: AppConfig = {
 	notice: null,
 	maxUploadBytes: 25 * 1024 * 1024,
 	defaultSettings: null,
+	presetThemes: true,
 };
 
 export interface TestContainer {

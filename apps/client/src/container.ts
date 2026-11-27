@@ -16,6 +16,7 @@ import { MicrosoftSession } from "./microsoft/microsoft-session";
 import { MicrosoftSyncEngine } from "./microsoft/microsoft-sync-engine";
 import { MicrosoftSyncService } from "./microsoft/microsoft-sync-service";
 import { PhotoLibrary } from "./photos/photo-library";
+import { PRESET_PHOTOS, type PresetPhoto } from "./photos/preset-photos";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { ExpoListPrinter } from "./print/expo-list-printer";
 import type { ListPrinter } from "./print/list-print-document";
@@ -57,6 +58,7 @@ export interface Container {
 	readonly store: TodoStore;
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
+	readonly presetPhotos: readonly PresetPhoto[];
 	readonly attachments: TaskAttachments;
 	readonly reminders: ReminderService;
 	readonly printer: ListPrinter;
@@ -189,6 +191,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		microsoft,
 		sync,
 		photos,
+		presetPhotos: config.presetThemes ? PRESET_PHOTOS : [],
 		attachments,
 		reminders,
 		printer: overrides.printer ?? new ExpoListPrinter(),
