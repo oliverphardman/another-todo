@@ -1,15 +1,30 @@
 import type { ThemeSetting } from "../domain/view-settings";
 import { ColorMath } from "./color-math";
-import { DARK, type Palette } from "./theme";
+import { DARK, LIGHT, type Palette } from "./theme";
 
 export interface ResolvedTheme {
 	readonly overrides: Partial<Palette>;
 	readonly imageUrl: string | null;
 }
 
+export type Tone = "light" | "dark";
+
+export type FieldColors = Pick<Palette, "addField" | "onAddField">;
+
 const MINIMUM_CONTRAST = 4.5;
+const LIGHT_FIELD_SHADE = 0.18;
+const DARK_FIELD_SHADE = 0.65;
+
+const PHOTO_FIELDS: Readonly<Record<Tone, FieldColors>> = {
+	light: { addField: LIGHT.surface, onAddField: LIGHT.text },
+	dark: { addField: DARK.surface, onAddField: DARK.text },
+};
 
 export class ListTheme {
+	static photoField(tone: Tone): FieldColors {
+		return PHOTO_FIELDS[tone];
+	}
+
 	static resolve(
 		setting: ThemeSetting | null,
 		photoUrl: string | null,
@@ -28,16 +43,24 @@ export class ListTheme {
 		const accentSoft = ColorMath.mix(accent, dark ? "#000000" : "#ffffff", dark ? 0.65 : 0.85);
 		if (setting?.type === "photo" && photoUrl !== null) {
 			return {
-				overrides: { accent, accentSoft, onAccent: "#ffffff", title: "#ffffff" },
+				overrides: {
+					accent,
+					accentSoft,
+					onAccent: "#ffffff",
+					title: "#ffffff",
+					...ListTheme.photoField(dark ? "dark" : "light"),
+				},
 				imageUrl: photoUrl,
 			};
 		}
+		const addField = ColorMath.mix(color, "#000000", dark ? DARK_FIELD_SHADE : LIGHT_FIELD_SHADE);
+		const field = { addField, onAddField: ColorMath.readableOn(addField) };
 		if (dark) {
-			return { overrides: { accent, accentSoft, title: accent }, imageUrl: null };
+			return { overrides: { accent, accentSoft, title: accent, ...field }, imageUrl: null };
 		}
 		const onAccent = ColorMath.readableOn(color);
 		return {
-			overrides: { background: color, onAccent, title: onAccent, accent, accentSoft },
+			overrides: { background: color, onAccent, title: onAccent, accent, accentSoft, ...field },
 			imageUrl: null,
 		};
 	}

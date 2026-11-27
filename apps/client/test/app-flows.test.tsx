@@ -17,7 +17,7 @@ async function start(options: Parameters<typeof renderApp>[0] = {}) {
 }
 
 function addTask(title: string): void {
-	const input = screen.getByLabelText("Add a task");
+	const input = screen.getByLabelText("Add a Task");
 	fireEvent.change(input, { target: { value: title } });
 	fireEvent.keyDown(input, { key: "Enter" });
 }
@@ -65,7 +65,7 @@ describe("expanded layout", () => {
 		addTask("Buy milk");
 		addTask("Call mum");
 		expect(screen.getByText("Buy milk")).toBeTruthy();
-		expect((screen.getByLabelText("Add a task") as HTMLInputElement).value).toBe("");
+		expect((screen.getByLabelText("Add a Task") as HTMLInputElement).value).toBe("");
 		fireEvent.click(screen.getAllByLabelText("Mark as completed")[0]!);
 		expect(screen.getByText("Completed 1")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Hide completed tasks"));
@@ -91,14 +91,15 @@ describe("expanded layout", () => {
 		expect(app.sounds.plays).toBe(2);
 	});
 
-	it("uses the Add button and ignores blank titles", async () => {
+	it("adds with Return alone and ignores blank titles", async () => {
 		await start();
-		const input = screen.getByLabelText("Add a task");
+		const input = screen.getByLabelText("Add a Task");
 		fireEvent.change(input, { target: { value: "   " } });
 		fireEvent.keyDown(input, { key: "Enter" });
-		fireEvent.change(input, { target: { value: "From button" } });
-		fireEvent.click(screen.getByLabelText("Add"));
-		expect(screen.getByText("From button")).toBeTruthy();
+		fireEvent.change(input, { target: { value: "From the keyboard" } });
+		expect(screen.queryByLabelText("Add")).toBeNull();
+		fireEvent.keyDown(input, { key: "Enter" });
+		expect(screen.getByText("From the keyboard")).toBeTruthy();
 	});
 
 	it("edits a task in the detail pane", async () => {
@@ -618,7 +619,7 @@ describe("expanded layout", () => {
 
 	it("renders in dark mode", async () => {
 		await start({ scheme: "dark" });
-		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
 	});
 
 	it("renders the medium layout", async () => {
@@ -646,7 +647,7 @@ describe("compact layout", () => {
 		fireEvent.click(screen.getByLabelText("Open Phone task"));
 		expect(screen.getByLabelText("Task details")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Close details"));
-		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
 	});
 
 	it("returns to the task list after creating a list from the sidebar", async () => {
@@ -914,7 +915,7 @@ describe("list options menu", () => {
 		open();
 		fireEvent.click(screen.getByLabelText("Print List"));
 		await waitFor(() => expect(app.printer.documents).toHaveLength(2));
-		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
 	});
 });
 
@@ -1334,7 +1335,7 @@ describe("search", () => {
 		expect(screen.getByRole("heading", { name: "Search" })).toBeTruthy();
 		expect(screen.getByLabelText("Open Buy milk")).toBeTruthy();
 		expect(screen.queryByLabelText("Open Call mom")).toBeNull();
-		expect(screen.queryByLabelText("Add a task")).toBeNull();
+		expect(screen.queryByLabelText("Add a Task")).toBeNull();
 		fireEvent.change(field, { target: { value: "oat" } });
 		expect(screen.getByLabelText("Open Buy milk")).toBeTruthy();
 		fireEvent.change(field, { target: { value: "hotel" } });
@@ -1342,7 +1343,7 @@ describe("search", () => {
 		fireEvent.keyDown(field, { key: "a" });
 		fireEvent.click(screen.getByLabelText("Clear search"));
 		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
-		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
 		fireEvent.change(field, { target: { value: "  " } });
 		expect(screen.getByRole("heading", { name: "Tasks" })).toBeTruthy();
 		fireEvent.change(field, { target: { value: "mom" } });

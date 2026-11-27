@@ -17,6 +17,11 @@ export class ColorMath {
 		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 	}
 
+	static brightness(color: string): number {
+		const [r, g, b] = ColorMath.channels(color);
+		return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+	}
+
 	static contrast(a: string, b: string): number {
 		const [light, dark] = [ColorMath.luminance(a), ColorMath.luminance(b)].sort(
 			(x, y) => y - x,

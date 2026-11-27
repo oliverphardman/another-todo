@@ -78,7 +78,7 @@ describe("resizing panes in the app", () => {
 	it("resizes the details pane from its left edge", async () => {
 		const app = await renderApp({ width: 1300 });
 		stop = app.stop;
-		const input = screen.getByLabelText("Add a task");
+		const input = screen.getByLabelText("Add a Task");
 		fireEvent.change(input, { target: { value: "Wide" } });
 		fireEvent.keyDown(input, { key: "Enter" });
 		fireEvent.click(screen.getByLabelText("Open Wide"));

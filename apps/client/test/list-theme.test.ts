@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { LIST_THEME_COLOR } from "../src/domain/view-settings";
 import { ColorMath } from "../src/ui/color-math";
 import { ListTheme } from "../src/ui/list-theme";
-import { DARK } from "../src/ui/theme";
+import { DARK, LIGHT } from "../src/ui/theme";
 
 describe("ColorMath", () => {
 	it("mixes colors by ratio", () => {
@@ -91,6 +91,43 @@ describe("ListTheme", () => {
 			expect(themed.overrides.background).toBeUndefined();
 			expect(themed.overrides.onAccent).toBe("#ffffff");
 		}
+	});
+
+	it("shades the add field from the theme color, keeping its text readable", () => {
+		const light = ListTheme.resolve(null, null, false, LIST_THEME_COLOR).overrides;
+		expect(light.addField).toBe(ColorMath.mix(LIST_THEME_COLOR, "#000000", 0.18));
+		expect(light.onAddField).toBe("#ffffff");
+		const dark = ListTheme.resolve(null, null, true, LIST_THEME_COLOR).overrides;
+		expect(dark.addField).toBe(ColorMath.mix(LIST_THEME_COLOR, "#000000", 0.65));
+		expect(dark.onAddField).toBe("#ffffff");
+		const peach = ListTheme.resolve(null, null, false, "#f9e7de").overrides;
+		expect(ColorMath.luminance(peach.addField!)).toBeLessThan(ColorMath.luminance("#f9e7de"));
+		expect(peach.onAddField).toBe("#1b1a19");
+	});
+
+	it("starts a photo's add field with the system's default look", () => {
+		const setting = { type: "photo", photoId: "p" } as const;
+		for (const [dark, tone] of [
+			[false, "light"],
+			[true, "dark"],
+		] as const) {
+			const themed = ListTheme.resolve(setting, "https://photos.test/p", dark, LIST_THEME_COLOR);
+			expect(themed.overrides).toMatchObject(ListTheme.photoField(tone));
+		}
+		expect(ListTheme.photoField("light")).toEqual({
+			addField: LIGHT.surface,
+			onAddField: LIGHT.text,
+		});
+		expect(ListTheme.photoField("dark")).toEqual({
+			addField: DARK.surface,
+			onAddField: DARK.text,
+		});
+	});
+
+	it("measures how bright a color looks", () => {
+		expect(ColorMath.brightness("#000000")).toBe(0);
+		expect(ColorMath.brightness("#ffffff")).toBeCloseTo(1, 5);
+		expect(ColorMath.brightness("#00ff00")).toBeGreaterThan(ColorMath.brightness("#0000ff"));
 	});
 
 	it("falls back to the color when the photo's link is not known", () => {

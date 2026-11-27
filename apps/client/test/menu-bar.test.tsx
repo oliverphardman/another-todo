@@ -61,7 +61,7 @@ async function start() {
 }
 
 function addTask(title: string): void {
-	const input = screen.getByLabelText("Add a task");
+	const input = screen.getByLabelText("Add a Task");
 	fireEvent.change(input, { target: { value: title } });
 	fireEvent.keyDown(input, { key: "Enter" });
 }

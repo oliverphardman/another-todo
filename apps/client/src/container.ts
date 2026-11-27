@@ -15,7 +15,10 @@ import { LinkRepository } from "./microsoft/microsoft-links";
 import { MicrosoftSession } from "./microsoft/microsoft-session";
 import { MicrosoftSyncEngine } from "./microsoft/microsoft-sync-engine";
 import { MicrosoftSyncService } from "./microsoft/microsoft-sync-service";
+import { createImageSampler } from "./photos/create-image-sampler";
+import type { ImageSampler } from "./photos/image-sampler";
 import { PhotoLibrary } from "./photos/photo-library";
+import { PhotoTones } from "./photos/photo-tones";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
 import { ExpoListPrinter } from "./print/expo-list-printer";
 import type { ListPrinter } from "./print/list-print-document";
@@ -57,6 +60,7 @@ export interface Container {
 	readonly store: TodoStore;
 	readonly sync: SyncCoordinator;
 	readonly photos: PhotoLibrary;
+	readonly photoTones: PhotoTones;
 	readonly attachments: TaskAttachments;
 	readonly reminders: ReminderService;
 	readonly printer: ListPrinter;
@@ -82,6 +86,7 @@ export interface ContainerOverrides {
 	readonly ids?: IdGenerator;
 	readonly sounds?: SoundPlayer;
 	readonly photoGateway?: PhotoGateway;
+	readonly imageSampler?: ImageSampler;
 	readonly photoPicker?: PhotoPicker;
 	readonly attachmentGateway?: AttachmentGateway;
 	readonly filePicker?: FilePicker;
@@ -189,6 +194,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		microsoft,
 		sync,
 		photos,
+		photoTones: new PhotoTones(overrides.imageSampler ?? createImageSampler()),
 		attachments,
 		reminders,
 		printer: overrides.printer ?? new ExpoListPrinter(),

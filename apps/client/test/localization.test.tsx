@@ -400,7 +400,7 @@ describe("localized dates", () => {
 		expect(screen.getByText("Colours")).toBeTruthy();
 		expect(screen.getByLabelText("Grey theme")).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("Close theme"));
-		const input = screen.getByLabelText("Add a task");
+		const input = screen.getByLabelText("Add a Task");
 		fireEvent.change(input, { target: { value: "Quokka" } });
 		fireEvent.keyDown(input, { key: "Enter" });
 		fireEvent.click(screen.getByLabelText("Open Quokka"));
@@ -412,6 +412,6 @@ describe("localized dates", () => {
 			stop = app.stop;
 		});
 		expect(screen.getByText("Thursday, November 19")).toBeTruthy();
-		expect(screen.getByLabelText("Add a task")).toBeTruthy();
+		expect(screen.getByLabelText("Add a Task")).toBeTruthy();
 	});
 });

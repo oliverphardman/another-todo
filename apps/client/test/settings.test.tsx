@@ -39,7 +39,7 @@ const press = async (element: HTMLElement) => {
 const checked = (element: HTMLElement) => element.getAttribute("aria-checked");
 
 function addTask(title: string): void {
-	const input = screen.getByLabelText("Add a task");
+	const input = screen.getByLabelText("Add a Task");
 	fireEvent.change(input, { target: { value: title } });
 	fireEvent.keyDown(input, { key: "Enter" });
 }
@@ -123,14 +123,14 @@ describe("appearance", () => {
 		expect([size("Water plants"), heading()]).toEqual(["15px", "28px"]);
 		act(() => app.container.settings.change({ rowStyle: "compact" }));
 		expect([size("Water plants"), heading()]).toEqual(["13px", "24px"]);
-		expect(screen.getByLabelText("Add a task").style.fontSize).toBe("13px");
+		expect(screen.getByLabelText("Add a Task").style.fontSize).toBe("13px");
 	});
 
 	it("moves the add task bar below the list", async () => {
 		const app = await start();
 		act(() => app.container.store.select("tasks"));
 		addTask("First");
-		const bar = () => screen.getByLabelText("Add a task");
+		const bar = () => screen.getByLabelText("Add a Task");
 		expect(follows(bar(), screen.getByText("First"))).toBe(true);
 		const settings = await openSettings();
 		await press(settings.getByLabelText("Bottom"));
@@ -146,7 +146,7 @@ describe("appearance", () => {
 		const app = await start({ width: 400 });
 		act(() => app.container.settings.change({ addTaskPosition: "bottom" }));
 		addTask("Narrow");
-		expect(follows(screen.getByText("Narrow"), screen.getByLabelText("Add a task"))).toBe(true);
+		expect(follows(screen.getByText("Narrow"), screen.getByLabelText("Add a Task"))).toBe(true);
 	});
 });
 
@@ -185,7 +185,7 @@ describe("optional lists", () => {
 		expect(screen.getByText("Swept")).toBeTruthy();
 		expect(screen.queryByText("Pending")).toBeNull();
 		expect(screen.getByLabelText("Open Swept").textContent).toContain("Home");
-		expect(screen.queryByLabelText("Add a task")).toBeNull();
+		expect(screen.queryByLabelText("Add a Task")).toBeNull();
 		expect(screen.queryByLabelText("Hide completed tasks")).toBeNull();
 		fireEvent.click(screen.getByLabelText("List options"));
 		expect(screen.queryByLabelText("Hide Completed Tasks")).toBeNull();

@@ -1,26 +1,24 @@
-import { useI18n } from "../i18n/i18n-context";
 import { useState } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
+import type { AddTaskPosition, RowStyle } from "../state/app-settings";
 import { TextField } from "./text-field";
-import { AppText } from "./app-text";
 import { Icon } from "./icon";
-import { PressableSurface } from "./pressable-surface";
 import { rowMetrics } from "./row-metrics";
-import type { RowStyle } from "../state/app-settings";
 import { fontStyle } from "./typeface";
-import { useTheme } from "./theme-context";
+import { useAddFieldColors } from "./use-add-field-colors";
 
 export interface AddTaskBarProps {
 	readonly rowStyle: RowStyle;
+	readonly position: AddTaskPosition;
 	readonly placeholder: string;
 	readonly onSubmit: (text: string) => void;
 }
 
-export function AddTaskBar({ rowStyle, placeholder, onSubmit }: AddTaskBarProps) {
-	const metrics = rowMetrics(rowStyle).addBar;
-	const palette = useTheme();
-	const { t } = useI18n();
+export function AddTaskBar({ rowStyle, position, placeholder, onSubmit }: AddTaskBarProps) {
+	const { addBar: metrics, circle } = rowMetrics(rowStyle);
+	const { addField, onAddField } = useAddFieldColors(position);
 	const [text, setText] = useState("");
+	const [focused, setFocused] = useState(false);
 	const submit = () => {
 		if (text.trim().length > 0) {
 			onSubmit(text);
@@ -32,20 +30,35 @@ export function AddTaskBar({ rowStyle, placeholder, onSubmit }: AddTaskBarProps)
 			style={{
 				flexDirection: "row",
 				alignItems: "center",
-				backgroundColor: palette.surface,
+				backgroundColor: addField,
 				borderRadius: 4,
 				paddingHorizontal: metrics.paddingHorizontal,
 				minHeight: metrics.height,
 				marginBottom: 8,
 			}}
 		>
-			<Icon glyph="plus" size={metrics.iconSize} color={palette.accent} />
+			<View style={{ width: metrics.iconSize, alignItems: "center" }}>
+				{focused || text.length > 0 ? (
+					<Icon
+						glyph="circle"
+						size={circle.size}
+						strokeWidth={circle.strokeWidth}
+						color={onAddField}
+					/>
+				) : (
+					<Icon glyph="plus" size={metrics.plusSize} color={onAddField} />
+				)}
+			</View>
 			<TextField
 				accessibilityLabel={placeholder}
 				placeholder={placeholder}
-				placeholderTextColor={palette.accent}
+				placeholderTextColor={onAddField}
+				cursorColor={onAddField}
+				selectionColor={Platform.OS === "ios" ? onAddField : undefined}
 				value={text}
 				onChangeText={setText}
+				onFocus={() => setFocused(true)}
+				onBlur={() => setFocused(false)}
 				onSubmitEditing={submit}
 				style={
 					{
@@ -53,24 +66,12 @@ export function AddTaskBar({ rowStyle, placeholder, onSubmit }: AddTaskBarProps)
 						marginLeft: metrics.gap,
 						...fontStyle(),
 						fontSize: metrics.fontSize,
-						color: palette.text,
+						color: onAddField,
 						paddingVertical: metrics.textPadding,
 						outlineStyle: "none",
 					} as object
 				}
 			/>
-			{text.trim().length === 0 ? null : (
-				<PressableSurface
-					accessibilityRole="button"
-					accessibilityLabel={t("task.addButton")}
-					onPress={submit}
-					style={{ paddingHorizontal: 12, paddingVertical: 6 }}
-				>
-					<AppText weight="600" style={{ color: palette.accent }}>
-						{t("task.addButton")}
-					</AppText>
-				</PressableSurface>
-			)}
 		</View>
 	);
 }

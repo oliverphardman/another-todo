@@ -162,7 +162,7 @@ describe("DrawerLayout", () => {
 			await later();
 			fireEvent.touchEnd(element, { touches: [], changedTouches: [touch(to)] });
 		};
-		await act(() => swipe(screen.getByLabelText("Add a task"), 20, 260));
+		await act(() => swipe(screen.getByLabelText("Add a Task"), 20, 260));
 		expect(screen.getByLabelText("Lists")).toBeTruthy();
 		await act(() => swipe(screen.getByLabelText("My Day"), 300, 40));
 		expect(screen.queryByLabelText("Lists")).toBeNull();
