@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 import { TextField } from "./text-field";
 import { Icon } from "./icon";
-import type { MenuMetrics } from "./menu-look";
+import type { MenuMetrics } from "./menu-metrics";
 import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 

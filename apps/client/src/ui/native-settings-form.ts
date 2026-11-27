@@ -8,7 +8,7 @@ import {
 } from "../state/app-settings";
 import type { NativeSettingsModel, NativeSettingsRow } from "./native-settings";
 import { STYLE_LABELS } from "./layout-labels";
-import { menuLook } from "./menu-look";
+import { menuMetrics } from "./menu-metrics";
 import { rowMetrics } from "./row-metrics";
 import type { AccountAction, MicrosoftSettingsState } from "./settings-state";
 
@@ -124,7 +124,7 @@ export class NativeSettingsForm {
 						key: "menuPreview",
 						label: t("view.myDay"),
 						value: menuStyle,
-						height: menuLook(menuStyle, "macos").metrics.rowHeight,
+						height: menuMetrics(menuStyle, "macos").rowHeight,
 					},
 				},
 				{

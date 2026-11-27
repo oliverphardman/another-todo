@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { menuLook } from "../src/ui/menu-look";
+import { menuMetrics } from "../src/ui/menu-metrics";
 import { NewListField } from "../src/ui/new-list-field";
 import { ThemeProvider } from "../src/ui/theme-context";
 
@@ -9,7 +9,7 @@ function renderField() {
 	const onCancel = vi.fn();
 	render(
 		<ThemeProvider scheme="light">
-			<NewListField metrics={menuLook("compact").metrics} onSubmit={onSubmit} onCancel={onCancel} />
+			<NewListField metrics={menuMetrics("compact")} onSubmit={onSubmit} onCancel={onCancel} />
 		</ThemeProvider>,
 	);
 	return { onSubmit, onCancel, field: screen.getByLabelText("New List") };

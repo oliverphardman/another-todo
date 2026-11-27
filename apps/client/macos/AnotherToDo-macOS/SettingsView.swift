@@ -160,19 +160,14 @@ private struct SettingsMenuPreview: View {
     HStack(spacing: cozy ? 16 : 12) {
       Image(systemName: "sun.max")
         .font(.system(size: cozy ? 17 : 14, weight: cozy ? .light : .medium))
-        .foregroundStyle(cozy ? Color.primary : Color.secondary)
+        .foregroundStyle(Color.secondary)
       Text(row.label)
         .font(.system(size: cozy ? 14 : 13, weight: .semibold))
       Spacer()
     }
     .padding(.horizontal, cozy ? 24 : 16)
     .frame(height: row.height ?? 28)
-    .background(cozy ? Color.accentColor.opacity(0.08) : Color.primary.opacity(0.1))
-    .overlay(alignment: .leading) {
-      if cozy {
-        Rectangle().fill(Color.accentColor).frame(width: 3)
-      }
-    }
+    .background(Color.primary.opacity(0.1))
     .accessibilityElement(children: .combine)
   }
 }

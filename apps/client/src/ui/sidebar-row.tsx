@@ -4,7 +4,7 @@ import { useI18n } from "../i18n/i18n-context";
 import { AppText } from "./app-text";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Icon, type IconGlyph } from "./icon";
-import type { MenuLook } from "./menu-look";
+import type { MenuMetrics } from "./menu-metrics";
 import { PressableSurface } from "./pressable-surface";
 import { useTheme } from "./theme-context";
 
@@ -19,7 +19,7 @@ const GLYPHS: Record<IconName, IconGlyph> = {
 };
 
 export interface SidebarRowProps {
-	readonly look: MenuLook;
+	readonly metrics: MenuMetrics;
 	readonly view: TaskView;
 	readonly selected: boolean;
 	readonly count: number;
@@ -45,7 +45,7 @@ export interface RowReorder {
 }
 
 export function SidebarRow({
-	look,
+	metrics,
 	view,
 	selected,
 	count,
@@ -60,8 +60,6 @@ export function SidebarRow({
 	const { t } = i18n;
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("ctx.listMenu"), () => listActions!.buildMenu());
-	const { metrics } = look;
-	const surface = look.surface(palette);
 	return (
 		<PressableSurface
 			ref={reorder?.ref}
@@ -77,7 +75,7 @@ export function SidebarRow({
 				}
 			}}
 			android_ripple={{ color: palette.ripple, foreground: true }}
-			hoverColor={surface.hover}
+			hoverColor={palette.sidebarHover}
 			{...(listActions !== null
 				? ({
 						onMouseDown: listActions.onDragStart,
@@ -98,10 +96,10 @@ export function SidebarRow({
 				borderTopColor: marker === "before" ? palette.accent : "transparent",
 				borderBottomWidth: 2,
 				borderBottomColor: marker === "after" ? palette.accent : "transparent",
-				backgroundColor: selected ? surface.selected : undefined,
+				backgroundColor: selected ? palette.sidebarSelected : undefined,
 				...(reorder?.lifted === true
 					? {
-							backgroundColor: surface.hover,
+							backgroundColor: palette.sidebarHover,
 							transform: [{ translateY: reorder.offset }],
 							zIndex: 1,
 							elevation: 4,
@@ -109,19 +107,6 @@ export function SidebarRow({
 					: {}),
 			}}
 		>
-			{selected && surface.selectionMarker !== null ? (
-				<View
-					testID="selection-marker"
-					style={{
-						position: "absolute",
-						left: 0,
-						top: -2,
-						bottom: -2,
-						width: 3,
-						backgroundColor: surface.selectionMarker,
-					}}
-				/>
-			) : null}
 			<Icon
 				glyph={
 					view.isCustomList && (view as CustomListView).list.shared ? "people" : GLYPHS[view.icon]
@@ -141,7 +126,7 @@ export function SidebarRow({
 			{count === 0 ? null : (
 				<AppText
 					size={metrics.countSize}
-					style={{ color: surface.count }}
+					tone="secondary"
 					accessibilityLabel={t("sidebar.openCount", { count })}
 				>
 					{count}

@@ -10,10 +10,11 @@ import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { AccountHeader } from "./account-header";
 import { FOOTER_INSET, NewListField } from "./new-list-field";
-import type { MenuLook } from "./menu-look";
+import type { MenuMetrics } from "./menu-metrics";
 import { sidebarActions } from "./sidebar-actions";
+import { SidebarColors } from "./sidebar-colors";
 import { SidebarRow } from "./sidebar-row";
-import { useMenuLook } from "./use-menu-look";
+import { useMenuMetrics } from "./use-menu-metrics";
 import { useSettingsController } from "./settings-host";
 import { useTouchReorder } from "./use-touch-reorder";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
@@ -41,9 +42,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const state = useObservable(store);
 	const [creating, setCreating] = useState(false);
 	const dark = useIsDark();
-	const look = useMenuLook();
-	const { metrics } = look;
-	const surface = look.surface(palette);
+	const metrics = useMenuMetrics();
 	const print = usePrintList();
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
@@ -130,16 +129,16 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const renderRow = (view: TaskView, indented: boolean) => (
 		<SidebarRow
 			key={view.id}
-			look={look}
+			metrics={metrics}
 			view={view}
 			selected={state.selectedViewId === view.id}
 			count={store.taskCount(view)}
-			iconColor={look.iconColor({
-				viewId: view.id,
-				theme: store.settingsFor(view.id).theme,
-				palette,
+			iconColor={SidebarColors.icon(
+				view.id,
+				store.settingsFor(view.id).theme,
+				palette.sidebar,
 				dark,
-			})}
+			)}
 			indented={indented}
 			onPress={() => {
 				if (dragged.current) {
@@ -215,9 +214,9 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			style={[
 				{
 					flex: 1,
-					backgroundColor: surface.background,
+					backgroundColor: palette.sidebar,
 					borderRightWidth: 1,
-					borderRightColor: surface.border,
+					borderRightColor: palette.sidebarBorder,
 				},
 				insetPadding(insets),
 			]}
@@ -225,7 +224,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 		>
 			<StatusBarTone foreground={palette.text} />
 			<AccountHeader>
-				{sidebarActions().headerAction === null ? null : <SettingsButton hover={surface.hover} />}
+				{sidebarActions().headerAction === null ? null : <SettingsButton />}
 			</AccountHeader>
 			<View
 				style={{
@@ -299,7 +298,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 						return (
 							<View key={group.id}>
 								<GroupHeader
-									look={look}
+									metrics={metrics}
 									group={group}
 									open={open}
 									count={members.length}
@@ -350,7 +349,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityRole="button"
 							accessibilityLabel={t("sidebar.createList")}
 							onPress={() => setCreating(true)}
-							hoverColor={surface.hover}
+							hoverColor={palette.sidebarHover}
 							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								flex: 1,
@@ -374,7 +373,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 							accessibilityRole="button"
 							accessibilityLabel={t("sidebar.createGroup")}
 							onPress={() => store.newGroup(t("group.new"))}
-							hoverColor={surface.hover}
+							hoverColor={palette.sidebarHover}
 							android_ripple={{ color: palette.ripple, foreground: true }}
 							style={{
 								minHeight: metrics.rowHeight,
@@ -393,7 +392,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	);
 }
 
-function SettingsButton({ hover }: { hover: string }) {
+function SettingsButton() {
 	const { t } = useI18n();
 	const palette = useTheme();
 	const settings = useSettingsController();
@@ -402,7 +401,7 @@ function SettingsButton({ hover }: { hover: string }) {
 			accessibilityRole="button"
 			accessibilityLabel={t("settings.title")}
 			onPress={() => settings.open()}
-			hoverColor={hover}
+			hoverColor={palette.sidebarHover}
 			android_ripple={{ color: palette.ripple, borderless: true }}
 			style={{ padding: 8, borderRadius: 4 }}
 		>
@@ -412,7 +411,7 @@ function SettingsButton({ hover }: { hover: string }) {
 }
 
 interface GroupHeaderProps {
-	readonly look: MenuLook;
+	readonly metrics: MenuMetrics;
 	readonly group: Group;
 	readonly open: boolean;
 	readonly count: number;
@@ -423,7 +422,7 @@ interface GroupHeaderProps {
 }
 
 function GroupHeader({
-	look,
+	metrics,
 	group,
 	open,
 	count,
@@ -435,8 +434,6 @@ function GroupHeader({
 	const { t } = useI18n();
 	const palette = useTheme();
 	const menu = useContextMenuTrigger(t("group.menu"), buildMenu);
-	const { metrics } = look;
-	const surface = look.surface(palette);
 	const [text, setText] = useState(group.name);
 	return (
 		<PressableSurface
@@ -446,7 +443,7 @@ function GroupHeader({
 			onPress={renaming ? undefined : onToggle}
 			onContextMenu={menu.onContextMenu}
 			onLongPress={menu.onLongPress}
-			hoverColor={surface.hover}
+			hoverColor={palette.sidebarHover}
 			android_ripple={{ color: palette.ripple, foreground: true }}
 			style={{
 				flexDirection: "row",
@@ -490,7 +487,7 @@ function GroupHeader({
 				</AppText>
 			)}
 			{renaming || count === 0 ? null : (
-				<AppText size={metrics.countSize} style={{ color: surface.count }}>
+				<AppText size={metrics.countSize} tone="secondary">
 					{count}
 				</AppText>
 			)}

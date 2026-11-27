@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { menuLook } from "../src/ui/menu-look";
+import { menuMetrics } from "../src/ui/menu-metrics";
 import { rowMetrics } from "../src/ui/row-metrics";
 import { renderApp, type RenderOptions } from "./support/render-app";
 
@@ -63,8 +63,8 @@ describe("choosing a layout on desktop", () => {
 			Array.from(radio(name).querySelectorAll<HTMLElement>("[aria-label='My Day']")).map(
 				(row) => row.style.minHeight,
 			);
-		expect(rows("Cozy")).toEqual([`${menuLook("cozy", "macos").metrics.rowHeight}px`]);
-		expect(rows("Compact")).toEqual([`${menuLook("compact").metrics.rowHeight}px`]);
+		expect(rows("Cozy")).toEqual([`${menuMetrics("cozy", "macos").rowHeight}px`]);
+		expect(rows("Compact")).toEqual([`${menuMetrics("compact").rowHeight}px`]);
 		expect(radio("Cozy").textContent).toContain("Groceries");
 		expect(checked("Compact")).toBe("true");
 	});

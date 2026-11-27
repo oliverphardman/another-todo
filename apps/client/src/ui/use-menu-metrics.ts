@@ -1,8 +1,8 @@
 import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
-import { menuLook, type MenuLook } from "./menu-look";
+import { menuMetrics, type MenuMetrics } from "./menu-metrics";
 
-export function useMenuLook(): MenuLook {
+export function useMenuMetrics(): MenuMetrics {
 	const { menuStyle } = useObservable(useContainer().settings);
-	return menuLook(menuStyle);
+	return menuMetrics(menuStyle);
 }

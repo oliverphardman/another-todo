@@ -133,19 +133,20 @@ describe("appearance", () => {
 		const preview = settings.getByLabelText("Menu style preview");
 		const menu = within(settings.getByRole("radiogroup", { name: "Menu style" }));
 		const sidebar = () => screen.getByLabelText("Lists");
-		const marker = () => within(preview).queryByTestId("selection-marker");
+		const padding = (area: HTMLElement) =>
+			area.querySelector<HTMLElement>('[aria-label="My Day"]')!.style.paddingLeft;
 		expect(checked(menu.getByLabelText("Compact"))).toBe("true");
 		expect(preview.textContent).toBe("My Day2Tasks9Groceries3");
-		expect(marker()).toBeNull();
+		expect(padding(preview)).toBe("16px");
 		await press(menu.getByLabelText("Cozy"));
 		expect(checked(menu.getByLabelText("Cozy"))).toBe("true");
-		expect(marker()).toBeTruthy();
-		expect(within(sidebar()).getByTestId("selection-marker")).toBeTruthy();
+		expect(padding(preview)).toBe("24px");
+		expect(padding(sidebar())).toBe("24px");
 		expect(app.container.settings.get()).toMatchObject({ menuStyle: "cozy", rowStyle: "cozy" });
 		fireEvent.click(within(preview).getByText("Tasks"));
 		expect(app.container.store.get().selectedViewId).toBe("my-day");
 		await press(menu.getByLabelText("Compact"));
-		expect(within(sidebar()).queryByTestId("selection-marker")).toBeNull();
+		expect(padding(sidebar())).toBe("16px");
 	});
 
 	it("moves the add task bar below the list", async () => {

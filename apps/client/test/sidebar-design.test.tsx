@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest";
 import { ColorMath } from "../src/ui/color-math";
 import { SidebarColors } from "../src/ui/sidebar-colors";
-import { menuLook } from "../src/ui/menu-look";
+import { menuMetrics } from "../src/ui/menu-metrics";
 import { sidebarActions } from "../src/ui/sidebar-actions";
 import { DARK, LIGHT } from "../src/ui/theme";
 import { renderApp } from "./support/render-app";
@@ -104,23 +104,23 @@ describe("sidebarActions", () => {
 	});
 });
 
-describe("menuLook", () => {
+describe("menuMetrics", () => {
 	const height = (style: "cozy" | "compact", platform: string) =>
-		menuLook(style, platform).metrics.rowHeight;
+		menuMetrics(style, platform).rowHeight;
 
 	it("is denser when compact on pointer platforms than on touch", () => {
 		expect(height("compact", "macos")).toBe(28);
 		expect(height("compact", "windows")).toBe(28);
 		expect(height("compact", "android")).toBe(44);
 		expect(height("compact", "ios")).toBe(44);
-		expect(menuLook("compact")).toBe(menuLook("compact", "web"));
+		expect(menuMetrics("compact")).toBe(menuMetrics("compact", "web"));
 	});
 
 	it.each(["macos", "windows", "web", "ios", "android"])(
 		"is equally roomy when cozy on %s",
 		(platform) => {
-			expect(menuLook("cozy", platform)).toBe(menuLook("cozy"));
-			expect(menuLook("cozy", platform).metrics).toMatchObject({
+			expect(menuMetrics("cozy", platform)).toBe(menuMetrics("cozy"));
+			expect(menuMetrics("cozy", platform)).toMatchObject({
 				rowHeight: 44,
 				fontSize: 14,
 				iconSize: 20,
@@ -129,22 +129,6 @@ describe("menuLook", () => {
 			});
 		},
 	);
-
-	it.each([
-		["light", LIGHT, false],
-		["dark", DARK, true],
-	])("keeps cozy icons plain and compact icons colored in %s mode", (_, palette, dark) => {
-		const icon = { viewId: "planned", theme: null, palette, dark };
-		expect(menuLook("cozy").iconColor(icon)).toBe(palette.text);
-		expect(menuLook("compact").iconColor(icon)).toBe(
-			SidebarColors.icon("planned", null, palette.sidebar, dark),
-		);
-	});
-
-	it.each([LIGHT, DARK])("keeps cozy text readable on a selected list", (palette) => {
-		const surface = menuLook("cozy").surface(palette);
-		expect(ColorMath.contrast(palette.text, surface.selected)).toBeGreaterThanOrEqual(4.5);
-	});
 });
 
 describe("menu style", () => {
@@ -160,12 +144,10 @@ describe("menu style", () => {
 
 	it("is compact until changed", async () => {
 		await start();
-		expect(screen.queryByTestId("selection-marker")).toBeNull();
 		expect(row("My Day").style.paddingLeft).toBe("16px");
-		expect(screen.getByLabelText("Lists").style.backgroundColor).toBe("rgb(245, 245, 245)");
 	});
 
-	it("changes the whole sidebar at once", async () => {
+	it("changes the spacing of the whole sidebar at once", async () => {
 		const app = await start({ platform: "web" });
 		act(() => {
 			app.container.store.addList("Errands");
@@ -175,7 +157,6 @@ describe("menu style", () => {
 			app.container.store.select("my-day");
 			app.container.settings.change({ menuStyle: "cozy" });
 		});
-		expect(screen.getByLabelText("Lists").style.backgroundColor).toBe("rgb(255, 255, 255)");
 		expect(row("My Day").style.paddingLeft).toBe("24px");
 		expect(row("Errands").style.paddingLeft).toBe("44px");
 		expect(label("My Day").style.marginLeft).toBe("16px");
@@ -185,18 +166,31 @@ describe("menu style", () => {
 		expect(sidebar().getByLabelText("New List").style.marginLeft).toBe("16px");
 	});
 
-	it("marks only the selected list", async () => {
-		const app = await start();
+	it.each(["light", "dark"] as const)("keeps the same colors in %s mode", async (scheme) => {
+		const app = await start({ scheme });
+		const colors = () =>
+			[
+				screen.getByLabelText("Lists"),
+				...["My Day", "Planned"].flatMap((name) => [
+					row(name),
+					label(name),
+					...Array.from(row(name).querySelectorAll("svg, svg *")),
+				]),
+			].map((element) => [
+				(element as HTMLElement).style.backgroundColor,
+				(element as HTMLElement).style.borderRightColor,
+				(element as HTMLElement).style.color,
+				element.getAttribute("stroke"),
+				element.getAttribute("fill"),
+			]);
+		const compact = colors();
 		act(() => app.container.settings.change({ menuStyle: "cozy" }));
-		const marked = () => screen.getByTestId("selection-marker").parentElement;
-		expect(marked()).toBe(row("My Day"));
-		fireEvent.click(row("Tasks"));
-		expect(marked()).toBe(row("Tasks"));
+		expect(colors()).toEqual(compact);
 	});
 
 	it("starts from the server's default", async () => {
 		await start({ config: { defaultSettings: { menuStyle: "cozy" } } });
-		expect(screen.getByTestId("selection-marker")).toBeTruthy();
+		expect(row("My Day").style.paddingLeft).toBe("24px");
 	});
 });
 
