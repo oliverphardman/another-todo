@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2](https://github.com/oliverphardman/another-todo/compare/v1.5.1...v1.5.2) (2026-11-27)
+
+
+### Fixes
+
+* **infra:** leave blank variables off the Web Function ([05bf6a0](https://github.com/oliverphardman/another-todo/commit/05bf6a05bd5fe0c981eedcabe675602309e94c87))
+* **infra:** leave blank variables off the Web Function ([#21](https://github.com/oliverphardman/another-todo/issues/21)) ([f6ff93c](https://github.com/oliverphardman/another-todo/commit/f6ff93ce3940cf571e4ccb5df7d97de1cb700263))
+
 ## [1.5.1](https://github.com/oliverphardman/another-todo/compare/v1.5.0...v1.5.1) (2026-11-27)
 
 
