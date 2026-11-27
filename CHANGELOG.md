@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.1](https://github.com/oliverphardman/another-todo/compare/v1.5.0...v1.5.1) (2026-11-27)
+
+
+### Performance
+
+* **client:** faster list switching and closer compact rows ([#19](https://github.com/oliverphardman/another-todo/issues/19)) ([ba2310b](https://github.com/oliverphardman/another-todo/commit/ba2310b3d0badf14ee78104197af261fcc906155))
+* **client:** make switching between lists fast ([6653501](https://github.com/oliverphardman/another-todo/commit/66535012ddc9a4b51b5ed62f6bdcbe91433b1078))
+
 ## [1.5.0](https://github.com/oliverphardman/another-todo/compare/v1.4.0...v1.5.0) (2026-11-26)
 
 
