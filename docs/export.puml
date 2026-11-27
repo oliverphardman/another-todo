@@ -23,7 +23,7 @@ package "Platform adapters" {
   component "BrowserFileSaver\n(save picker or download)" as Browser
   component "ModuleFileSaver\nAnotherToDoExport module:\nNSSavePanel / document picker /\nStorage Access Framework / IFileSaveDialog" as Module
   component "CanvasPdfRenderer\n(web)" as Canvas
-  component "HtmlPdfRenderer\nWKWebView (macOS)\nexpo-print (iOS, Android)" as Html
+  component "HtmlPdfRenderer\nWKWebView (macOS)\nWebView2 (Windows)\nexpo-print (iOS, Android)" as Html
 }
 
 Menus --> Dialog : current list
@@ -38,9 +38,4 @@ Saver <|.. Browser
 Saver <|.. Module
 Pdf <|.. Canvas
 Pdf <|.. Html
-
-note bottom of Html
-  Windows has no PDF renderer,
-  so PDF is not offered there
-end note
 @enduml

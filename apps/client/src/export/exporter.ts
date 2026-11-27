@@ -14,7 +14,7 @@ import { XlsxExportFormat } from "./xlsx-export-format";
 
 export interface ExportPlatform {
 	readonly saver: FileSaver;
-	readonly pdf: PdfRenderer | null;
+	readonly pdf: PdfRenderer;
 }
 
 export class Exporter {
@@ -29,7 +29,7 @@ export class Exporter {
 			new CsvExportFormat(),
 			new XlsxExportFormat(),
 			new JsonExportFormat(),
-			...(platform.pdf === null ? [] : [new PdfExportFormat(platform.pdf)]),
+			new PdfExportFormat(platform.pdf),
 		];
 	}
 

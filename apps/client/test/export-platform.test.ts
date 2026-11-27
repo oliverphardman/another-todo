@@ -7,8 +7,6 @@ import { createExportPlatform as ios } from "../src/export/export-platform.ios";
 import { createExportPlatform as mac } from "../src/export/export-platform.macos";
 import { createExportPlatform as web } from "../src/export/export-platform";
 import { createExportPlatform as windows } from "../src/export/export-platform.windows";
-import { SystemClock } from "../src/domain/ports";
-import { Exporter, type ExportPlatform } from "../src/export/exporter";
 import type { SaveRequest } from "../src/export/file-saver";
 import { ModuleFileSaver } from "../src/export/module-file-saver";
 import { I18n } from "../src/i18n/i18n";
@@ -149,34 +147,21 @@ describe("export platforms", () => {
 		mobile.module = { save: async () => true };
 		const platform = android();
 		expect(platform.saver.available).toBe(true);
-		expect(new TextDecoder().decode(await platform.pdf!.render(BOOK, new I18n()))).toBe("%PDF");
+		expect(new TextDecoder().decode(await platform.pdf.render(BOOK, new I18n()))).toBe("%PDF");
 		expect(mobile.printed[0]).toMatchObject({ base64: true });
 	});
 
-	it("saves and renders through the macOS module", async () => {
-		expect(mac().saver.available).toBe(false);
+	it.each([
+		["macOS", mac],
+		["Windows", windows],
+	])("saves and renders through the %s module", async (_, create) => {
+		expect(create().saver.available).toBe(false);
 		const renderPdf = vi.fn(async () => "JVBERg==");
 		modules.AnotherToDoExport = { save: async () => true, renderPdf };
-		const platform = mac();
+		const platform = create();
 		expect(platform.saver.available).toBe(true);
-		await platform.pdf!.render(BOOK, new I18n());
+		await platform.pdf.render(BOOK, new I18n());
 		expect(renderPdf).toHaveBeenCalledWith(expect.stringContaining("<title>T</title>"));
-	});
-
-	it("saves on Windows, which cannot make PDFs yet", () => {
-		expect(windows().saver.available).toBe(false);
-		modules.AnotherToDoExport = { save: async () => true };
-		expect(windows().saver.available).toBe(true);
-		expect(windows().pdf).toBeNull();
-	});
-});
-
-describe("the exporter", () => {
-	it("offers PDF only where one can be made", () => {
-		const exporter = (platform: ExportPlatform) =>
-			new Exporter(platform, {} as never, new SystemClock()).formats.map((format) => format.id);
-		expect(exporter(web())).toEqual(["csv", "xlsx", "json", "pdf"]);
-		expect(exporter(windows())).toEqual(["csv", "xlsx", "json"]);
 	});
 });
 
@@ -202,6 +187,16 @@ describe("native export modules", () => {
 			'REACT_MODULE(AnotherToDoExport, L"AnotherToDoExport")',
 		);
 		expect(read("windows/AnotherToDo/AnotherToDo.cpp")).toContain('#include "NativeExport.h"');
+	});
+
+	it("renders PDFs with the WebView2 that ships with the Windows app SDK", () => {
+		expect(read("windows/AnotherToDo/NativeExport.h")).toContain(
+			'REACT_METHOD(RenderPdf, L"renderPdf")',
+		);
+		expect(read("windows/AnotherToDo/NativePdf.h")).toContain("IsScriptEnabled(false)");
+		const project = read("windows/AnotherToDo/AnotherToDo.vcxproj");
+		expect(project).toContain("<WebView2UseWinRT>true</WebView2UseWinRT>");
+		expect(project).toContain('Include="Microsoft.Web.WebView2" Version="1.0.3179.45"');
 	});
 
 	it("may write the file the user chose on macOS", () => {

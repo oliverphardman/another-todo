@@ -11,6 +11,7 @@
 
 #include "NativeMenu.h"
 #include "NativeModules.h"
+#include "NativePdf.h"
 
 #pragma comment(lib, "Crypt32.lib")
 
@@ -92,6 +93,13 @@ struct AnotherToDoExport {
         pending->promise.Reject(winrt::to_string(error.message()).c_str());
       }
     });
+  }
+
+  REACT_METHOD(RenderPdf, L"renderPdf")
+  void RenderPdf(std::string &&html, winrt::Microsoft::ReactNative::ReactPromise<std::string> &&promise) noexcept {
+    auto pending = std::make_shared<AnotherToDoPdfSupport::PendingPdf>(
+        AnotherToDoPdfSupport::PendingPdf{std::move(html), std::move(promise)});
+    m_context.UIDispatcher().Post([pending]() { AnotherToDoPdfSupport::Render(pending); });
   }
 
  private:

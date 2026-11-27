@@ -76,7 +76,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 
 - [x] Export the current list or every list to CSV, XLSX, JSON or PDF from the list menus and the macOS List menu, through the system save dialog
 - [x] Export chosen lists from Settings, with Select all
-- [ ] PDF export on Windows
+- [ ] PDF export on Windows (written with WebView2, not yet compiled or run on Windows)
 
 ## Dependencies
 
