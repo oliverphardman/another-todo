@@ -79,6 +79,19 @@ describe("ViewSettingsService", () => {
 		);
 	});
 
+	it("stores preset photo themes by id without needing an uploaded photo", async () => {
+		const { settings } = createServices();
+		const themed = await settings.put("u", "v", {
+			...valid,
+			theme: { type: "preset", presetId: "aurora", photoId: "ignored" },
+		});
+		expect(themed.theme).toEqual({ type: "preset", presetId: "aurora" });
+		expect((await settings.list("u"))[0]!.theme).toEqual({ type: "preset", presetId: "aurora" });
+		for (const theme of [{ type: "preset" }, { type: "preset", presetId: "not valid" }]) {
+			await expect(settings.put("u", "v", { ...valid, theme })).rejects.toThrow(ValidationError);
+		}
+	});
+
 	it("only allows photo themes that exist for the caller", async () => {
 		const { settings, photos } = createServices();
 		await expect(

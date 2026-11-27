@@ -73,7 +73,7 @@ export class ViewSettingsService {
 		if (value === null) {
 			return null;
 		}
-		const { type, color, photoId } = (value ?? {}) as Record<string, unknown>;
+		const { type, color, photoId, presetId } = (value ?? {}) as Record<string, unknown>;
 		if (type === "color" && typeof color === "string" && COLOR.test(color)) {
 			return { type: "color", color: color.toLowerCase() };
 		}
@@ -84,6 +84,11 @@ export class ViewSettingsService {
 			}
 			return { type: "photo", photoId: id };
 		}
-		throw new ValidationError("theme must be null, a #rrggbb color or an existing photo");
+		if (type === "preset") {
+			return { type: "preset", presetId: EntityId.parse(presetId) };
+		}
+		throw new ValidationError(
+			"theme must be null, a #rrggbb color, an existing photo or a preset photo",
+		);
 	}
 }

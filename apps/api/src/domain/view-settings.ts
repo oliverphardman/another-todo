@@ -4,7 +4,8 @@ export type SortKey = (typeof SORT_KEYS)[number];
 
 export type ThemeSetting =
 	| { readonly type: "color"; readonly color: string }
-	| { readonly type: "photo"; readonly photoId: string };
+	| { readonly type: "photo"; readonly photoId: string }
+	| { readonly type: "preset"; readonly presetId: string };
 
 export interface ViewSettingsRecord {
 	readonly ownerId: string;
