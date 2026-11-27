@@ -20,28 +20,86 @@ import lighthouseThumbnail from "../../assets/themes/lighthouse-thumbnail.jpg";
 import lotus from "../../assets/themes/lotus.jpg";
 import lotusThumbnail from "../../assets/themes/lotus-thumbnail.jpg";
 import type { MessageKey } from "../i18n/en-us";
+import type { Tone } from "../ui/list-theme";
+import type { ImageEdge } from "./photo-tones";
 
 export interface PresetPhoto {
 	readonly id: string;
 	readonly nameKey: MessageKey;
 	readonly image: ImageSourcePropType;
 	readonly thumbnail: ImageSourcePropType;
+	readonly tones: Readonly<Record<ImageEdge, Tone>>;
 }
 
 export const PRESET_PHOTOS: readonly PresetPhoto[] = [
-	{ id: "aurora", nameKey: "preset.aurora", image: aurora, thumbnail: auroraThumbnail },
-	{ id: "mountain", nameKey: "preset.mountain", image: mountain, thumbnail: mountainThumbnail },
-	{ id: "forest", nameKey: "preset.forest", image: forest, thumbnail: forestThumbnail },
-	{ id: "coast", nameKey: "preset.coast", image: coast, thumbnail: coastThumbnail },
-	{ id: "desert", nameKey: "preset.desert", image: desert, thumbnail: desertThumbnail },
-	{ id: "wave", nameKey: "preset.wave", image: wave, thumbnail: waveThumbnail },
-	{ id: "fern", nameKey: "preset.fern", image: fern, thumbnail: fernThumbnail },
-	{ id: "bridge", nameKey: "preset.bridge", image: bridge, thumbnail: bridgeThumbnail },
+	{
+		id: "aurora",
+		nameKey: "preset.aurora",
+		image: aurora,
+		thumbnail: auroraThumbnail,
+		tones: { top: "dark", bottom: "dark" },
+	},
+	{
+		id: "mountain",
+		nameKey: "preset.mountain",
+		image: mountain,
+		thumbnail: mountainThumbnail,
+		tones: { top: "light", bottom: "light" },
+	},
+	{
+		id: "forest",
+		nameKey: "preset.forest",
+		image: forest,
+		thumbnail: forestThumbnail,
+		tones: { top: "dark", bottom: "dark" },
+	},
+	{
+		id: "coast",
+		nameKey: "preset.coast",
+		image: coast,
+		thumbnail: coastThumbnail,
+		tones: { top: "light", bottom: "dark" },
+	},
+	{
+		id: "desert",
+		nameKey: "preset.desert",
+		image: desert,
+		thumbnail: desertThumbnail,
+		tones: { top: "light", bottom: "light" },
+	},
+	{
+		id: "wave",
+		nameKey: "preset.wave",
+		image: wave,
+		thumbnail: waveThumbnail,
+		tones: { top: "light", bottom: "dark" },
+	},
+	{
+		id: "fern",
+		nameKey: "preset.fern",
+		image: fern,
+		thumbnail: fernThumbnail,
+		tones: { top: "dark", bottom: "dark" },
+	},
+	{
+		id: "bridge",
+		nameKey: "preset.bridge",
+		image: bridge,
+		thumbnail: bridgeThumbnail,
+		tones: { top: "light", bottom: "dark" },
+	},
 	{
 		id: "lighthouse",
 		nameKey: "preset.lighthouse",
 		image: lighthouse,
 		thumbnail: lighthouseThumbnail,
+		tones: { top: "dark", bottom: "dark" },
 	},
-	{ id: "lotus", nameKey: "preset.lotus", image: lotus, thumbnail: lotusThumbnail },
+	{
+		id: "lotus",
+		nameKey: "preset.lotus",
+		image: lotus,
+		thumbnail: lotusThumbnail,
+		tones: { top: "dark", bottom: "dark" },
+	},
 ];

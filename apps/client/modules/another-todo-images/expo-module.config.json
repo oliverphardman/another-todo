@@ -1,0 +1,9 @@
+{
+	"platforms": ["ios", "android"],
+	"ios": {
+		"modules": ["AnotherToDoImagesModule"]
+	},
+	"android": {
+		"modules": ["dev.oliverhardman.anothertodo.images.AnotherToDoImagesModule"]
+	}
+}

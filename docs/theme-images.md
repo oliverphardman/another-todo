@@ -19,6 +19,6 @@ The photos included in the theme menu are in `apps/client/assets/themes`. Each o
 
 1. Use only photos that are CC0 or otherwise in the public domain, and record the source here.
 2. Save a JPEG 1920 pixels wide as `<id>.jpg` and one 216 pixels wide as `<id>-thumbnail.jpg`, for example with `sips --resampleWidth 1920 -s format jpeg -s formatOptions 45 original.jpg --out <id>.jpg`.
-3. Add the entry to `apps/client/src/photos/preset-photos.ts` and its `preset.<id>` name to every locale.
+3. Add the entry to `apps/client/src/photos/preset-photos.ts` and its `preset.<id>` name to every locale. Set its `tones`: scale the photo to 32 by 32, average rows 10% to 35% (`top`) and 75% to 100% (`bottom`), and use `dark` where the brightness (`ColorMath.brightness`) is below 0.5, otherwise `light`.
 
 The server stores only the id, so adding a photo needs no server change. An app that does not have a chosen photo shows the view's default color. Never rename or remove an id that has shipped.

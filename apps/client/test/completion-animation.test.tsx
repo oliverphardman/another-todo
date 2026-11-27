@@ -46,7 +46,7 @@ async function start(motion = { fillMs: 100, travelMs: 200, slideMs: 0 }) {
 	const app = await renderApp({ motion });
 	stop = app.stop;
 	act(() => app.connectivity.setOnline(false));
-	const input = screen.getByLabelText("Add a task");
+	const input = screen.getByLabelText("Add a Task");
 	for (const title of ["Third", "Second", "First"]) {
 		app.clock.advance(1000);
 		fireEvent.change(input, { target: { value: title } });

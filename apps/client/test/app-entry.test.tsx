@@ -56,7 +56,7 @@ describe("App", () => {
 		vi.stubEnv("EXPO_PUBLIC_ENFORCED_SERVER_URL", "https://demo.example.com");
 		vi.stubGlobal("fetch", serverAnswer("none"));
 		const { unmount } = render(<App />);
-		await waitFor(() => expect(screen.getByLabelText("Add a task")).toBeTruthy());
+		await waitFor(() => expect(screen.getByLabelText("Add a Task")).toBeTruthy());
 		expect(screen.queryByLabelText("Server address")).toBeNull();
 		expect(screen.queryByLabelText("Sign in")).toBeNull();
 		unmount();
@@ -69,7 +69,7 @@ describe("day rollover", () => {
 		vi.stubGlobal("fetch", serverAnswer("none"));
 		const timers = vi.spyOn(globalThis, "setInterval");
 		const { unmount } = render(<App />);
-		await waitFor(() => expect(screen.getByLabelText("Add a task")).toBeTruthy());
+		await waitFor(() => expect(screen.getByLabelText("Add a Task")).toBeTruthy());
 		act(() => {
 			for (const [callback, delay] of timers.mock.calls) {
 				if (delay === 60_000) {

@@ -34,6 +34,7 @@ export interface RowMetrics {
 		readonly height: number;
 		readonly fontSize: number;
 		readonly iconSize: number;
+		readonly plusSize: number;
 		readonly paddingHorizontal: number;
 		readonly gap: number;
 		readonly textPadding: number;
@@ -61,6 +62,7 @@ const METRICS: Readonly<Record<RowStyle, RowMetrics>> = {
 			height: 52,
 			fontSize: 15,
 			iconSize: 22,
+			plusSize: 26,
 			paddingHorizontal: 14,
 			gap: 12,
 			textPadding: 12,
@@ -84,6 +86,7 @@ const METRICS: Readonly<Record<RowStyle, RowMetrics>> = {
 			height: 44,
 			fontSize: 13,
 			iconSize: 19,
+			plusSize: 24,
 			paddingHorizontal: 12.5,
 			gap: 14.5,
 			textPadding: 10,

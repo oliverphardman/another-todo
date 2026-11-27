@@ -13,6 +13,8 @@ export interface Palette {
 	readonly textSecondary: string;
 	readonly onAccent: string;
 	readonly title: string;
+	readonly addField: string;
+	readonly onAddField: string;
 	readonly accent: string;
 	readonly accentSoft: string;
 	readonly border: string;
@@ -36,6 +38,8 @@ export const LIGHT: Palette = {
 	textSecondary: "#605e5c",
 	onAccent: "#ffffff",
 	title: "#ffffff",
+	addField: "#1e52aa",
+	onAddField: "#ffffff",
 	accent: "#2564cf",
 	accentSoft: "#dbe7fa",
 	border: "#e1dfdd",
@@ -59,6 +63,8 @@ export const DARK: Palette = {
 	textSecondary: "#c8c6c4",
 	onAccent: "#ffffff",
 	title: "#ffffff",
+	addField: "#0d2348",
+	onAddField: "#ffffff",
 	accent: "#6ea0f5",
 	accentSoft: "#27406e",
 	border: "#3b3a39",

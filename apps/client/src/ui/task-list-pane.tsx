@@ -230,6 +230,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const addBar = (
 		<AddTaskBar
 			rowStyle={rowStyle}
+			position={addTaskPosition}
 			placeholder={t("task.add")}
 			onSubmit={(text) => store.addTask(text)}
 		/>

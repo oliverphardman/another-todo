@@ -17,6 +17,7 @@ import {
 	FakePhotoPicker,
 	RecordingPrinter,
 	RecordingSoundPlayer,
+	FakeImageSampler,
 	SequenceIds,
 } from "./fakes";
 
@@ -42,6 +43,7 @@ export interface TestContainer {
 	readonly connectivity: ManualConnectivity;
 	readonly authorizationServer: FakeAuthorizationServer;
 	readonly sounds: RecordingSoundPlayer;
+	readonly imageSampler: FakeImageSampler;
 	readonly printer: RecordingPrinter;
 	readonly photoGateway: FakePhotoGateway;
 	readonly photoPicker: FakePhotoPicker;
@@ -71,6 +73,7 @@ export function createTestContainer(
 	const connectivity = new ManualConnectivity();
 	const authorizationServer = new FakeAuthorizationServer();
 	const sounds = new RecordingSoundPlayer();
+	const imageSampler = new FakeImageSampler();
 	const printer = new RecordingPrinter();
 	const photoGateway = new FakePhotoGateway();
 	const photoPicker = new FakePhotoPicker();
@@ -95,6 +98,7 @@ export function createTestContainer(
 			connectivity,
 			authorizationServer,
 			sounds,
+			imageSampler,
 			printer,
 			photoGateway,
 			photoPicker,
@@ -133,6 +137,7 @@ export function createTestContainer(
 		connectivity,
 		authorizationServer,
 		sounds,
+		imageSampler,
 		printer,
 		photoGateway,
 		photoPicker,

@@ -1,3 +1,4 @@
+import type { ImageBand, ImageSampler } from "../../src/photos/image-sampler";
 import type { ShareGateway, ShareMember } from "../../src/shares/share-gateway";
 import type { GroupData } from "../../src/domain/group";
 import type { SocketLike } from "../../src/sync/realtime-client";
@@ -460,4 +461,14 @@ export function taskData(overrides: Partial<TaskData> & { id: string }): TaskDat
 		createdAt: "2026-11-19T10:00:00.000Z",
 		...overrides,
 	};
+}
+
+export class FakeImageSampler implements ImageSampler {
+	readonly calls: { url: string; band: ImageBand }[] = [];
+	color: (band: ImageBand) => string | null = () => null;
+
+	async averageColor(url: string, band: ImageBand): Promise<string | null> {
+		this.calls.push({ url, band });
+		return this.color(band);
+	}
 }
