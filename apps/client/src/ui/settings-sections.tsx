@@ -4,6 +4,7 @@ import { useI18n } from "../i18n/i18n-context";
 import { OPTIONAL_LISTS } from "../state/app-settings";
 import { AppText } from "./app-text";
 import { useContainer } from "./container-context";
+import { useExportActions } from "./export-host";
 import { useObservable } from "./hooks";
 import { PressableSurface } from "./pressable-surface";
 import { Checkbox, Choice, NumberField, SettingsSection } from "./settings-controls";
@@ -189,6 +190,37 @@ export function MyDaySection() {
 				checked={myDay.dueToday}
 				onChange={(dueToday) => settings.changeMyDay({ dueToday })}
 			/>
+		</SettingsSection>
+	);
+}
+
+export function ExportSection() {
+	const { t } = useI18n();
+	const palette = useTheme();
+	const actions = useExportActions();
+	if (actions === null) {
+		return null;
+	}
+	return (
+		<SettingsSection title={t("settings.export")}>
+			<PressableSurface
+				accessibilityRole="button"
+				accessibilityLabel={t("settings.exportLists")}
+				onPress={actions.exportLists}
+				hoverColor={palette.surfaceHover}
+				style={{
+					alignSelf: "flex-start",
+					paddingHorizontal: 16,
+					paddingVertical: 8,
+					borderRadius: 4,
+					borderWidth: 1,
+					borderColor: palette.border,
+				}}
+			>
+				<AppText size={14} weight="600">
+					{t("settings.exportLists")}
+				</AppText>
+			</PressableSurface>
 		</SettingsSection>
 	);
 }

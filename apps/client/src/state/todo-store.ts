@@ -179,26 +179,35 @@ export class TodoStore extends Observable<TodoState> {
 	visibleTasks(): VisibleTasks {
 		const view = this.selectedView;
 		const today = this.today;
-		const matching = this.get().tasks.filter((task) => view.matches(task, today));
-		const settings = this.settingsFor(view.id);
-		const compare = TaskSorter.comparator(
-			settings.sort,
-			view.order,
-			today,
-			settings.sortDescending,
-			this.preferences.get().myDay.dueToday,
-		);
+		const { open, done } = this.tasksIn(view);
 		const yesterday = this.get()
 			.tasks.filter((task) => view.carriesOver(task, today))
-			.sort(compare);
+			.sort(this.comparator(view));
+		return { open, yesterday, done: this.settingsFor(view.id).hideCompleted ? [] : done };
+	}
+
+	tasksIn(view: TaskView): Pick<VisibleTasks, "open" | "done"> {
+		const today = this.today;
+		const compare = this.comparator(view);
+		const matching = this.get().tasks.filter((task) => view.matches(task, today));
 		if (!view.separatesCompleted) {
-			return { open: matching.sort(compare), yesterday, done: [] };
+			return { open: matching.sort(compare), done: [] };
 		}
 		return {
 			open: matching.filter((task) => !task.completed).sort(compare),
-			yesterday,
-			done: settings.hideCompleted ? [] : matching.filter((task) => task.completed).sort(compare),
+			done: matching.filter((task) => task.completed).sort(compare),
 		};
+	}
+
+	private comparator(view: TaskView): (a: Task, b: Task) => number {
+		const settings = this.settingsFor(view.id);
+		return TaskSorter.comparator(
+			settings.sort,
+			view.order,
+			this.today,
+			settings.sortDescending,
+			this.preferences.get().myDay.dueToday,
+		);
 	}
 
 	reorderTask(taskId: string, index: number): void {

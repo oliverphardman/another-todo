@@ -19,6 +19,7 @@ import { buildListOptions } from "./list-options";
 import { ListMenu, type ListPanel } from "./list-menu";
 import { NativeMenu } from "./native-menu";
 import { usePrintList } from "./use-print-list";
+import { useExportActions } from "./export-host";
 import { PaneBackground } from "./pane-background";
 import { Pointer } from "./pointer";
 import { buildTaskMenu } from "./task-menu";
@@ -56,8 +57,9 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { imageUrl } = useListTheme();
 	const view = store.selectedView;
 	const print = usePrintList();
+	const exportList = useExportActions()?.exportView ?? null;
 	const options = useContextMenuTrigger(t("list.options"), () =>
-		buildListOptions({ store, i18n, view, print }),
+		buildListOptions({ store, i18n, view, print, exportList }),
 	);
 	useEffect(() => {
 		setPanel(null);

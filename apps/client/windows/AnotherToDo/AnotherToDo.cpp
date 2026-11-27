@@ -8,6 +8,7 @@
 
 #include "NativeModules.h"
 #include "DeepLinks.h"
+#include "NativeExport.h"
 #include "NativeMenu.h"
 #include "NativeReminders.h"
 

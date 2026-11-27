@@ -71,6 +71,12 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] My Day can show yesterday's unfinished tasks and can leave out tasks that are only due today
 - [ ] Sync settings between devices
 
+## 8. Export
+
+- [x] Export the current list or every list to CSV, XLSX, JSON or PDF from the list menus and the macOS List menu, through the system save dialog
+- [x] Export chosen lists from Settings, with Select all
+- [ ] PDF export on Windows
+
 ## Dependencies
 
 - Reordering lists needs an order field on lists

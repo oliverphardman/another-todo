@@ -8,6 +8,7 @@ export interface ListContextMenuContext {
 	readonly i18n: I18n;
 	readonly listId: string;
 	readonly print: () => void;
+	readonly exportList: (() => void) | null;
 	readonly onRename: () => void;
 }
 
@@ -16,6 +17,7 @@ export function buildListContextMenu({
 	i18n,
 	listId,
 	print,
+	exportList,
 	onRename,
 }: ListContextMenuContext): ContextMenuEntry[] {
 	const { t } = i18n;
@@ -33,6 +35,21 @@ export function buildListContextMenu({
 			print();
 		},
 	};
+	const exportEntries: ContextMenuEntry[] =
+		exportList === null
+			? []
+			: [
+					{
+						kind: "action",
+						key: "export",
+						glyph: "export",
+						label: t("ctx.exportList"),
+						onPress: () => {
+							store.select(listId);
+							exportList();
+						},
+					},
+				];
 	const removeEntry: ContextMenuEntry = {
 		kind: "action",
 		key: "delete",
@@ -43,7 +60,7 @@ export function buildListContextMenu({
 		onPress: () => store.deleteList(listId),
 	};
 	if (!list.owned) {
-		return [printEntry, removeEntry];
+		return [printEntry, ...exportEntries, removeEntry];
 	}
 	const groupMoves: ContextMenuEntry[] = [
 		...(list.groupId === null
@@ -114,6 +131,7 @@ export function buildListContextMenu({
 			onPress: onRename,
 		},
 		printEntry,
+		...exportEntries,
 		removeEntry,
 	];
 }

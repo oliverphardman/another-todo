@@ -20,6 +20,8 @@ import type { ImageSampler } from "./photos/image-sampler";
 import { PhotoLibrary } from "./photos/photo-library";
 import { PhotoTones } from "./photos/photo-tones";
 import type { PhotoGateway, PhotoPicker } from "./photos/photo-gateway";
+import { createExportPlatform } from "./export/export-platform";
+import { Exporter, type ExportPlatform } from "./export/exporter";
 import { ExpoListPrinter } from "./print/expo-list-printer";
 import type { ListPrinter } from "./print/list-print-document";
 import { createReminderNotifier } from "./reminders/reminder-notifier-factory";
@@ -64,6 +66,7 @@ export interface Container {
 	readonly attachments: TaskAttachments;
 	readonly reminders: ReminderService;
 	readonly printer: ListPrinter;
+	readonly exporter: Exporter;
 	readonly paneWidths: PaneWidths;
 	readonly settings: AppSettings;
 	readonly shares: ShareGateway;
@@ -92,6 +95,7 @@ export interface ContainerOverrides {
 	readonly filePicker?: FilePicker;
 	readonly reminderNotifier?: ReminderNotifier;
 	readonly printer?: ListPrinter;
+	readonly exportPlatform?: ExportPlatform;
 	readonly shareGateway?: ShareGateway;
 	readonly microsoftAuthorizer?: MicrosoftAuthorizer;
 	readonly graphFetcher?: GraphFetcher;
@@ -198,6 +202,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		attachments,
 		reminders,
 		printer: overrides.printer ?? new ExpoListPrinter(),
+		exporter: new Exporter(overrides.exportPlatform ?? createExportPlatform(), store, clock),
 		paneWidths: new PaneWidths(dataStore),
 		shares:
 			overrides.shareGateway ??

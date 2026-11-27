@@ -1,6 +1,7 @@
 import { useI18n } from "../i18n/i18n-context";
 import { SORT_OPTIONS } from "../domain/view-settings";
 import { useContainer } from "./container-context";
+import { useExportActions } from "./export-host";
 import { useObservable } from "./hooks";
 import { MenuDivider, MenuItem, MenuOverlay, MenuPanel } from "./menu";
 import { SORT_GLYPHS } from "./sort-glyphs";
@@ -33,6 +34,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 		onClose();
 	};
 	const print = usePrintList();
+	const exportActions = useExportActions();
 	const sortItems = SORT_OPTIONS.map((option) => (
 		<MenuItem
 			key={option.key}
@@ -86,6 +88,13 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 						/>
 					) : null}
 					<MenuItem glyph="print" label={t("menu.print")} onPress={finish(print)} />
+					{exportActions === null ? null : (
+						<MenuItem
+							glyph="export"
+							label={t("ctx.exportList")}
+							onPress={finish(exportActions.exportView)}
+						/>
+					)}
 					{view.separatesCompleted ? (
 						<MenuItem
 							glyph="check"

@@ -104,6 +104,11 @@ private struct SettingsRowView: View {
       SettingsNumberField(row: row, change: change)
     case "text":
       TextField(row.label, text: .constant(row.value ?? ""))
+    case "action":
+      Button(row.label) {
+        NSApp.keyWindow?.performClose(nil)
+        change("")
+      }
     case "button":
       HStack {
         Spacer()

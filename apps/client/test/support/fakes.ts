@@ -10,7 +10,10 @@ import type {
 	ReminderNotifier,
 } from "../../src/reminders/reminder-notifier";
 import type { PhotoGateway, PhotoPicker } from "../../src/photos/photo-gateway";
-import type { ListPrinter } from "../../src/print/list-print-document";
+import type { ListPrinter, PrintableBook } from "../../src/print/list-print-document";
+import type { ExportPlatform } from "../../src/export/exporter";
+import type { FileSaver, SaveOutcome, SaveRequest } from "../../src/export/file-saver";
+import type { PdfRenderer } from "../../src/export/pdf-renderer";
 import type { SoundPlayer } from "../../src/audio/sound-player";
 import type { ApiGateway } from "../../src/api/api-gateway";
 import type {
@@ -63,6 +66,34 @@ export class RecordingPrinter implements ListPrinter {
 		if (this.failure !== null) {
 			throw this.failure;
 		}
+	}
+}
+
+export class FakeExportPlatform implements ExportPlatform, FileSaver {
+	available = true;
+	outcome: SaveOutcome | Error = "saved";
+	files: { name: string; contentType: string; text: string }[] = [];
+	books: PrintableBook[] = [];
+
+	readonly pdf: PdfRenderer = {
+		render: async (book) => {
+			this.books.push(book);
+			return new TextEncoder().encode("%PDF");
+		},
+	};
+
+	get saver(): FileSaver {
+		return this;
+	}
+
+	async save({ name, contentType, content }: SaveRequest): Promise<SaveOutcome> {
+		if (this.outcome instanceof Error) {
+			throw this.outcome;
+		}
+		if (this.outcome === "saved") {
+			this.files.push({ name, contentType, text: new TextDecoder().decode(await content()) });
+		}
+		return this.outcome;
 	}
 }
 

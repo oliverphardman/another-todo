@@ -12,6 +12,7 @@ export interface NativeSettingsContext {
 	readonly serverUrl: string;
 	readonly microsoft: MicrosoftSettingsState;
 	readonly account: AccountAction | null;
+	readonly exportLists: (() => void) | null;
 }
 
 interface Field {
@@ -35,6 +36,7 @@ export class NativeSettingsForm {
 			NativeSettingsForm.server(context),
 			NativeSettingsForm.lists(context),
 			NativeSettingsForm.myDay(context),
+			...NativeSettingsForm.export(context),
 			...NativeSettingsForm.account(context),
 		];
 	}
@@ -218,6 +220,24 @@ export class NativeSettingsForm {
 				),
 			],
 		};
+	}
+
+	private static export({ i18n, exportLists }: NativeSettingsContext): FieldSection[] {
+		if (exportLists === null) {
+			return [];
+		}
+		return [
+			{
+				key: "export",
+				title: i18n.t("settings.export"),
+				fields: [
+					{
+						row: { kind: "action", key: "export", label: i18n.t("settings.exportLists") },
+						apply: () => exportLists(),
+					},
+				],
+			},
+		];
 	}
 
 	private static account({ account }: NativeSettingsContext): FieldSection[] {

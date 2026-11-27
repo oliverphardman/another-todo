@@ -10,6 +10,7 @@ import { insetPadding, useInsets } from "./safe-area";
 import {
 	AccountSection,
 	AppearanceSection,
+	ExportSection,
 	ListsSection,
 	MicrosoftSection,
 	MyDaySection,
@@ -86,6 +87,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
 				<ServerSection />
 				<ListsSection />
 				<MyDaySection />
+				<ExportSection />
 				<AccountSection />
 			</ScrollView>
 		</View>
