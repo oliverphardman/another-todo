@@ -7,6 +7,8 @@ const FORKS = {
 	windows: "react-native-windows",
 };
 
+const ASSET_REGISTRY = "@react-native/assets-registry/";
+
 config.resolver.platforms = [
 	...new Set([...(config.resolver.platforms ?? []), "macos", "windows"]),
 ];
@@ -14,15 +16,17 @@ config.resolver.platforms = [
 const resolveWithExpo = config.resolver.resolveRequest;
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+	const resolve = resolveWithExpo ?? context.resolveRequest;
 	const fork = FORKS[platform];
-	if (
-		fork !== undefined &&
-		(moduleName === "react-native" || moduleName.startsWith("react-native/"))
-	) {
-		const redirected = moduleName.replace(/^react-native/, fork);
-		return (resolveWithExpo ?? context.resolveRequest)(context, redirected, platform);
+	if (fork === undefined) {
+		return resolve(context, moduleName, platform);
 	}
-	return (resolveWithExpo ?? context.resolveRequest)(context, moduleName, platform);
+	if (moduleName.startsWith(ASSET_REGISTRY)) {
+		const originModulePath = require.resolve(`${fork}/package.json`);
+		return resolve({ ...context, originModulePath }, moduleName, platform);
+	}
+	const redirected = moduleName.replace(/^react-native(?=\/|$)/, fork);
+	return resolve(context, redirected, platform);
 };
 
 const originalRunBefore = config.serializer.getModulesRunBeforeMainModule;

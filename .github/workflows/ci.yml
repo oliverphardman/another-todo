@@ -85,6 +85,11 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Bundle the Windows app
+        run: >-
+          pnpm exec react-native bundle --platform windows --entry-file index.windows.ts --dev false
+          --bundle-output "$RUNNER_TEMP/index.windows.bundle" --assets-dest "$RUNNER_TEMP/windows-assets"
+
   terraform:
     name: Terraform
     runs-on: ubuntu-latest
