@@ -6,6 +6,7 @@ import { useContainer } from "./container-context";
 import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
+import { rowMetrics } from "./row-metrics";
 import { useTheme } from "./theme-context";
 
 const PILL = {
@@ -18,7 +19,8 @@ const PILL = {
 } as const;
 
 export function SortChip() {
-	const { store } = useContainer();
+	const { store, settings: preferences } = useContainer();
+	const { rowStyle } = useObservable(preferences);
 	const { t } = useI18n();
 	const palette = useTheme();
 	useObservable(store);
@@ -29,7 +31,14 @@ export function SortChip() {
 		return null;
 	}
 	return (
-		<View style={{ flexDirection: "row", paddingHorizontal: 16, marginBottom: 12, gap: 8 }}>
+		<View
+			style={{
+				flexDirection: "row",
+				paddingHorizontal: rowMetrics(rowStyle).listPadding,
+				marginBottom: 12,
+				gap: 8,
+			}}
+		>
 			<PressableSurface
 				accessibilityRole="button"
 				accessibilityLabel={t("sort.flip")}

@@ -1,5 +1,5 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Animated, View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
@@ -45,19 +45,26 @@ export function TaskRow({
 	const { motion } = useContainer();
 	const metrics = rowMetrics(rowStyle);
 	const fill = useRef(new Animated.Value(task.completed ? 1 : 0)).current;
-	const filled = useRef(task.completed);
-	useEffect(() => {
-		if (filled.current === task.completed) {
+	const mark = useRef({ id: task.id, ticked: task.completed });
+	if (mark.current.id !== task.id) {
+		mark.current = { id: task.id, ticked: task.completed };
+	}
+	mark.current.ticked ||= task.completed;
+	const filled = useRef({ id: task.id, completed: task.completed });
+	useLayoutEffect(() => {
+		const before = filled.current;
+		filled.current = { id: task.id, completed: task.completed };
+		const reused = before.id !== task.id;
+		if (!reused && before.completed === task.completed) {
 			return;
 		}
-		filled.current = task.completed;
 		const toValue = task.completed ? 1 : 0;
-		if (motion.fillMs === 0) {
+		if (reused || motion.fillMs === 0) {
 			fill.setValue(toValue);
 			return;
 		}
 		Animated.timing(fill, { toValue, duration: motion.fillMs, useNativeDriver: false }).start();
-	}, [task.completed, motion.fillMs, fill]);
+	}, [task.id, task.completed, motion.fillMs, fill]);
 	return (
 		<View
 			{...({
@@ -83,13 +90,15 @@ export function TaskRow({
 				onPress={onToggleCompleted}
 				onContextMenu={menu.onContextMenu}
 				onLongPress={menu.onLongPress}
-				style={{ ...metrics.control, cursor: "default" as never }}
+				style={{ ...metrics.circleControl, cursor: "default" as never }}
 			>
 				<View>
-					<Icon glyph="circle" size={22} color={palette.accent} />
-					<Animated.View style={{ position: "absolute", opacity: fill }}>
-						<CheckedCircle size={22} color={palette.accent} />
-					</Animated.View>
+					<Icon glyph="circle" color={palette.accent} {...metrics.circle} />
+					{mark.current.ticked ? (
+						<Animated.View style={{ position: "absolute", opacity: fill }}>
+							<CheckedCircle size={metrics.circle.size} color={palette.accent} />
+						</Animated.View>
+					) : null}
 				</View>
 			</PressableSurface>
 			<PressableSurface
@@ -102,14 +111,14 @@ export function TaskRow({
 				style={{ flex: 1, paddingVertical: metrics.textPadding, cursor: "default" as never }}
 			>
 				<AppText
-					size={15}
+					size={metrics.titleSize}
 					tone={task.completed ? "secondary" : "primary"}
 					style={task.completed ? { textDecorationLine: "line-through" } : undefined}
 				>
 					{task.title}
 				</AppText>
 				{subtitle.length === 0 ? null : (
-					<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} />
+					<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} rowStyle={rowStyle} />
 				)}
 			</PressableSurface>
 			<PressableSurface
@@ -118,9 +127,13 @@ export function TaskRow({
 				onPress={onToggleImportant}
 				onContextMenu={menu.onContextMenu}
 				onLongPress={menu.onLongPress}
-				style={{ ...metrics.control, cursor: "default" as never }}
+				style={{ ...metrics.starControl, cursor: "default" as never }}
 			>
-				<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
+				<Icon
+					glyph={task.important ? "starFilled" : "star"}
+					size={metrics.starSize}
+					color={palette.accent}
+				/>
 			</PressableSurface>
 		</View>
 	);

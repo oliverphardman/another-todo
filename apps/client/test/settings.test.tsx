@@ -103,8 +103,8 @@ describe("appearance", () => {
 		expect(rowHeight("Example task")).toBe("52px");
 		await press(settings.getByLabelText("Compact"));
 		expect(checked(settings.getByLabelText("Compact"))).toBe("true");
-		expect(rowHeight("Example task")).toBe("36px");
-		expect(rowHeight("Water plants")).toBe("36px");
+		expect(rowHeight("Example task")).toBe("44px");
+		expect(rowHeight("Water plants")).toBe("44px");
 		fireEvent.click(preview.getByText("Example task"));
 		fireEvent.click(preview.getByLabelText("Mark as completed", { selector: "[role=checkbox]" }));
 		fireEvent.contextMenu(preview.getByText("Example task"));
@@ -112,6 +112,18 @@ describe("appearance", () => {
 		expect(app.container.store.get().tasks).toHaveLength(1);
 		await press(settings.getByLabelText("Cozy"));
 		expect(rowHeight("Water plants")).toBe("52px");
+	});
+
+	it("sets compact text smaller throughout the list", async () => {
+		const app = await start();
+		act(() => app.container.store.select("tasks"));
+		addTask("Water plants");
+		const size = (text: string) => screen.getByText(text).style.fontSize;
+		const heading = () => screen.getByRole("heading", { name: "Tasks" }).style.fontSize;
+		expect([size("Water plants"), heading()]).toEqual(["15px", "28px"]);
+		act(() => app.container.settings.change({ rowStyle: "compact" }));
+		expect([size("Water plants"), heading()]).toEqual(["13px", "24px"]);
+		expect(screen.getByLabelText("Add a task").style.fontSize).toBe("13px");
 	});
 
 	it("moves the add task bar below the list", async () => {
