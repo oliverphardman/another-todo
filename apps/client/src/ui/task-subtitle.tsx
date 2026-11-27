@@ -3,9 +3,11 @@ import { View } from "react-native";
 import type { Task } from "../domain/task";
 import type { TaskView } from "../domain/task-view";
 import type { I18n } from "../i18n/i18n";
+import type { RowStyle } from "../state/app-settings";
 import type { TodoStore } from "../state/todo-store";
 import { AppText } from "./app-text";
 import { Icon, type IconGlyph } from "./icon";
+import { rowMetrics } from "./row-metrics";
 import { useTheme } from "./theme-context";
 
 export interface SubtitlePart {
@@ -39,11 +41,15 @@ export class TaskSubtitleParts {
 export function TaskSubtitle({
 	parts,
 	overdue,
+	rowStyle,
 }: {
 	readonly parts: readonly SubtitlePart[];
 	readonly overdue: boolean;
+	readonly rowStyle: RowStyle;
 }) {
 	const palette = useTheme();
+	const { size, iconSize, separator, separatorSize, separatorMargin } =
+		rowMetrics(rowStyle).subtitle;
 	const tone = overdue ? "danger" : "secondary";
 	const color = overdue ? palette.danger : palette.textSecondary;
 	return (
@@ -51,17 +57,17 @@ export function TaskSubtitle({
 			{parts.map((part, index) => (
 				<Fragment key={`${part.glyph ?? "text"}-${part.text}`}>
 					{index === 0 ? null : (
-						<AppText size={12} tone={tone} style={{ marginHorizontal: 4 }}>
-							·
+						<AppText size={separatorSize} tone={tone} style={{ marginHorizontal: separatorMargin }}>
+							{separator}
 						</AppText>
 					)}
 					<View style={{ flexDirection: "row", alignItems: "center" }}>
 						{part.glyph === undefined ? null : (
 							<View style={{ marginRight: 3 }}>
-								<Icon glyph={part.glyph} size={12} color={color} />
+								<Icon glyph={part.glyph} size={iconSize} color={color} />
 							</View>
 						)}
-						<AppText size={12} tone={tone}>
+						<AppText size={size} tone={tone}>
 							{part.text}
 						</AppText>
 					</View>

@@ -138,7 +138,17 @@ describe("My Day preferences", () => {
 describe("rowMetrics", () => {
 	it("makes compact rows shorter", () => {
 		expect(rowMetrics("cozy").height).toBe(52);
-		expect(rowMetrics("compact").height).toBe(36);
+		expect(rowMetrics("compact").height).toBe(44);
 		expect(rowMetrics("compact").pitch).toBeLessThan(rowMetrics("cozy").pitch);
+	});
+
+	it("matches Microsoft To Do's compact type and spacing", () => {
+		expect(rowMetrics("compact")).toMatchObject({
+			height: 44,
+			gap: 1,
+			titleSize: 13,
+			listPadding: 12,
+			subtitle: { size: 12 },
+		});
 	});
 });

@@ -30,6 +30,7 @@ import { useTheme } from "./theme-context";
 import { TaskRow } from "./task-row";
 import { TaskSubtitleParts } from "./task-subtitle";
 import { rowMetrics } from "./row-metrics";
+import type { RowStyle } from "../state/app-settings";
 import { MovingList, type MovingItem } from "./list-motion";
 import { useRowWindow } from "./row-window";
 
@@ -39,7 +40,6 @@ export interface TaskListPaneProps {
 }
 
 const DRAG_THRESHOLD = 5;
-const SECTION_HEIGHT = 48;
 
 export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { store, settings, motion } = useContainer();
@@ -49,6 +49,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const i18n = useI18n();
 	const { t } = i18n;
 	const state = useObservable(store);
+	const metrics = rowMetrics(rowStyle);
 	const [showDone, setShowDone] = useState(true);
 	const [showYesterday, setShowYesterday] = useState(true);
 	const [panel, setPanel] = useState<ListPanel | null>(null);
@@ -172,7 +173,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 		tasks.map((task) => ({
 			key: task.id,
 			kind: "task",
-			estimatedHeight: rowMetrics(rowStyle).pitch,
+			estimatedHeight: metrics.pitch,
 			render: () => row(task),
 		}));
 	const section = (
@@ -189,9 +190,10 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					{
 						key,
 						kind: "section",
-						estimatedHeight: SECTION_HEIGHT,
+						estimatedHeight: metrics.section.height,
 						render: () => (
 							<SectionHeader
+								rowStyle={rowStyle}
 								title={title}
 								toggleLabel={toggleLabel}
 								expanded={expanded}
@@ -220,13 +222,17 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 			done,
 		),
 	];
-	const shownRows = useRowWindow(view.id, rowMetrics(rowStyle).pitch, items, moved.current.ids);
+	const shownRows = useRowWindow(view.id, metrics.pitch, items, moved.current.ids);
 	const scroller = useRef<ScrollView>(null);
 	useLayoutEffect(() => {
 		scroller.current?.scrollTo({ y: 0, animated: false });
 	}, [view.id]);
 	const addBar = (
-		<AddTaskBar placeholder={t("task.add")} onSubmit={(text) => store.addTask(text)} />
+		<AddTaskBar
+			rowStyle={rowStyle}
+			placeholder={t("task.add")}
+			onSubmit={(text) => store.addTask(text)}
+		/>
 	);
 	return (
 		<PaneBackground imageUrl={imageUrl}>
@@ -236,7 +242,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				style={{
 					flexDirection: "row",
 					alignItems: "center",
-					paddingHorizontal: 16,
+					paddingHorizontal: metrics.listPadding,
 					paddingTop: 16,
 					paddingBottom: 23,
 				}}
@@ -253,6 +259,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				) : null}
 				{state.renamingViewId === view.id ? (
 					<RenameField
+						rowStyle={rowStyle}
 						initial={view.title}
 						onDone={(name) => {
 							store.renameList(view.id, name);
@@ -267,7 +274,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 						onPress={() => store.startRenaming(view.id)}
 						style={{ flex: 1 }}
 					>
-						<AppText role="heading" size={28} weight="600" tone="title">
+						<AppText role="heading" tone="title" {...metrics.heading}>
 							{i18n.viewTitle(view)}
 						</AppText>
 						{view.showsDate ? (
@@ -301,7 +308,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{
 					flexGrow: 1,
-					paddingHorizontal: 16,
+					paddingHorizontal: metrics.listPadding,
 					paddingBottom: compact ? 16 : 32,
 				}}
 			>
@@ -320,7 +327,13 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 				/>
 			</ScrollView>
 			{view.allowsAdding && addTaskPosition === "bottom" ? (
-				<View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: compact ? 8 : 16 }}>
+				<View
+					style={{
+						paddingHorizontal: metrics.listPadding,
+						paddingTop: 8,
+						paddingBottom: compact ? 8 : 16,
+					}}
+				>
 					{addBar}
 				</View>
 			) : null}
@@ -337,33 +350,49 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 }
 
 function SectionHeader({
+	rowStyle,
 	title,
 	toggleLabel,
 	expanded,
 	onToggle,
 }: {
+	readonly rowStyle: RowStyle;
 	readonly title: string;
 	readonly toggleLabel: string;
 	readonly expanded: boolean;
 	readonly onToggle: () => void;
 }) {
 	const palette = useTheme();
+	const { marginTop, paddingVertical, fontSize, iconSize } = rowMetrics(rowStyle).section;
 	return (
 		<PressableSurface
 			accessibilityRole="button"
 			accessibilityLabel={toggleLabel}
 			onPress={onToggle}
-			style={{ flexDirection: "row", alignItems: "center", marginTop: 12, paddingVertical: 8 }}
+			style={{ flexDirection: "row", alignItems: "center", marginTop, paddingVertical }}
 		>
-			<Icon glyph={expanded ? "chevronDown" : "chevronRight"} size={16} color={palette.onAccent} />
-			<AppText tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
+			<Icon
+				glyph={expanded ? "chevronDown" : "chevronRight"}
+				size={iconSize}
+				color={palette.onAccent}
+			/>
+			<AppText size={fontSize} tone="onAccent" weight="600" style={{ marginLeft: 8 }}>
 				{title}
 			</AppText>
 		</PressableSurface>
 	);
 }
 
-function RenameField({ initial, onDone }: { initial: string; onDone: (name: string) => void }) {
+function RenameField({
+	rowStyle,
+	initial,
+	onDone,
+}: {
+	rowStyle: RowStyle;
+	initial: string;
+	onDone: (name: string) => void;
+}) {
+	const { size, weight } = rowMetrics(rowStyle).heading;
 	const { t } = useI18n();
 	const palette = useTheme();
 	const [text, setText] = useState(initial);
@@ -380,8 +409,8 @@ function RenameField({ initial, onDone }: { initial: string; onDone: (name: stri
 			style={
 				{
 					flex: 1,
-					...fontStyle("600"),
-					fontSize: 28,
+					...fontStyle(weight),
+					fontSize: size,
 					color: palette.title,
 					outlineStyle: "none",
 				} as object

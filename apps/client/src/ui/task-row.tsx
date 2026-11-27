@@ -90,13 +90,13 @@ export function TaskRow({
 				onPress={onToggleCompleted}
 				onContextMenu={menu.onContextMenu}
 				onLongPress={menu.onLongPress}
-				style={{ ...metrics.control, cursor: "default" as never }}
+				style={{ ...metrics.circleControl, cursor: "default" as never }}
 			>
 				<View>
-					<Icon glyph="circle" size={22} color={palette.accent} />
+					<Icon glyph="circle" color={palette.accent} {...metrics.circle} />
 					{mark.current.ticked ? (
 						<Animated.View style={{ position: "absolute", opacity: fill }}>
-							<CheckedCircle size={22} color={palette.accent} />
+							<CheckedCircle size={metrics.circle.size} color={palette.accent} />
 						</Animated.View>
 					) : null}
 				</View>
@@ -111,14 +111,14 @@ export function TaskRow({
 				style={{ flex: 1, paddingVertical: metrics.textPadding, cursor: "default" as never }}
 			>
 				<AppText
-					size={15}
+					size={metrics.titleSize}
 					tone={task.completed ? "secondary" : "primary"}
 					style={task.completed ? { textDecorationLine: "line-through" } : undefined}
 				>
 					{task.title}
 				</AppText>
 				{subtitle.length === 0 ? null : (
-					<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} />
+					<TaskSubtitle parts={subtitle} overdue={overdue && !task.completed} rowStyle={rowStyle} />
 				)}
 			</PressableSurface>
 			<PressableSurface
@@ -127,9 +127,13 @@ export function TaskRow({
 				onPress={onToggleImportant}
 				onContextMenu={menu.onContextMenu}
 				onLongPress={menu.onLongPress}
-				style={{ ...metrics.control, cursor: "default" as never }}
+				style={{ ...metrics.starControl, cursor: "default" as never }}
 			>
-				<Icon glyph={task.important ? "starFilled" : "star"} size={20} color={palette.accent} />
+				<Icon
+					glyph={task.important ? "starFilled" : "star"}
+					size={metrics.starSize}
+					color={palette.accent}
+				/>
 			</PressableSurface>
 		</View>
 	);

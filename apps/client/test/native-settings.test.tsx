@@ -110,7 +110,7 @@ describe("the macOS settings window", () => {
 		const app = await start();
 		const settings = app.container.settings;
 		await native.change("rowStyle", "compact");
-		expect(native.row("preview").height).toBe(36);
+		expect(native.row("preview").height).toBe(44);
 		await native.change("addTaskPosition", "bottom");
 		await native.change("list.planned", "false");
 		await native.change("myDay.yesterday", "true");
