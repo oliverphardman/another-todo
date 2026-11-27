@@ -54,6 +54,7 @@ import { SyncCoordinator } from "./sync/sync-coordinator";
 import { SyncEngine } from "./sync/sync-engine";
 
 export interface Container {
+	readonly platform: string;
 	readonly config: AppConfig;
 	readonly server: ServerControls;
 	readonly auth: AuthenticationService;
@@ -183,6 +184,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		settings,
 	);
 	return {
+		platform: overrides.platform,
 		settings,
 		config,
 		server: overrides.server ?? {
