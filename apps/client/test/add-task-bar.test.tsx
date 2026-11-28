@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react
 import { afterEach, describe, expect, it } from "vitest";
 import { LIST_THEME_COLOR } from "../src/domain/view-settings";
 import { PRESET_PHOTOS } from "../src/photos/preset-photos";
-import { ColorMath } from "../src/ui/color-math";
 import { IconArtwork } from "../src/ui/icon-artwork";
+import { ListTheme } from "../src/ui/list-theme";
 import { DARK, LIGHT } from "../src/ui/theme";
 import { renderApp } from "./support/render-app";
 
@@ -71,16 +71,26 @@ describe("Add a Task field", () => {
 		expect(glyph()).toBe(IconArtwork.path("plus").d);
 	});
 
-	it("is a darker shade of the list's theme", async () => {
-		const app = await start();
-		const shade = (color: string) => rgb(ColorMath.mix(color, "#000000", 0.18));
-		expect(bar().style.backgroundColor).toBe(shade(LIST_THEME_COLOR));
-		expect(input().style.color).toBe(rgb("#ffffff"));
-		act(() =>
-			app.container.store.updateSettings("tasks", { theme: { type: "color", color: "#c0392b" } }),
-		);
-		expect(bar().style.backgroundColor).toBe(shade("#c0392b"));
-	});
+	it.each([
+		["light", LIGHT],
+		["dark", DARK],
+	] as const)(
+		"keeps the standard %s fill for a color theme, with text in the theme color",
+		async (scheme, palette) => {
+			const app = await start({ scheme });
+			const accent = (color: string) =>
+				rgb(ListTheme.resolve(null, null, scheme === "dark", color).overrides.accent!);
+			expect(bar().style.backgroundColor).toBe(rgb(palette.surface));
+			expect(input().style.color).toBe(accent(LIST_THEME_COLOR));
+			act(() =>
+				app.container.store.updateSettings("tasks", {
+					theme: { type: "color", color: "#c0392b" },
+				}),
+			);
+			expect(bar().style.backgroundColor).toBe(rgb(palette.surface));
+			expect(input().style.color).toBe(accent("#c0392b"));
+		},
+	);
 
 	it.each([
 		["top", { from: 0.1, to: 0.35 }],
