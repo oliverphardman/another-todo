@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Animated, Easing, Platform } from "react-native";
+import { Animated, Easing } from "react-native";
+import { usesNativeDriver } from "./native-driver";
 import { RowSlots } from "./row-slots";
 
 export interface MovingItem {
@@ -39,8 +40,6 @@ export class ListPositions {
 	}
 }
 
-const NATIVE_DRIVER = ["ios", "android"];
-
 export function MovingList({ scope, trigger, raised, duration, items }: MovingListProps) {
 	const heights = useRef(new Map<string, number>()).current;
 	const offsets = useRef(new Map<string, Animated.Value>()).current;
@@ -78,7 +77,7 @@ export function MovingList({ scope, trigger, raised, duration, items }: MovingLi
 				toValue: 0,
 				duration,
 				easing: Easing.out(Easing.cubic),
-				useNativeDriver: NATIVE_DRIVER.includes(Platform.OS),
+				useNativeDriver: usesNativeDriver(),
 			}).start();
 		}
 	});
