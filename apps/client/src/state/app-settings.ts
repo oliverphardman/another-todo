@@ -24,6 +24,8 @@ export interface MyDayPreferences {
 }
 
 export interface AppSettingsState {
+	readonly completionSound: boolean;
+	readonly confirmDelete: boolean;
 	readonly rowStyle: RowStyle;
 	readonly menuStyle: MenuStyle;
 	readonly addTaskPosition: AddTaskPosition;
@@ -33,6 +35,8 @@ export interface AppSettingsState {
 }
 
 export const DEFAULT_SETTINGS: AppSettingsState = {
+	completionSound: true,
+	confirmDelete: true,
 	rowStyle: "cozy",
 	menuStyle: "compact",
 	addTaskPosition: "top",
@@ -46,6 +50,8 @@ const KEY = "atd.settings";
 type Saved = Readonly<Record<string, unknown>>;
 
 export interface SettingsChanges {
+	readonly completionSound?: boolean;
+	readonly confirmDelete?: boolean;
 	readonly rowStyle?: RowStyle;
 	readonly menuStyle?: MenuStyle;
 	readonly addTaskPosition?: AddTaskPosition;
@@ -122,6 +128,8 @@ export class AppSettings extends Observable<AppSettingsState> {
 			choices.find((candidate) => candidate === stored) ?? otherwise;
 		const minutes = microsoft.intervalMinutes;
 		return {
+			completionSound: flag(saved.completionSound, fallback.completionSound),
+			confirmDelete: flag(saved.confirmDelete, fallback.confirmDelete),
 			rowStyle: choice(saved.rowStyle, LAYOUT_STYLES, fallback.rowStyle),
 			menuStyle: choice(saved.menuStyle, LAYOUT_STYLES, fallback.menuStyle),
 			addTaskPosition: choice(saved.addTaskPosition, ["top", "bottom"], fallback.addTaskPosition),

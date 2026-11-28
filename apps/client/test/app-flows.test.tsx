@@ -493,6 +493,10 @@ describe("expanded layout", () => {
 		expect(screen.getByRole("heading", { name: "Errands" })).toBeTruthy();
 		fireEvent.contextMenu(screen.getByLabelText("Errands"));
 		fireEvent.click(screen.getByLabelText("Delete List"));
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete list")),
+		);
 		expect(app.container.store.get().lists).toEqual([]);
 		expect(screen.getByRole("heading", { name: "My Day" })).toBeTruthy();
 	});
@@ -546,6 +550,10 @@ describe("expanded layout", () => {
 		expect(screen.getByRole("heading", { name: "Cats" })).toBeTruthy();
 		fireEvent.click(screen.getByLabelText("List options"));
 		fireEvent.click(screen.getByLabelText("Delete List"));
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete list")),
+		);
 		expect(app.container.store.get().lists).toEqual([]);
 	});
 

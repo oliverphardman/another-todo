@@ -5,7 +5,6 @@ import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
 import { AttachmentRow } from "./attachment-row";
-import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
@@ -15,6 +14,7 @@ import { CheckCircle } from "./check-circle";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
+import { useConfirmDeletion } from "./use-confirm-deletion";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { Hint } from "./hint";
 import { TaskNoteField, TaskTitleField } from "./task-fields";
@@ -32,7 +32,7 @@ export interface TaskDetailPaneProps {
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const { store, attachments, reminders } = useContainer();
 	const reminderState = useObservable(reminders);
-	const confirm = useConfirm();
+	const confirm = useConfirmDeletion();
 	const files = useObservable(attachments);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();

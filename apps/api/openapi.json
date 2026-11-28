@@ -1618,6 +1618,12 @@
 				"description": "Settings apps start with until someone changes them on their device",
 				"additionalProperties": false,
 				"properties": {
+					"completionSound": {
+						"type": "boolean"
+					},
+					"confirmDelete": {
+						"type": "boolean"
+					},
 					"rowStyle": {
 						"type": "string",
 						"enum": [

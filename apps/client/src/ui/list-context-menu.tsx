@@ -8,6 +8,7 @@ export interface ListContextMenuContext {
 	readonly i18n: I18n;
 	readonly listId: string;
 	readonly print: () => void;
+	readonly deleteList: (listId: string) => void;
 	readonly exportList: (() => void) | null;
 	readonly onRename: () => void;
 }
@@ -17,6 +18,7 @@ export function buildListContextMenu({
 	i18n,
 	listId,
 	print,
+	deleteList,
 	exportList,
 	onRename,
 }: ListContextMenuContext): ContextMenuEntry[] {
@@ -57,7 +59,7 @@ export function buildListContextMenu({
 		danger: true,
 		glyph: "trash",
 		label: list.owned ? t("ctx.deleteList") : t("ctx.leaveList"),
-		onPress: () => store.deleteList(listId),
+		onPress: () => deleteList(listId),
 	};
 	if (!list.owned) {
 		return [printEntry, ...exportEntries, removeEntry];

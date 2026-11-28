@@ -8,6 +8,7 @@ import { MenuBar } from "./menu-bar";
 import { MenuBarMenus } from "./menu-bar-menus";
 import { NativeMenu } from "./native-menu";
 import { useDeleteTasks } from "./use-delete-tasks";
+import { useDeleteList } from "./use-delete-list";
 import { useExportActions } from "./export-host";
 import { useLogOut } from "./use-log-out";
 import { usePrintList } from "./use-print-list";
@@ -21,13 +22,14 @@ export function MenuBarSync() {
 	useObservable(store);
 	const deleteTasks = useDeleteTasks();
 	const print = usePrintList();
+	const deleteList = useDeleteList();
 	const logOut = useLogOut();
 	const exportList = useExportActions()?.exportView ?? null;
 	const controller = useContextMenuController();
 	const { width } = useWindowDimensions();
 	const bridge = MenuBar.bridge;
 	const menus = bridge.isAvailable()
-		? MenuBarMenus.build({ store, i18n, print, exportList, deleteTasks, logOut })
+		? MenuBarMenus.build({ store, i18n, print, exportList, deleteTasks, deleteList, logOut })
 		: [];
 	const items = NativeMenu.items(menus);
 	const shown = JSON.stringify(items);

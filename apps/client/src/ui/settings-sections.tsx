@@ -15,6 +15,26 @@ import { TextField } from "./text-field";
 import { fontStyle } from "./typeface";
 import { useTheme } from "./theme-context";
 
+export function GeneralSection() {
+	const { settings } = useContainer();
+	const { t } = useI18n();
+	const { completionSound, confirmDelete } = useObservable(settings);
+	return (
+		<SettingsSection title={t("settings.general")}>
+			<Checkbox
+				label={t("settings.completionSound")}
+				checked={completionSound}
+				onChange={(next) => settings.change({ completionSound: next })}
+			/>
+			<Checkbox
+				label={t("settings.confirmDelete")}
+				checked={confirmDelete}
+				onChange={(next) => settings.change({ confirmDelete: next })}
+			/>
+		</SettingsSection>
+	);
+}
+
 export function AppearanceSection() {
 	const { settings } = useContainer();
 	const { t } = useI18n();

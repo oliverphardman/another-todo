@@ -70,6 +70,7 @@ The list was clipped after "Rearrange lists by dragging them around"; the remain
 - [x] Choose whether to receive from and send to Microsoft To Do, and how often
 - [x] Show or hide the All, Important, Planned and Completed lists
 - [x] My Day can show yesterday's unfinished tasks and can leave out tasks that are only due today
+- [x] Turn off the completion sound and the confirmation before deleting
 - [ ] Sync settings between devices
 
 ## 8. Export

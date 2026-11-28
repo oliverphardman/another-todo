@@ -20,6 +20,8 @@ describe("AppSettings", () => {
 	it("starts cozy, adding at the top, with every list and due tasks in My Day", async () => {
 		const { settings } = await loaded(null);
 		expect(settings.get()).toEqual({
+			completionSound: true,
+			confirmDelete: true,
 			rowStyle: "cozy",
 			menuStyle: "compact",
 			addTaskPosition: "top",
@@ -31,6 +33,7 @@ describe("AppSettings", () => {
 
 	it("remembers every change on this device", async () => {
 		const { settings, storage } = await loaded(null);
+		settings.change({ completionSound: false, confirmDelete: false });
 		settings.change({ rowStyle: "compact", menuStyle: "cozy", addTaskPosition: "bottom" });
 		settings.changeMicrosoft({ send: false, intervalMinutes: 15 });
 		settings.changeMyDay({ yesterday: true, dueToday: false });
