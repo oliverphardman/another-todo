@@ -34,7 +34,7 @@ export function AddTaskBar({ rowStyle, position, placeholder, onSubmit }: AddTas
 				borderRadius: 4,
 				paddingHorizontal: metrics.paddingHorizontal,
 				minHeight: metrics.height,
-				marginBottom: 8,
+				marginBottom: position === "top" ? 8 : 0,
 			}}
 		>
 			<View style={{ width: metrics.iconSize, alignItems: "center" }}>

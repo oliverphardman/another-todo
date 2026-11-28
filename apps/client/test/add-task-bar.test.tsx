@@ -93,6 +93,22 @@ describe("Add a Task field", () => {
 	);
 
 	it.each([
+		["compact", "12px"],
+		["cozy", "16px"],
+	] as const)(
+		"sits the list margin above the bottom edge in the %s style",
+		async (rowStyle, margin) => {
+			const app = await start();
+			act(() => app.container.settings.change({ rowStyle, addTaskPosition: "bottom" }));
+			expect(bar().style.marginBottom).toBe("0px");
+			expect(bar().parentElement!.style.paddingBottom).toBe(margin);
+			expect(bar().parentElement!.style.paddingLeft).toBe(margin);
+			act(() => app.container.settings.change({ addTaskPosition: "top" }));
+			expect(bar().style.marginBottom).toBe("8px");
+		},
+	);
+
+	it.each([
 		["top", { from: 0.1, to: 0.35 }],
 		["bottom", { from: 0.75, to: 1 }],
 	] as const)("samples a photo where the field sits at the %s", async (position, band) => {

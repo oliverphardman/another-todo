@@ -334,7 +334,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					style={{
 						paddingHorizontal: metrics.listPadding,
 						paddingTop: 8,
-						paddingBottom: compact ? 8 : 16,
+						paddingBottom: metrics.listPadding,
 					}}
 				>
 					{addBar}
