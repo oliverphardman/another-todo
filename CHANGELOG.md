@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.7.0](https://github.com/oliverphardman/another-todo/compare/v1.6.1...v1.7.0) (2026-11-28)
+
+
+### Features
+
+* add completion sound and delete confirmation settings ([fcb9d9b](https://github.com/oliverphardman/another-todo/commit/fcb9d9bcc7e89ad694c2c7f997dd646f7c6a276f))
+* **client:** add general settings and polish check circles and panes ([#26](https://github.com/oliverphardman/another-todo/issues/26)) ([7ec2ca0](https://github.com/oliverphardman/another-todo/commit/7ec2ca072de6ec97e629eace2dbe2d312453355c))
+* **client:** animate check circles while pressed and when toggled ([f1d628e](https://github.com/oliverphardman/another-todo/commit/f1d628e86daef7a4757f7daacbd67d3dd80f1279))
+
+
+### Fixes
+
+* **client:** keep the standard Add a Task fill for color themes ([2310b82](https://github.com/oliverphardman/another-todo/commit/2310b82e905c2fe267b877744c5825fb1335d8be))
+* **client:** match the list margin under a bottom Add a Task field ([a39a087](https://github.com/oliverphardman/another-todo/commit/a39a0876269dbcf2266faa53d75b4e112d428ed9))
+* **client:** stop lists scrolling sideways and wrap long task details ([503888a](https://github.com/oliverphardman/another-todo/commit/503888a547c86869db29a01c9ffcb2bf88cbe37c))
+
+
+### Performance
+
+* **client:** slide the details pane without re-laying out the list ([7744f96](https://github.com/oliverphardman/another-todo/commit/7744f96daf4bf7bf1d133a3f3d5d2159dc425ac9))
+
 ## [1.6.1](https://github.com/oliverphardman/another-todo/compare/v1.6.0...v1.6.1) (2026-11-27)
 
 
