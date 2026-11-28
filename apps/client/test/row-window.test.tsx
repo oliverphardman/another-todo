@@ -20,7 +20,7 @@ type Handlers = HTMLElement & {
 
 const PAGE = Math.ceil(768 / 54) + 2;
 
-async function start(count = 100, motion = { fillMs: 0, travelMs: 0, slideMs: 0 }) {
+async function start(count = 100, motion = { pressMs: 0, fillMs: 0, travelMs: 0, slideMs: 0 }) {
 	const app = await renderApp({ motion });
 	stop = app.stop;
 	const { store } = app.container;
@@ -154,7 +154,7 @@ describe("a long list", () => {
 					start: () => (value as Animated.Value).setValue(config.toValue as number),
 				}) as unknown as Animated.CompositeAnimation,
 		);
-		await start(100, { fillMs: 100, travelMs: 200, slideMs: 0 });
+		await start(100, { pressMs: 50, fillMs: 100, travelMs: 200, slideMs: 0 });
 		await act(async () => {
 			fireEvent.click(screen.getAllByLabelText("Mark as completed")[0]!);
 		});

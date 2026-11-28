@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 async function start() {
-	const app = await renderApp({ motion: { fillMs: 0, travelMs: 0, slideMs: 150 } });
+	const app = await renderApp({ motion: { pressMs: 0, fillMs: 0, travelMs: 0, slideMs: 150 } });
 	stop = app.stop;
 	const input = screen.getByLabelText("Add a Task");
 	fireEvent.change(input, { target: { value: "Slide" } });

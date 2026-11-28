@@ -3,7 +3,8 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 import { TextField } from "./text-field";
 import type { TaskStepData } from "../domain/task-step";
-import { CheckedCircle, Icon } from "./icon";
+import { CheckCircle } from "./check-circle";
+import { Icon } from "./icon";
 import { useContextMenuTrigger } from "./context-menu";
 import { PressableSurface } from "./pressable-surface";
 import { DETAIL_ROW_HEIGHT, DetailSeparator } from "./detail-card";
@@ -70,22 +71,18 @@ export function StepRow({ step, onToggle, onRename, onPromote, onDelete }: StepR
 					paddingLeft: 14,
 				}}
 			>
-				<PressableSurface
-					accessibilityRole="checkbox"
-					accessibilityLabel={
+				<CheckCircle
+					identity={step.id}
+					completed={step.completed}
+					label={
 						step.completed
 							? t("step.uncomplete", { title: step.title })
 							: t("step.complete", { title: step.title })
 					}
-					accessibilityState={{ checked: step.completed }}
-					onPress={onToggle}
-				>
-					{step.completed ? (
-						<CheckedCircle size={20} color={palette.accent} />
-					) : (
-						<Icon glyph="circle" size={20} color={palette.accent} strokeWidth={1.3} />
-					)}
-				</PressableSurface>
+					size={20}
+					strokeWidth={1.3}
+					onToggle={onToggle}
+				/>
 				<TextField
 					accessibilityLabel={t("step.named", { title: step.title })}
 					value={title}
