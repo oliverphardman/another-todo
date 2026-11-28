@@ -48,6 +48,8 @@ that device. This shows every setting with its built-in value:
 
 ```json
 {
+	"completionSound": true,
+	"confirmDelete": true,
 	"rowStyle": "cozy",
 	"menuStyle": "compact",
 	"addTaskPosition": "top",
@@ -57,7 +59,7 @@ that device. This shows every setting with its built-in value:
 }
 ```
 
-`rowStyle` (the task style) and `menuStyle` (the list sidebar) are `cozy` or `compact`, `addTaskPosition` is `top` or `bottom`, and `intervalMinutes` is 1 to 1440. In a
+`completionSound` and `confirmDelete` are `true` or `false`, `rowStyle` (the task style) and `menuStyle` (the list sidebar) are `cozy` or `compact`, `addTaskPosition` is `top` or `bottom`, and `intervalMinutes` is 1 to 1440. In a
 `.env` file, write it on one line in single quotes: `DEFAULT_SETTINGS='{"rowStyle":"compact"}'`. The server refuses
 to start if it contains anything else. Apps pick up a change the next time they start.
 

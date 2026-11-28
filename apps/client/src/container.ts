@@ -28,6 +28,7 @@ import type { ListPrinter } from "./print/list-print-document";
 import { createReminderNotifier } from "./reminders/reminder-notifier-factory";
 import type { ReminderNotifier } from "./reminders/reminder-notifier";
 import { ReminderService } from "./reminders/reminder-service";
+import { PreferredSoundPlayer } from "./audio/preferred-sound-player";
 import { ExpoSoundPlayer } from "./audio/expo-sound-player";
 import type { SoundPlayer } from "./audio/sound-player";
 import { HttpApiGateway } from "./api/http-api-gateway";
@@ -153,7 +154,7 @@ export function createContainer(config: AppConfig, overrides: ContainerOverrides
 		ids,
 		clock,
 		sync,
-		overrides.sounds ?? new ExpoSoundPlayer(),
+		new PreferredSoundPlayer(overrides.sounds ?? new ExpoSoundPlayer(), settings),
 		settings,
 	);
 	attachments.subscribe(() => {

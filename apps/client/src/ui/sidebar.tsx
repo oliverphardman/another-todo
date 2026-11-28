@@ -21,6 +21,7 @@ import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
 import { Pointer } from "./pointer";
 import { PressableSurface } from "./pressable-surface";
 import { buildListContextMenu } from "./list-context-menu";
+import { useDeleteList } from "./use-delete-list";
 import { usePrintList } from "./use-print-list";
 import { useExportActions } from "./export-host";
 import { fontStyle } from "./typeface";
@@ -45,6 +46,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 	const dark = useIsDark();
 	const metrics = useMenuMetrics();
 	const print = usePrintList();
+	const deleteList = useDeleteList();
 	const exportList = useExportActions()?.exportView ?? null;
 	const microsoftStatus = useObservable(microsoft);
 	const blankMenu = useContextMenuTrigger(t("ctx.sidebarMenu"), () => {
@@ -206,6 +208,7 @@ export function Sidebar({ onSelected }: SidebarProps) {
 			i18n,
 			listId: viewId,
 			print,
+			deleteList,
 			exportList,
 			onRename: () => {
 				store.startRenaming(viewId);

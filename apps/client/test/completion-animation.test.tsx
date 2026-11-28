@@ -42,7 +42,7 @@ afterEach(() => {
 const PITCH = 54;
 const HEADER = 48;
 
-async function start(motion = { fillMs: 100, travelMs: 200, slideMs: 0 }) {
+async function start(motion = { pressMs: 50, fillMs: 100, travelMs: 200, slideMs: 0 }) {
 	const app = await renderApp({ motion });
 	stop = app.stop;
 	act(() => app.connectivity.setOnline(false));
@@ -147,7 +147,7 @@ describe("completing a task with motion", () => {
 	});
 
 	it("changes at once without motion", async () => {
-		await start({ fillMs: 0, travelMs: 0, slideMs: 0 });
+		await start({ pressMs: 0, fillMs: 0, travelMs: 0, slideMs: 0 });
 		await click(circle("First"));
 		await waitFor(() => expect(titles()).toEqual(["Second", "Third", "First"]));
 		expect(runs).toEqual([]);

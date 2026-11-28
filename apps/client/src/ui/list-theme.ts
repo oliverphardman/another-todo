@@ -13,8 +13,6 @@ export type Tone = "light" | "dark";
 export type FieldColors = Pick<Palette, "addField" | "onAddField">;
 
 const MINIMUM_CONTRAST = 4.5;
-const LIGHT_FIELD_SHADE = 0.18;
-const DARK_FIELD_SHADE = 0.65;
 
 const PHOTO_FIELDS: Readonly<Record<Tone, FieldColors>> = {
 	light: { addField: LIGHT.surface, onAddField: LIGHT.text },
@@ -54,8 +52,7 @@ export class ListTheme {
 				image,
 			};
 		}
-		const addField = ColorMath.mix(color, "#000000", dark ? DARK_FIELD_SHADE : LIGHT_FIELD_SHADE);
-		const field = { addField, onAddField: ColorMath.readableOn(addField) };
+		const field = { addField: (dark ? DARK : LIGHT).surface, onAddField: accent };
 		if (dark) {
 			return { overrides: { accent, accentSoft, title: accent, ...field }, image: null };
 		}

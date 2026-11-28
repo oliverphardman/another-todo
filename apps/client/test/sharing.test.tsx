@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { ApiError } from "../src/api/errors";
 import { HttpShareGateway } from "../src/shares/http-share-gateway";
@@ -183,6 +183,10 @@ describe("lists shared with you", () => {
 		expect(screen.queryByLabelText("Rename List", { selector: "[role=menuitem]" })).toBeNull();
 		expect(screen.queryByLabelText("Share List", { selector: "[role=menuitem]" })).toBeNull();
 		fireEvent.click(menuItem("Leave List"));
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Leave list")),
+		);
 		expect(app.container.store.get().lists).toEqual([]);
 	});
 
@@ -195,6 +199,10 @@ describe("lists shared with you", () => {
 		expect(screen.queryByLabelText("Create Group")).toBeNull();
 		expect(screen.queryByLabelText("Rename List")).toBeNull();
 		fireEvent.click(screen.getByLabelText("Leave List"));
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Leave list")),
+		);
 		expect(app.container.store.get().lists).toEqual([]);
 	});
 

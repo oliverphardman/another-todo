@@ -19,7 +19,7 @@ export interface ThemePanelProps {
 }
 
 export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
-	const { store, photos, presetPhotos } = useContainer();
+	const { store, photos, presetPhotos, settings } = useContainer();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -111,7 +111,13 @@ export function ThemePanel({ viewId, onClose }: ThemePanelProps) {
 							<PressableSurface
 								accessibilityRole="button"
 								accessibilityLabel={t("photo.delete", { name: photo.name })}
-								onPress={() => setConfirming(photo.id)}
+								onPress={() => {
+									if (settings.get().confirmDelete) {
+										setConfirming(photo.id);
+									} else {
+										void photos.remove(photo.id);
+									}
+								}}
 								style={{
 									position: "absolute",
 									top: 2,

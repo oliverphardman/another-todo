@@ -543,6 +543,8 @@ export interface components {
         };
         /** @description Settings apps start with until someone changes them on their device */
         DefaultSettings: {
+            completionSound?: boolean;
+            confirmDelete?: boolean;
             /** @enum {string} */
             rowStyle?: "cozy" | "compact";
             /** @enum {string} */

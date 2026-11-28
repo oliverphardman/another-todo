@@ -11,6 +11,7 @@ import { useObservable } from "./hooks";
 import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useDeleteTasks } from "./use-delete-tasks";
+import { useDeleteList } from "./use-delete-list";
 import { SortChip } from "./sort-chip";
 import { StatusBarTone } from "./status-bar-tone";
 import { SyncBanner } from "./sync-banner";
@@ -46,6 +47,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const { store, settings, motion } = useContainer();
 	const { rowStyle, addTaskPosition } = useObservable(settings);
 	const deleteTasks = useDeleteTasks();
+	const deleteList = useDeleteList();
 	const palette = useTheme();
 	const i18n = useI18n();
 	const { t } = i18n;
@@ -59,7 +61,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 	const print = usePrintList();
 	const exportList = useExportActions()?.exportView ?? null;
 	const options = useContextMenuTrigger(t("list.options"), () =>
-		buildListOptions({ store, i18n, view, print, exportList }),
+		buildListOptions({ store, i18n, view, print, deleteList, exportList }),
 	);
 	useEffect(() => {
 		setPanel(null);
@@ -334,7 +336,7 @@ export function TaskListPane({ mode, onShowSidebar }: TaskListPaneProps) {
 					style={{
 						paddingHorizontal: metrics.listPadding,
 						paddingTop: 8,
-						paddingBottom: compact ? 8 : 16,
+						paddingBottom: metrics.listPadding,
 					}}
 				>
 					{addBar}

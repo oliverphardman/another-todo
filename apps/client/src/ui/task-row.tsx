@@ -1,12 +1,11 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useLayoutEffect, useRef } from "react";
-import { Animated, View } from "react-native";
+import { View } from "react-native";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
 import { useContextMenuTrigger, type ContextMenuEntry } from "./context-menu";
-import { CheckedCircle, Icon } from "./icon";
+import { CheckCircle } from "./check-circle";
+import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
-import { useContainer } from "./container-context";
 import { TaskSubtitle, type SubtitlePart } from "./task-subtitle";
 import type { RowStyle } from "../state/app-settings";
 import { rowMetrics } from "./row-metrics";
@@ -42,29 +41,7 @@ export function TaskRow({
 	const palette = useTheme();
 	const { t } = useI18n();
 	const menu = useContextMenuTrigger(t("ctx.taskMenu"), buildMenu);
-	const { motion } = useContainer();
 	const metrics = rowMetrics(rowStyle);
-	const fill = useRef(new Animated.Value(task.completed ? 1 : 0)).current;
-	const mark = useRef({ id: task.id, ticked: task.completed });
-	if (mark.current.id !== task.id) {
-		mark.current = { id: task.id, ticked: task.completed };
-	}
-	mark.current.ticked ||= task.completed;
-	const filled = useRef({ id: task.id, completed: task.completed });
-	useLayoutEffect(() => {
-		const before = filled.current;
-		filled.current = { id: task.id, completed: task.completed };
-		const reused = before.id !== task.id;
-		if (!reused && before.completed === task.completed) {
-			return;
-		}
-		const toValue = task.completed ? 1 : 0;
-		if (reused || motion.fillMs === 0) {
-			fill.setValue(toValue);
-			return;
-		}
-		Animated.timing(fill, { toValue, duration: motion.fillMs, useNativeDriver: false }).start();
-	}, [task.id, task.completed, motion.fillMs, fill]);
 	return (
 		<View
 			{...({
@@ -83,24 +60,16 @@ export function TaskRow({
 				minHeight: metrics.height,
 			}}
 		>
-			<PressableSurface
-				accessibilityRole="checkbox"
-				accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
-				accessibilityState={{ checked: task.completed }}
-				onPress={onToggleCompleted}
+			<CheckCircle
+				identity={task.id}
+				completed={task.completed}
+				label={task.completed ? t("task.uncomplete") : t("task.complete")}
+				{...metrics.circle}
+				onToggle={onToggleCompleted}
 				onContextMenu={menu.onContextMenu}
 				onLongPress={menu.onLongPress}
-				style={{ ...metrics.circleControl, cursor: "default" as never }}
-			>
-				<View>
-					<Icon glyph="circle" color={palette.accent} {...metrics.circle} />
-					{mark.current.ticked ? (
-						<Animated.View style={{ position: "absolute", opacity: fill }}>
-							<CheckedCircle size={metrics.circle.size} color={palette.accent} />
-						</Animated.View>
-					) : null}
-				</View>
-			</PressableSurface>
+				style={metrics.circleControl}
+			/>
 			<PressableSurface
 				accessibilityRole="button"
 				accessibilityLabel={t("task.open", { title: task.title })}

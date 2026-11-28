@@ -82,6 +82,7 @@ describe("the macOS settings window", () => {
 	it("describes every section in order, ending with logging out", async () => {
 		await start();
 		expect(native.shown.sections.map((section) => section.title)).toEqual([
+			"General",
 			"Appearance",
 			"Microsoft To Do",
 			"Server",
@@ -110,6 +111,11 @@ describe("the macOS settings window", () => {
 	it("applies what is changed there and shows the result", async () => {
 		const app = await start();
 		const settings = app.container.settings;
+		await native.change("completionSound", "false");
+		await native.change("confirmDelete", "false");
+		expect(settings.get()).toMatchObject({ completionSound: false, confirmDelete: false });
+		expect(native.row("completionSound").value).toBe("false");
+		expect(native.row("confirmDelete").value).toBe("false");
 		await native.change("rowStyle", "compact");
 		expect(native.row("preview").height).toBe(44);
 		expect(native.row("menuPreview")).toMatchObject({ value: "compact", height: 28 });

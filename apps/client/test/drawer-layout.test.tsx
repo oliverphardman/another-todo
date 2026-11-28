@@ -26,7 +26,12 @@ afterEach(() => {
 function Harness({ slideMs }: { slideMs: number }) {
 	const [lists, setLists] = useState(false);
 	const [details, setDetails] = useState(false);
-	const { container } = createTestContainer(undefined, { fillMs: 0, travelMs: 0, slideMs });
+	const { container } = createTestContainer(undefined, {
+		pressMs: 0,
+		fillMs: 0,
+		travelMs: 0,
+		slideMs,
+	});
 	return (
 		<ThemeProvider scheme="light">
 			<ContainerProvider container={container}>

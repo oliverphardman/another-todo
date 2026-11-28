@@ -93,17 +93,22 @@ describe("ListTheme", () => {
 		}
 	});
 
-	it("shades the add field from the theme color, keeping its text readable", () => {
-		const light = ListTheme.resolve(null, null, false, LIST_THEME_COLOR).overrides;
-		expect(light.addField).toBe(ColorMath.mix(LIST_THEME_COLOR, "#000000", 0.18));
-		expect(light.onAddField).toBe("#ffffff");
-		const dark = ListTheme.resolve(null, null, true, LIST_THEME_COLOR).overrides;
-		expect(dark.addField).toBe(ColorMath.mix(LIST_THEME_COLOR, "#000000", 0.65));
-		expect(dark.onAddField).toBe("#ffffff");
-		const peach = ListTheme.resolve(null, null, false, "#f9e7de").overrides;
-		expect(ColorMath.luminance(peach.addField!)).toBeLessThan(ColorMath.luminance("#f9e7de"));
-		expect(peach.onAddField).toBe("#1b1a19");
-	});
+	it.each([
+		["light", false, LIGHT],
+		["dark", true, DARK],
+	] as const)(
+		"keeps the add field on the standard %s surface with text in the theme color",
+		(_, dark, palette) => {
+			for (const color of [LIST_THEME_COLOR, "#c0392b", "#f9e7de"]) {
+				const { overrides } = ListTheme.resolve({ type: "color", color }, null, dark, color);
+				expect(overrides.addField).toBe(palette.surface);
+				expect(overrides.onAddField).toBe(overrides.accent);
+				expect(ColorMath.contrast(overrides.onAddField!, palette.surface)).toBeGreaterThanOrEqual(
+					4.5,
+				);
+			}
+		},
+	);
 
 	it("starts a photo's add field with the system's default look", () => {
 		const setting = { type: "photo", photoId: "p" } as const;

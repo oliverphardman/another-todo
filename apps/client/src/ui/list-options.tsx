@@ -11,6 +11,7 @@ export interface ListOptionsContext {
 	readonly i18n: I18n;
 	readonly view: TaskView;
 	readonly print: () => void;
+	readonly deleteList: (listId: string) => void;
 	readonly exportList: (() => void) | null;
 }
 
@@ -19,6 +20,7 @@ export function buildListOptions({
 	i18n,
 	view,
 	print,
+	deleteList,
 	exportList,
 }: ListOptionsContext): ContextMenuEntry[] {
 	const { t } = i18n;
@@ -103,7 +105,7 @@ export function buildListOptions({
 			danger: true,
 			glyph: "trash",
 			label: editable ? t("ctx.deleteList") : t("ctx.leaveList"),
-			onPress: () => store.deleteList(view.id),
+			onPress: () => deleteList(view.id),
 		});
 	}
 	return entries;

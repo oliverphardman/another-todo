@@ -1,11 +1,11 @@
 import { useI18n } from "../i18n/i18n-context";
-import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
+import { useConfirmDeletion } from "./use-confirm-deletion";
 
 export function useDeleteTasks(): (taskIds: readonly string[]) => Promise<void> {
 	const { store } = useContainer();
 	const { t } = useI18n();
-	const confirm = useConfirm();
+	const confirm = useConfirmDeletion();
 	return async (taskIds) => {
 		const tasks = store.get().tasks.filter((task) => taskIds.includes(task.id));
 		const single = tasks.length === 1;

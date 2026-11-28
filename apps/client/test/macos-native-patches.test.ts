@@ -37,6 +37,17 @@ describe("macOS native patches", () => {
 		).toContain("_containerView = [[RCTUIView alloc] initWithFrame:");
 	});
 
+	it("keeps scroll views on overlay scrollbars, so none ever scrolls sideways", () => {
+		expect(
+			source(
+				"react-native-macos",
+				"React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm",
+			),
+		).toMatch(
+			/- \(void\)setScrollerStyle:\(NSScrollerStyle\)scrollerStyle\s*\{\s*\[super setScrollerStyle:NSScrollerStyleOverlay\];/,
+		);
+	});
+
 	it("rechecks the multiline scrollbar once the field has a size", () => {
 		expect(
 			source("react-native-macos", "Libraries/Text/TextInput/Multiline/RCTWrappedTextView.m"),

@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, screen } from "@testing-library/react";
-import { Animated } from "react-native";
+import { Animated, Platform } from "react-native";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderApp } from "./support/render-app";
 
@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 async function start() {
-	const app = await renderApp({ motion: { fillMs: 0, travelMs: 0, slideMs: 150 } });
+	const app = await renderApp({ motion: { pressMs: 0, fillMs: 0, travelMs: 0, slideMs: 150 } });
 	stop = app.stop;
 	const input = screen.getByLabelText("Add a Task");
 	fireEvent.change(input, { target: { value: "Slide" } });
@@ -38,7 +38,39 @@ async function start() {
 	return app;
 }
 
+const space = () => screen.getByTestId("sliding-pane-space").style.width;
+
 describe("the task details pane", () => {
+	it("resizes the list only once it has slid in, and before it slides out", async () => {
+		await start();
+		fireEvent.click(screen.getByLabelText("Open Slide"));
+		expect(space()).toBe("0px");
+		expect(screen.getByTestId("sliding-pane").style.width).toBe("320px");
+		act(() => finishers[0]!({ finished: true }));
+		expect(space()).toBe("320px");
+		fireEvent.click(screen.getByLabelText("Close details"));
+		expect(space()).toBe("0px");
+		expect(screen.getByTestId("sliding-pane").style.width).toBe("320px");
+	});
+
+	it("slides with a transform, using the native driver only on phones", async () => {
+		const original = Platform.OS;
+		for (const [os, native] of [
+			["macos", false],
+			["ios", true],
+		] as const) {
+			Platform.OS = os as typeof Platform.OS;
+			await start();
+			vi.mocked(Animated.timing).mockClear();
+			fireEvent.click(screen.getByLabelText("Open Slide"));
+			expect(vi.mocked(Animated.timing).mock.calls.at(-1)![1].useNativeDriver).toBe(native);
+			expect(screen.getByTestId("sliding-pane").style.transform).toContain("translateX(320px)");
+			stop?.();
+			cleanup();
+		}
+		Platform.OS = original;
+	});
+
 	it("slides in when a task is opened and stays mounted until the slide out finishes", async () => {
 		const app = await start();
 		expect(screen.queryByLabelText("Task details")).toBeNull();

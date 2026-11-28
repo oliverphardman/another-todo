@@ -4,6 +4,8 @@ import { startLocalApp } from "./support/local-app";
 
 const everything = {
 	rowStyle: "compact",
+	completionSound: false,
+	confirmDelete: false,
 	addTaskPosition: "bottom",
 	microsoft: { receive: false, send: true, intervalMinutes: 1440 },
 	lists: { all: false, important: false, planned: true, completed: true },

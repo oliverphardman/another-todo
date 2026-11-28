@@ -38,6 +38,7 @@ export class NativeSettingsForm {
 
 	constructor(context: NativeSettingsContext) {
 		this.sections = [
+			NativeSettingsForm.general(context),
 			NativeSettingsForm.appearance(context),
 			NativeSettingsForm.microsoft(context),
 			NativeSettingsForm.server(context),
@@ -94,6 +95,29 @@ export class NativeSettingsForm {
 				options: LAYOUT_STYLES.map((style) => ({ value: style, label: t(STYLE_LABELS[style]) })),
 			},
 			apply: (entered) => change(entered === "compact" ? "compact" : "cozy"),
+		};
+	}
+
+	private static general({ settings, i18n }: NativeSettingsContext): FieldSection {
+		const { t } = i18n;
+		const { completionSound, confirmDelete } = settings.get();
+		return {
+			key: "general",
+			title: t("settings.general"),
+			fields: [
+				NativeSettingsForm.toggle(
+					"completionSound",
+					t("settings.completionSound"),
+					completionSound,
+					(on) => settings.change({ completionSound: on }),
+				),
+				NativeSettingsForm.toggle(
+					"confirmDelete",
+					t("settings.confirmDelete"),
+					confirmDelete,
+					(on) => settings.change({ confirmDelete: on }),
+				),
+			],
 		};
 	}
 

@@ -124,6 +124,10 @@ describe("the menu bar", () => {
 		await bar.choose("list/rename");
 		expect(app.container.store.get().renamingViewId).toBe(id);
 		await bar.choose("list/delete");
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete list")),
+		);
 		expect(app.container.store.get().lists).toEqual([]);
 	});
 

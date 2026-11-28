@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DesktopMenuBridge } from "../src/ui/desktop-menu-bridge";
 import { nativeMenuBridge as macBridge } from "../src/ui/native-menu-bridge.macos";
@@ -381,6 +381,11 @@ describe("native context menus", () => {
 		await pick("Rename List", () => expect(renaming.some((id) => id !== null)).toBe(true));
 		act(() => store.stopRenaming());
 		await pick("Duplicate List", () => expect(store.get().lists).toHaveLength(2));
-		await pick("Delete List", () => expect(store.get().lists).toHaveLength(1));
+		await pick("Delete List", () => expect(screen.getByRole("alert")).toBeTruthy());
+		await act(
+			async () =>
+				void fireEvent.click(within(screen.getByRole("alert")).getByLabelText("Delete list")),
+		);
+		expect(store.get().lists).toHaveLength(1);
 	});
 });

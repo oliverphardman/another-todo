@@ -150,7 +150,7 @@ function MainLayout() {
 		);
 	}
 	return (
-		<View style={{ flex: 1, flexDirection: "row" }}>
+		<View style={{ flex: 1, flexDirection: "row", overflow: "hidden" }}>
 			<View style={{ width: sidebarWidth }}>
 				<ConsumedInsets edges={["right"]}>
 					<Sidebar onSelected={() => undefined} />

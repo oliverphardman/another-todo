@@ -6,6 +6,7 @@ import { useObservable } from "./hooks";
 import { MenuDivider, MenuItem, MenuOverlay, MenuPanel } from "./menu";
 import { SORT_GLYPHS } from "./sort-glyphs";
 import { ThemePanel } from "./theme-panel";
+import { useDeleteList } from "./use-delete-list";
 import { usePrintList } from "./use-print-list";
 
 export type ListPanel = "menu" | "sort" | "theme";
@@ -34,6 +35,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 		onClose();
 	};
 	const print = usePrintList();
+	const deleteList = useDeleteList();
 	const exportActions = useExportActions();
 	const sortItems = SORT_OPTIONS.map((option) => (
 		<MenuItem
@@ -111,7 +113,7 @@ export function ListMenu({ panel, compact, onPanel, onClose }: ListMenuProps) {
 								glyph="trash"
 								label={view.canEditList ? t("ctx.deleteList") : t("ctx.leaveList")}
 								danger
-								onPress={finish(() => store.deleteList(view.id))}
+								onPress={finish(() => void deleteList(view.id))}
 							/>
 						</>
 					) : null}

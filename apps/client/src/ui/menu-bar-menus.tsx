@@ -11,6 +11,7 @@ export interface MenuBarContext {
 	readonly print: () => void;
 	readonly exportList: (() => void) | null;
 	readonly deleteTasks: (taskIds: readonly string[]) => void;
+	readonly deleteList: (listId: string) => void;
 	readonly logOut: (() => void) | null;
 }
 
@@ -78,9 +79,10 @@ export class MenuBarMenus {
 		];
 	}
 
-	private static list({ store, i18n, print, exportList }: MenuBarContext): ContextMenuEntry[] {
+	private static list(context: MenuBarContext): ContextMenuEntry[] {
+		const { store, i18n, print, deleteList, exportList } = context;
 		const view = store.selectedView;
-		const options = buildListOptions({ store, i18n, view, print, exportList });
+		const options = buildListOptions({ store, i18n, view, print, deleteList, exportList });
 		if (!view.isCustomList) {
 			return options;
 		}
@@ -89,6 +91,7 @@ export class MenuBarMenus {
 			i18n,
 			listId: view.id,
 			print,
+			deleteList,
 			exportList,
 			onRename: () => store.startRenaming(view.id),
 		});

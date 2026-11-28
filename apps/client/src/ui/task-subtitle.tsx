@@ -61,13 +61,13 @@ export function TaskSubtitle({
 							{separator}
 						</AppText>
 					)}
-					<View style={{ flexDirection: "row", alignItems: "center" }}>
+					<View style={{ flexDirection: "row", alignItems: "center", flexShrink: 1 }}>
 						{part.glyph === undefined ? null : (
 							<View style={{ marginRight: 3 }}>
 								<Icon glyph={part.glyph} size={iconSize} color={color} />
 							</View>
 						)}
-						<AppText size={size} tone={tone}>
+						<AppText size={size} tone={tone} style={{ flexShrink: 1 }}>
 							{part.text}
 						</AppText>
 					</View>

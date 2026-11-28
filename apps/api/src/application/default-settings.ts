@@ -29,6 +29,8 @@ const wholeNumber = (min: number, max: number): Rule => ({
 });
 
 const SHAPE: Shape = {
+	completionSound: flag,
+	confirmDelete: flag,
 	rowStyle: oneOf("cozy", "compact"),
 	menuStyle: oneOf("cozy", "compact"),
 	addTaskPosition: oneOf("top", "bottom"),

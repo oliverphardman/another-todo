@@ -125,6 +125,22 @@ index 0bb5a4d978165951adce61301b9ca1c3ff11a63b..ecd34986ff829601628db82c848eabde
  #endif // macOS]
  
    // We fallback to screen size if a key window is not found.
+diff --git a/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm b/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+index 8c14f01..0e69a6b 100644
+--- a/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
++++ b/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+@@ -154,6 +154,11 @@ - (void)setFrame:(CGRect)frame
+ }
+ 
+ #if TARGET_OS_OSX // [macOS
++- (void)setScrollerStyle:(NSScrollerStyle)scrollerStyle
++{
++  [super setScrollerStyle:NSScrollerStyleOverlay];
++}
++
+ - (NSSize)contentSize
+ {
+   if (!self.documentView) {
 diff --git a/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm b/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm
 index d22921730f6046550189017acd1c3b45d8b1cd64..4ec089cc0077c195f664baf4e4e08d0e0899a907 100644
 --- a/React/Fabric/Mounting/ComponentViews/TextInput/RCTTextInputComponentView.mm

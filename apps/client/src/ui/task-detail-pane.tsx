@@ -5,15 +5,16 @@ import { DueDay } from "../domain/due-day";
 import type { Task } from "../domain/task";
 import { AppText } from "./app-text";
 import { AttachmentRow } from "./attachment-row";
-import { useConfirm } from "./confirm";
 import { useContainer } from "./container-context";
 import { ActionRow, DETAIL_ROW_HEIGHT, DetailCard, DetailSeparator } from "./detail-card";
 import { DueDatePicker } from "./due-date-picker";
 import { ReminderPicker } from "./reminder-picker";
 import { RepeatPicker } from "./repeat-picker";
-import { CheckedCircle, Icon } from "./icon";
+import { CheckCircle } from "./check-circle";
+import { Icon } from "./icon";
 import { PressableSurface } from "./pressable-surface";
 import { useObservable } from "./hooks";
+import { useConfirmDeletion } from "./use-confirm-deletion";
 import { useDeleteTasks } from "./use-delete-tasks";
 import { Hint } from "./hint";
 import { TaskNoteField, TaskTitleField } from "./task-fields";
@@ -31,7 +32,7 @@ export interface TaskDetailPaneProps {
 export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 	const { store, attachments, reminders } = useContainer();
 	const reminderState = useObservable(reminders);
-	const confirm = useConfirm();
+	const confirm = useConfirmDeletion();
 	const files = useObservable(attachments);
 	const deleteTasks = useDeleteTasks();
 	const palette = useTheme();
@@ -73,19 +74,15 @@ export function TaskDetailPane({ task, onClose }: TaskDetailPaneProps) {
 			>
 				<DetailCard>
 					<View style={{ flexDirection: "row", alignItems: "center", minHeight: 52 }}>
-						<PressableSurface
-							accessibilityRole="checkbox"
-							accessibilityLabel={task.completed ? t("task.uncomplete") : t("task.complete")}
-							accessibilityState={{ checked: task.completed }}
-							onPress={() => store.toggleCompleted(task.id)}
+						<CheckCircle
+							identity={task.id}
+							completed={task.completed}
+							label={task.completed ? t("task.uncomplete") : t("task.complete")}
+							size={22}
+							strokeWidth={1.3}
+							onToggle={() => store.toggleCompleted(task.id)}
 							style={{ padding: 14 }}
-						>
-							{task.completed ? (
-								<CheckedCircle size={22} color={palette.accent} />
-							) : (
-								<Icon glyph="circle" size={22} color={palette.accent} strokeWidth={1.3} />
-							)}
-						</PressableSurface>
+						/>
 						<TaskTitleField key={task.id} task={task} />
 						<PressableSurface
 							accessibilityRole="button"

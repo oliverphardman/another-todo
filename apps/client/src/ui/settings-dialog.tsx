@@ -11,6 +11,7 @@ import {
 	AccountSection,
 	AppearanceSection,
 	ExportSection,
+	GeneralSection,
 	ListsSection,
 	MicrosoftSection,
 	MyDaySection,
@@ -82,6 +83,7 @@ export function SettingsDialog({ onClose }: { onClose: () => void }) {
 				keyboardShouldPersistTaps="handled"
 				contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
 			>
+				<GeneralSection />
 				<AppearanceSection />
 				<MicrosoftSection />
 				<ServerSection />
